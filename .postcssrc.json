@@ -1,5 +1,15 @@
 {
   "plugins": {
     "@tailwindcss/postcss": {}
+  },
+   "theme": {
+    "extend": {
+      "colors": {
+        "primary-orange": "#FF6F00",     
+        "primary-blue": "#455A64",       
+        "primary-white": "#FFFFFF",      
+        "primary-beige": "#FBE9E7"    
+      }
+    }
   }
 }

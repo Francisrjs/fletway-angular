@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@source "../node_modules/flowbite";
+@theme {
+    --color-primary-blue: #455A64;  /* Azul grisáceo */
+    --color-secondary-orange: #FF6F00; /* Naranja */
+    --color-tertiary-beige: #FBE9E7; /* Beige claro */
+    --color-white: #FFFFFF;    
+}
