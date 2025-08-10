@@ -1,25 +1,11 @@
 import { Routes } from '@angular/router';
-import { App } from './app';
 
 export const routes: Routes = [
   {
     path: 'auth',
-    children: [
-      {
-        path: 'login',
-        // Importa el componente nombrado (recomendado)
-        loadComponent: () =>
-          import('./core/auth/features/login-in/login-in').then(
-            (m) => m.LoginIn,
-          ),
-      },
-      {
-        path: 'sign',
-        loadComponent: () =>
-          import('./core/auth/features/sign-up/sign-up').then((m) => m.SignUp),
-      },
-    ],
+    loadChildren: () =>
+      import('./core/auth/features/ath-shell/auth-routing').then(
+        (m) => m.default,
+      ),
   },
-  { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'auth/login' },
 ];
