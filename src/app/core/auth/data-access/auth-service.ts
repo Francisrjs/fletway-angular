@@ -3,23 +3,28 @@ import { Supabase } from '../../../shared/data-access/supabase';
 import { SignInWithPasswordCredentials } from '@supabase/supabase-js';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private _supabaseClient = inject(Supabase).supabaseCLient;
-
-  session(){
-
+  //Escuchador de cambios
+  constructor() {
+    this._supabaseClient.auth.onAuthStateChange((session) => {
+      console.log(session);
+    });
   }
-  signUp(credentials: SignInWithPasswordCredentials){
-   return this._supabaseClient.auth.signUp(credentials)
+  session() {
+    return this._supabaseClient.auth.getSession();
+  }
+  signUp(credentials: SignInWithPasswordCredentials) {
+    return this._supabaseClient.auth.signUp(credentials);
   }
 
-  loginIn(credentials: SignInWithPasswordCredentials){
-    return this._supabaseClient.auth.signInWithPassword(credentials)
+  loginIn(credentials: SignInWithPasswordCredentials) {
+    return this._supabaseClient.auth.signInWithPassword(credentials);
   }
 
-  signOut(){
+  signOut() {
     return this._supabaseClient.auth.signOut();
   }
 }

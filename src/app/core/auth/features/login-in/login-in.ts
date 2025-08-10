@@ -6,7 +6,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../data-access/auth-service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 // Tipado del formulario
 interface LoginForm {
@@ -24,7 +24,7 @@ interface LoginForm {
 export class LoginIn {
   private _formBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
-
+  private _router = inject(Router);
   // --- Formulario con validadores ---
   form = this._formBuilder.group<LoginForm>({
     email: this._formBuilder.control(null, [
@@ -49,6 +49,7 @@ export class LoginIn {
       if (authResponse.error) throw authResponse.error;
 
       alert('Inicio de sesión exitoso');
+      this._router.navigateByUrl('/');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
     }

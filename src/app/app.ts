@@ -1,7 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { Router, RouterOutlet, Event as RouterEvent } from '@angular/router';
+import {
+  Router,
+  RouterOutlet,
+  Event as RouterEvent,
+  NavigationEnd,
+} from '@angular/router';
 import { initFlowbite } from 'flowbite';
 import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -11,19 +17,24 @@ import { NavbarComponent } from './core/navbar/navbar-component/navbar-component
   styleUrls: ['./app.scss'],
 })
 export class App implements OnInit {
+  showNavbar = true;
   constructor(private router: Router) {
-    // Imprime la config de rutas para verificar que exista auth/sign-up
-    console.log('Router config:', this.router.config);
-
     // Escuchar eventos del router
-    this.router.events.subscribe((e: RouterEvent) => {
-      console.log('Router event:', e);
-    });
   }
 
   protected readonly title = signal('Fletway');
 
   ngOnInit(): void {
     initFlowbite();
+
+    //Evento para detectar navbar
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        // Rutas donde NO querés mostrar navbar
+        const hideNavbarRoutes = ['/auth/login', '/auth/sign', '/auth/sign-up'];
+        initFlowbite();
+        this.showNavbar = !hideNavbarRoutes.includes(event.urlAfterRedirects);
+      });
   }
 }
