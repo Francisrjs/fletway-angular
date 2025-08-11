@@ -1,4 +1,4 @@
-<section class="bg-gray-50 dark:bg-primary-beige">
+<section class="bg-gray-50 dark:bg-primary-beige"> 
   <div
     class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0 mr-50"
   >
@@ -72,24 +72,73 @@
           </div>
 
           <!-- Campo extra para Cliente o Fletero -->
-          <div>
-            <label
-              for="tipo-usuario"
-              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >Tipo de usuario</label
-            >
-            <select
-              id="tipo-usuario"
-              name="tipo-usuario"
-              formControlName="tipoUsuario"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              required
-            >
-              <option value="">Seleccione...</option>
-              <option value="cliente">Cliente</option>
-              <option value="fletero">Fletero</option>
-            </select>
-          </div>
+          <!-- Campo tipo de usuario -->
+  <div>
+    <label
+      for="tipo-usuario"
+      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >Tipo de usuario</label
+    >
+    <select
+      id="tipo-usuario"
+      formControlName="tipoUsuario"
+     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      required
+    >
+      <option value="">Seleccione...</option>
+      <option value="cliente">Cliente</option>
+     <option value="fletero">Fletero</option>
+    </select>
+  </div>
+
+<!-- Campos adicionales para Fletero -->
+  <div *ngIf="form.get('tipoUsuario')?.value === 'fletero'">
+    <div>
+      <label
+        for="descripcion"
+        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >Descripción</label
+     >
+      <input
+        type="text"
+        id="descripcion"
+        formControlName="descripcion"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        placeholder="Descripción del servicio"
+      />
+  </div>
+
+  <div>
+    <label
+      for="vehiculo"
+      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >Vehículo</label
+    >
+    <input
+      type="text"
+      id="vehiculo"
+      formControlName="vehiculo"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      placeholder="Tipo de vehículo"
+    />
+  </div>
+
+  <div>
+    <label
+      for="patente"
+      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >Patente</label
+    >
+    <input
+      type="text"
+      id="patente"
+      formControlName="patente"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      placeholder="Número de patente"
+    />
+  </div>
+</div>
+
 
           <div class="flex items-start">
             <div class="flex items-center h-5">

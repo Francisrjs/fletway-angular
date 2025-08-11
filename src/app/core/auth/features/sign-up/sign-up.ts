@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   AbstractControl,
@@ -9,27 +9,35 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../data-access/auth-service';
-//tipado
+import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+
+// Tipado del formulario (incluye los campos extra)
 interface signUpForm {
-  email: FormControl<null | string>;
-  password: FormControl<null | string>;
-  confirmPassword: FormControl<null | string>;
+  email: FormControl<string | null>;
+  password: FormControl<string | null>;
+  confirmPassword: FormControl<string | null>;
+  tipoUsuario: FormControl<string | null>;
+  descripcion: FormControl<string | null>;
+  vehiculo: FormControl<string | null>;
+  patente: FormControl<string | null>;
 }
+
 @Component({
   selector: 'app-sign-up',
-  imports: [RouterLink, ReactiveFormsModule],
   standalone: true,
+  imports: [RouterLink, ReactiveFormsModule, CommonModule],
   templateUrl: './sign-up.html',
-  styleUrl: './sign-up.scss',
+  styleUrls: ['./sign-up.scss'],
 })
-export class SignUp {
-  private _formBuilder = inject(FormBuilder);
+export class SignUp implements OnDestroy {
+  private _fb = inject(FormBuilder);
   private _authService = inject(AuthService);
   private _router = inject(Router);
-  // --- Validador personalizado ---
-  private passwordMatchValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
+  private _subs = new Subscription();
+
+  // Validador personalizado a nivel de grupo
+  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password')?.value;
     const confirm = control.get('confirmPassword')?.value;
     if (password && confirm && password !== confirm) {
@@ -38,23 +46,52 @@ export class SignUp {
     return null;
   }
 
-  // --- Formulario con validadores ---
-  form = this._formBuilder.group<signUpForm>(
+  // FormGroup: incluimos los campos extras pero deshabilitados inicialmente
+  form = this._fb.group<signUpForm>(
     {
-      email: this._formBuilder.control(null, [
-        Validators.required,
-        Validators.email,
-      ]),
-      password: this._formBuilder.control(null, [
-        Validators.required,
-        Validators.minLength(6),
-      ]),
-      confirmPassword: this._formBuilder.control(null, [Validators.required]),
+      email: this._fb.control(null, [Validators.required, Validators.email]),
+      password: this._fb.control(null, [Validators.required, Validators.minLength(6)]),
+      confirmPassword: this._fb.control(null, Validators.required),
+      tipoUsuario: this._fb.control('', Validators.required),
+
+      // campos fletero: empiezan deshabilitados
+      descripcion: this._fb.control({ value: null, disabled: true }),
+      vehiculo: this._fb.control({ value: null, disabled: true }),
+      patente: this._fb.control({ value: null, disabled: true }),
     },
-    {
-      validators: this.passwordMatchValidator, // validación a nivel de grupo
-    },
+    { validators: this.passwordMatchValidator }
   );
+
+  constructor() {
+    // Suscribimos cambios de tipoUsuario para habilitar/deshabilitar campos
+    const sub = this.form.get('tipoUsuario')?.valueChanges.subscribe((v) => {
+      const desc = this.form.get('descripcion');
+      const veh = this.form.get('vehiculo');
+      const pat = this.form.get('patente');
+
+      if (v === 'fletero') {
+        // habilitar y validar
+        desc?.setValidators([Validators.required]);
+        desc?.enable();
+        desc?.updateValueAndValidity();
+
+        veh?.setValidators([Validators.required]);
+        veh?.enable();
+        veh?.updateValueAndValidity();
+
+        pat?.setValidators([Validators.required]);
+        pat?.enable();
+        pat?.updateValueAndValidity();
+      } else {
+        // limpiar, quitar validadores y deshabilitar
+        desc?.clearValidators(); desc?.setValue(null); desc?.disable(); desc?.updateValueAndValidity();
+        veh?.clearValidators();  veh?.setValue(null);  veh?.disable();  veh?.updateValueAndValidity();
+        pat?.clearValidators();  pat?.setValue(null);  pat?.disable();  pat?.updateValueAndValidity();
+      }
+    });
+
+    if (sub) this._subs.add(sub);
+  }
 
   async submit() {
     if (this.form.invalid) {
@@ -63,15 +100,18 @@ export class SignUp {
     }
 
     try {
-      const { error, data } = await this._authService.signUp({
+      const { error } = await this._authService.signUp({
         email: this.form.value.email ?? '',
         password: this.form.value.password ?? '',
       });
       if (error) throw error;
-      console.log(data);
       this._router.navigateByUrl('');
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
+  }
+
+  ngOnDestroy(): void {
+    this._subs.unsubscribe();
   }
 }
