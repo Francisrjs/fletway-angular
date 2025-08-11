@@ -1,0 +1,218 @@
+<!-- PASTA: src/app/features/solicitud/solicitud-form.component.html -->
+<div
+  class="flex flex-col flex-grow items-center justify-start w-full max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden"
+>
+  <header
+    class="w-full bg-primary-orange p-4 flex items-center justify-between rounded-t-lg shadow-md"
+  >
+    <div class="flex items-center">
+      <button
+        (click)="cancel()"
+        class="text-white text-2xl mr-4 focus:outline-none"
+      >
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="text-white text-xl font-semibold">Solicitar Flete</h1>
+    </div>
+    <button class="text-white text-2xl focus:outline-none">
+      <i class="fas fa-user-circle"></i>
+    </button>
+  </header>
+
+  <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
+    <h2 class="text-blue-gray-dark text-2xl font-bold mb-6 text-center">
+      Detalles de su Solicitud
+    </h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+      <!-- Origen -->
+      <div>
+        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+          >Ingrese la Localidad</label
+        >
+        <input
+          formControlName="origin"
+          (input)="onOriginInput($any($event.target).value)"
+          type="text"
+          placeholder="Ej: Zarate"
+          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+        />
+      </div>
+      <div>
+        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+          >Origen (Dirección o Mapa)</label
+        >
+        <input
+          formControlName="origin"
+          type="text"
+          placeholder="Ej: Calle Falsa 123, CABA"
+          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+        />
+        <div
+          *ngIf="form.get('origin')?.touched && form.get('origin')?.invalid"
+          class="text-sm text-red-600"
+        >
+          Origen requerido
+        </div>
+      </div>
+
+      <!-- campo oculto que guarda el id seleccionado -->
+      <input formControlName="localidadOrigenId" type="hidden" />
+
+      <!-- sugerencias -->
+      <ul
+        *ngIf="localidades?.length"
+        class="bg-white border mt-1 rounded-md max-h-48 overflow-auto"
+      >
+        <li
+          *ngFor="let loc of localidades"
+          (click)="selectLocalidad(loc)"
+          class="p-2 hover:bg-gray-100 cursor-pointer"
+        >
+          {{ loc.nombre }} — {{ loc.provincia }} (CP: {{ loc.codigo_postal }})
+        </li>
+      </ul>
+
+      <!-- botón para "no encontré la localidad" (opcional) -->
+      <div
+        *ngIf="localidades?.length === 0 && originTyped"
+        class="text-sm text-gray-500 mt-1"
+      >
+        No se encontraron localidades. Podés enviar igual y luego editar o
+        elegir "Crear nueva".
+      </div>
+      <!-- Destino -->
+      <div>
+        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+          >Destino (Dirección o Mapa)</label
+        >
+        <input
+          formControlName="destination"
+          type="text"
+          placeholder="Ej: Av. Siempre Viva 742, GBA"
+          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+        />
+        <div
+          *ngIf="
+            form.get('destination')?.touched && form.get('destination')?.invalid
+          "
+          class="text-sm text-red-600"
+        >
+          Destino requerido
+        </div>
+      </div>
+
+      <!-- Fecha / Hora -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >Fecha de Recogida</label
+          >
+          <input
+            formControlName="pickupDate"
+            type="date"
+            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+          />
+        </div>
+        <div>
+          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >Hora de Recogida</label
+          >
+          <input
+            formControlName="pickupTime"
+            type="time"
+            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+          />
+        </div>
+      </div>
+
+      <!-- Fotos -->
+      <div>
+        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+          >Fotos de la Carga</label
+        >
+        <input
+          type="file"
+          (change)="onFilesChange($event)"
+          accept="image/*"
+          multiple
+          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-orange file:text-white hover:file:bg-orange-600"
+        />
+        <p class="text-xs text-gray-500 mt-1">
+          Puedes seleccionar varias imágenes.
+        </p>
+      </div>
+
+      <!-- Detalle / Dimensiones / Peso -->
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >Titulo del pedido</label
+          >
+          <input
+            formControlName="detalle"
+            type="text"
+            placeholder="Ej: par de zapatillas"
+            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+          />
+        </div>
+
+        <div>
+          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >Dimensiones (cm)</label
+          >
+          <input
+            formControlName="dimensions"
+            type="text"
+            placeholder="Ej: 100x50x50"
+            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+          />
+        </div>
+
+        <div>
+          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >Peso (kg)</label
+          >
+          <input
+            formControlName="weight"
+            type="number"
+            placeholder="Ej: 200"
+            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+          />
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div *ngIf="message.type === 'error'" class="text-red-600">
+        {{ message.text }}
+      </div>
+      <div *ngIf="message.type === 'success'" class="text-green-600">
+        {{ message.text }}
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-around mt-8 space-x-4">
+        <button
+          type="button"
+          (click)="cancel()"
+          class="w-1/2 py-3 px-6 bg-white text-blue-gray-dark border border-blue-gray-dark rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none"
+        >
+          Cancelar
+        </button>
+        <button
+          [disabled]="submitting"
+          type="submit"
+          class="w-1/2 py-3 px-6 bg-secondary-orange text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none"
+        >
+          {{ submitting ? "Enviando..." : "Confirmar Solicitud" }}
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <footer
+    class="w-full bg-blue-gray-dark p-3 text-center text-white text-sm rounded-b-lg"
+  >
+    &copy; 2025 Fletway. Todos los derechos reservados.
+  </footer>
+</div>

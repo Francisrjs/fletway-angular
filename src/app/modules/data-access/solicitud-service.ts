@@ -255,4 +255,99 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: false }));
     }
   }
+  // solo incluyo el método modificado dentro de tu SolcitudService
+  async createSolicitud(
+    payload: {
+      direccion_origen: string;
+      direccion_destino: string;
+      fecha_recogida?: string; // yyyy-mm-dd
+      hora_recogida_time?: string; // HH:mm
+      detalles_carga?: string;
+      medidas?: string;
+      peso?: number | null;
+    },
+    // files queda para compatibilidad pero lo ignoramos
+    files?: FileList | null,
+  ): Promise<{ data?: Solicitud | null; error?: any }> {
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await this._supabaseClient.auth.getSession();
+
+      if (sessionError) return { error: sessionError };
+      if (!session?.user?.id)
+        return { error: new Error('Usuario no autenticado') };
+
+      const { data: userData, error: userError } = await this._supabaseClient
+        .from('usuario')
+        .select('usuario_id')
+        .eq('u_id', session.user.id)
+        .maybeSingle();
+
+      if (userError) return { error: userError };
+      if (!userData)
+        return { error: new Error('No se encontró usuario asociado al u_id') };
+
+      const cliente_id = userData.usuario_id;
+
+      // construir hora_recogida ISO si recibimos fecha + hora
+      let hora_recogida_iso: string | null = null;
+      if (payload.fecha_recogida && payload.hora_recogida_time) {
+        hora_recogida_iso = new Date(
+          `${payload.fecha_recogida}T${payload.hora_recogida_time}:00`,
+        ).toISOString();
+      }
+
+      const row: any = {
+        cliente_id,
+        direccion_origen: payload.direccion_origen,
+        direccion_destino: payload.direccion_destino,
+        detalles_carga: payload.detalles_carga ?? null,
+        medidas: payload.medidas ?? null,
+        estado: 'sin transportista',
+        hora_recogida: hora_recogida_iso,
+      };
+
+      // si el payload trae localidad_origen_id, lo agregamos
+      if ((payload as any).localidad_origen_id) {
+        row.localidad_origen_id = (payload as any).localidad_origen_id;
+      }
+
+      const { data: insertData, error: insertError } =
+        await this._supabaseClient
+          .from('solicitud')
+          .insert(row)
+          .select()
+          .maybeSingle();
+
+      if (insertError) return { error: insertError };
+
+      return { data: insertData as Solicitud };
+    } catch (err) {
+      console.error('createSolicitud catch:', err);
+      return { error: err };
+    }
+  }
+  async searchLocalidades(query: string): Promise<any[] | []> {
+    try {
+      const q = query.trim();
+      if (!q) return [];
+
+      const { data, error } = await this._supabaseClient
+        .from('localidad')
+        .select('localidad_id, nombre, provincia, codigo_postal')
+        .ilike('nombre', `%${q}%`)
+        .limit(10);
+
+      if (error) {
+        console.error('searchLocalidades error:', error);
+        return [];
+      }
+      return data ?? [];
+    } catch (err) {
+      console.error('searchLocalidades catch:', err);
+      return [];
+    }
+  }
 }

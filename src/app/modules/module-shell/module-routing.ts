@@ -22,4 +22,11 @@ export default [
         (m) => m.ClienteComponent,
       ),
   },
+  {
+    path: 'cliente/nuevaSolicitud',
+    loadComponent: () =>
+      import('../cliente/detalles-solicitud-cliente/solicitud').then(
+        (m) => m.SolicitudFormComponent,
+      ),
+  },
 ] as Routes;
