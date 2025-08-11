@@ -8,11 +8,12 @@ import {
 import { initFlowbite } from 'flowbite';
 import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
 import { filter } from 'rxjs';
+import { ClienteComponent } from './modules/cliente/cliente-component/cliente-component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent],
+  imports: [RouterOutlet, NavbarComponent, ClienteComponent],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })

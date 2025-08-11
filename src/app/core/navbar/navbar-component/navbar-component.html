@@ -1,55 +1,109 @@
-<nav class="bg-white border-gray-200">
-  <div class="max-w-screen-xl flex items-center justify-between mx-auto p-4 ">
-    
-    <!-- Logo -->
-    <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
-      <img src="fletway-car.png" class="w-18 h-15 rounded-sm" alt="Logo" />
-      <span class="self-center text-2xl font-semibold whitespace-nowrap text-primary-blue">FLETWAY</span>
-    </a>
+<!-- Botón Toggle para móviles -->
+<button
+  data-drawer-target="default-sidebar"
+  data-drawer-toggle="default-sidebar"
+  aria-controls="default-sidebar"
+  type="button"
+  class="inline-flex items-center p-2 mt-2 ml-3 text-sm text-gray-700 rounded-lg sm:hidden hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-300"
+>
+  <span class="sr-only">Abrir sidebar</span>
+  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+    <path
+      clip-rule="evenodd"
+      fill-rule="evenodd"
+      d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
+    />
+  </svg>
+</button>
 
-    <!-- Menú principal -->
-    <div class="hidden md:flex md:flex-grow md:justify-center" id="navbar-user">
-      <ul class="flex flex-row font-medium space-x-8 rtl:space-x-reverse">
-        <li><a href="#" class="block py-2 px-3 text-primary-blue rounded hover:bg-secondary-orange hover:text-white md:hover:bg-transparent md:hover:text-secondary-orange">Home</a></li>
-        <li><a href="#" class="block py-2 px-3 text-primary-blue rounded hover:bg-secondary-orange hover:text-white md:hover:bg-transparent md:hover:text-secondary-orange">About</a></li>
-        <li><a href="#" class="block py-2 px-3 text-primary-blue rounded hover:bg-secondary-orange hover:text-white md:hover:bg-transparent md:hover:text-secondary-orange">Services</a></li>
-        <li><a href="#" class="block py-2 px-3 text-primary-blue rounded hover:bg-secondary-orange hover:text-white md:hover:bg-transparent md:hover:text-secondary-orange">Pricing</a></li>
-        <li><a href="#" class="block py-2 px-3 text-primary-blue rounded hover:bg-secondary-orange hover:text-white md:hover:bg-transparent md:hover:text-secondary-orange">Contact</a></li>
-      </ul>
-    </div>
-
-    <!-- Usuario -->
-    <div class="flex items-center space-x-3 rtl:space-x-reverse md:order-2">
-      <button type="button" class="flex text-sm bg-primary-blue rounded-full focus:ring-4 focus:ring-secondary-orange"
-        id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown" data-dropdown-placement="bottom">
-        <span class="sr-only">Open user menu</span>
-        <img class="w-8 h-8 rounded-full" src="/docs/images/people/profile-picture-3.jpg" alt="user photo">
-      </button>
-      
-      <!-- Dropdown del usuario -->
-      <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-sm dark:bg-gray-700 dark:divide-gray-600" id="user-dropdown">
-        <div class="px-4 py-3">
-          <span class="block text-sm text-gray-900 dark:text-white">Bonnie Green</span>
-          <span class="block text-sm  text-gray-500 truncate dark:text-gray-400">name@flowbite.com</span>
-        </div>
-        <ul class="py-2" aria-labelledby="user-menu-button">
-          <li>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Dashboard</a>
-          </li>
-          <li>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Settings</a>
-          </li>
-          <li>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Earnings</a>
-          </li>
-          <li>
-            <a (click)="logOut()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Cerrar Sesion</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-
+<!-- Sidebar -->
+<aside
+  id="default-sidebar"
+  class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-[#f9f5f0] border-r border-gray-200"
+>
+  <div class="flex flex-col items-center py-6">
+    <!-- Logo + Título -->
+    <img src="fletway-icon.png" alt="Fletway Logo" class="w-24 h-24 mb-2" />
   </div>
-</nav>
 
+  <!-- Menú -->
+  <div class="overflow-y-auto px-4">
+    <ul class="space-y-2">
+      <li>
+        <a
+          href="#"
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        >
+          <svg
+            class="w-6 h-6 text-gray-500"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z"
+              clip-rule="evenodd"
+            />
+          </svg>
 
+          <span class="ml-3">Inicio</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="#"
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        >
+          <svg
+            className="w-6 h-6  text-gray-500"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+              clip-rule="evenodd"
+            />
+            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+          </svg>
+
+          <span class="ml-3 text-orange">Hacer un pedido</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="#"
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        >
+          <svg
+            class="w-6 h-6 text-gray-500"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"
+            />
+          </svg>
+
+          <span class="ml-3" (click)="logOut()">Desconectarse</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>

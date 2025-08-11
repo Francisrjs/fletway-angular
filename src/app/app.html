@@ -1,6 +1,20 @@
-@if (showNavbar) {
-  <app-navbar-component></app-navbar-component>
-}
-<router-outlet></router-outlet>
+<!-- Este es el contenedor principal de tu aplicación -->
+<div class="flex h-screen bg-gray-50">
+  <!-- El componente del sidebar. Las clases de posicionamiento (fixed, etc.) ya están dentro de app-navbar-component. -->
+  @if (showNavbar) {
+    <app-navbar-component></app-navbar-component>
+  }
 
-<!-- <h1>Hola</h1> -->
+  <!-- Este es el contenedor para tu contenido principal.
+       Tiene un margen izquierdo de 64 unidades (256px) para pantallas pequeñas y mayores (sm:).
+       Esto asegura que el contenido no quede debajo del sidebar fijo cuando este es visible.
+       flex-1 hace que ocupe todo el espacio restante horizontalmente.
+       overflow-y-auto permite el scroll vertical si el contenido es demasiado largo. -->
+  <main
+    class="flex-1 overflow-y-auto sm:ml-64 rounded-lg transition-all duration-300 ease-in-out"
+  >
+    <!-- Aquí van tus componentes de contenido -->
+    <app-cliente-component></app-cliente-component>
+    <router-outlet></router-outlet>
+  </main>
+</div>

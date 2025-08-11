@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 import { AuthService } from '../../data-access/auth-service';
 import { Router, RouterLink } from '@angular/router';
+import { Supabase } from '../../../../shared/data-access/supabase';
 
 // Tipado del formulario
 interface LoginForm {
@@ -49,6 +50,7 @@ export class LoginIn {
       if (authResponse.error) throw authResponse.error;
 
       alert('Inicio de sesión exitoso');
+      this._authService.esFletero();
       this._router.navigateByUrl('/');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);

@@ -21,4 +21,12 @@ export const routes: Routes = [
     canActivate: [privateGuard],
     loadComponent: () => import('./modules/home/home').then((m) => m.Home),
   },
+  {
+    path: '',
+    canActivate: [privateGuard],
+    loadComponent: () =>
+      import('./modules/fletero/fletero-component/fletero-component').then(
+        (m) => m.FleteroComponent,
+      ),
+  },
 ];

@@ -27,4 +27,13 @@ export class AuthService {
   signOut() {
     return this._supabaseClient.auth.signOut();
   }
+  esFletero() {
+    this._supabaseClient.rpc('es_fletero').then(({ data, error }) => {
+      if (error) {
+        console.error(error);
+      } else {
+        console.log('Resultado de es_fletero:', data);
+      }
+    });
+  }
 }
