@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-solicitar-flete',
-  templateUrl: './solicitar-flete.component.html',
-  styleUrls: ['./solicitar-flete.component.scss']
+  templateUrl: './detalles-solicitud-cliente.html',
+  styleUrls: ['./detalles-solicitud-cliente.scss'],
 })
 export class SolicitarFleteComponent {
   formData = {
@@ -13,7 +13,7 @@ export class SolicitarFleteComponent {
     pickupTime: '',
     dimensions: '',
     weight: null as number | null,
-    loadPhotos: [] as File[]
+    loadPhotos: [] as File[],
   };
 
   onBack() {
@@ -44,7 +44,9 @@ export class SolicitarFleteComponent {
   }
 
   onCancel() {
-    console.log('Solicitud de Flete Cancelada. Volviendo a la pantalla anterior.');
+    console.log(
+      'Solicitud de Flete Cancelada. Volviendo a la pantalla anterior.',
+    );
     // Podés limpiar el formulario o navegar a otra ruta
   }
 }

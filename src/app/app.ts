@@ -13,7 +13,7 @@ import { ClienteComponent } from './modules/cliente/cliente-component/cliente-co
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, ClienteComponent],
+  imports: [RouterOutlet, NavbarComponent],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })

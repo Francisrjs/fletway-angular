@@ -1,14 +1,17 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   templateUrl: './detalles-solicitud-fletero.html',
-  styleUrls: ['./detalles-solicitud-fletero.scss']
+  styleUrls: ['./detalles-solicitud-fletero.scss'],
+  imports: [CommonModule, FormsModule],
 })
 export class DetallesSolicitudFleteroComponent {
   quote = {
     price: null as number | null,
-    notes: ''
+    notes: '',
   };
 
   goBack(): void {
