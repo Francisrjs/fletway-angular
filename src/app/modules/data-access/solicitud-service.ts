@@ -132,4 +132,84 @@ export class SolcitudService {
   async getAllPedidosDisponibles(): Promise<Solicitud[] | null> {
     return this.getPedidosByEstado('sin transportista');
   }
+  async getAllPedidosEnViaje(): Promise<Solicitud[] | null> {
+    return this.getPedidosByEstado('en viaje');
+  }
+
+  async getAllPedidosUsuario(): Promise<Solicitud[] | null> {
+    try {
+      this._state.update((s) => ({ ...s, loading: true, error: false }));
+
+      const {
+        data: { session },
+      } = await this._authService.session();
+
+      if (!session?.user?.id) {
+        console.warn('Usuario no autenticado (session.user.id faltante)');
+        this._state.update((s) => ({ ...s, solicitudes: [] }));
+        return null;
+      }
+
+      // => usar maybeSingle() en lugar de single()
+      const { data: userData, error: userError } = await this._supabaseClient
+        .from('usuario')
+        .select('usuario_id')
+        .eq('u_id', session.user.id)
+        .maybeSingle();
+
+      if (userError) {
+        console.error('Error al obtener id_usuario:', userError);
+        this._state.update((s) => ({ ...s, error: true }));
+        return null;
+      }
+
+      // si no existe usuario asociado al uuid, devolvemos lista vacía
+      if (!userData) {
+        console.warn('No se encontró usuario para el u_id:', session.user.id);
+        this._state.update((s) => ({ ...s, solicitudes: [] }));
+        return [];
+      }
+
+      const idUsuario = userData.usuario_id;
+
+      const { data, error } = await this._supabaseClient
+        .from('solicitud')
+        .select(
+          `
+        solicitud_id,
+        cliente_id,
+        presupuesto_aceptado,
+        localidad_origen_id,
+        direccion_origen,
+        direccion_destino,
+        fecha_creacion,
+        detalles_carga,
+        estado,
+        borrado_logico,
+        creado_en,
+        actualizado_en,
+        cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
+        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal)
+      `,
+        )
+        .eq('cliente_id', idUsuario)
+        .returns<Solicitud[]>();
+
+      if (error) {
+        console.error('Supabase error (getAllPedidosUsuario):', error);
+        this._state.update((s) => ({ ...s, error: true }));
+        return null;
+      }
+
+      this._state.update((s) => ({ ...s, solicitudes: data ?? [] }));
+
+      return data ?? [];
+    } catch (err) {
+      console.error('getAllPedidosUsuario catch:', err);
+      this._state.update((s) => ({ ...s, error: true }));
+      return null;
+    } finally {
+      this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
 }

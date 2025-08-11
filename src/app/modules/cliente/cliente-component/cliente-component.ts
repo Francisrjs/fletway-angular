@@ -20,8 +20,8 @@ export class ClienteComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.loading = true;
     try {
-      const data = await this._solService.getAllPedidos();
-      const dataPendiente = await this._solService.getAllPedidosPendientes();
+      const data = await this._solService.getAllPedidosUsuario();
+      const dataPendiente = await this._solService.getAllPedidosEnViaje();
       if (data) {
         // CÓDIGO CORRECTO
         this.solicitudes = data ?? []; // Si data es null, se asigna un array vacío.
