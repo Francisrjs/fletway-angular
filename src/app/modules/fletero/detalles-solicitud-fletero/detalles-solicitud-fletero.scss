@@ -1,0 +1,36 @@
+/* Pega aquí el CSS/SCSS tal cual lo tenías en <style> en el html */
+/* Incluye las variables, clases personalizadas y estilos de body */
+:root {
+    --color-orange-primary: #FF6F00;
+    --color-blue-gray-dark: #455A64;
+    --color-white: #FFFFFF;
+    --color-beige-light: #FBE9E7;
+}
+
+.bg-primary-orange {
+    background-color: var(--color-orange-primary);
+}
+.text-blue-gray-dark {
+    color: var(--color-blue-gray-dark);
+}
+.bg-beige-light {
+    background-color: var(--color-beige-light);
+}
+.border-primary-orange {
+    border-color: var(--color-orange-primary);
+}
+.text-primary-orange {
+    color: var(--color-primary-orange);
+}
+.focus-ring-primary-orange:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.5); /* Custom focus ring color */
+}
+.focus-ring-blue-gray-dark:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(69, 90, 100, 0.5); /* Custom focus ring color */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
