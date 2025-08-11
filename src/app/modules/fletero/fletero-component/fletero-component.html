@@ -1,1 +1,111 @@
-<p>fletero-component works!</p>
+<header class="w-full bg-primary-orange p-6 flex items-center justify-between rounded-t-lg shadow-md">
+  <div class="flex items-center">
+    <img src="asdasd.png" alt="Fletway Logo" class="h-10 w-10 mr-3 rounded-full"
+      onerror="this.onerror=null;this.src='https://placehold.co/40x40/455A64/FFFFFF?text=Logo';" />
+    <h1 class="text-white text-2xl font-semibold">Fletway</h1>
+  </div>
+  <button class="text-white text-3xl focus:outline-none">
+    <i class="fas fa-user-circle"></i>
+  </button>
+</header>
+
+<main class="flex-grow flex flex-col p-8 w-full overflow-y-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-blue-gray-dark text-3xl font-bold">Solicitudes de Fletes</h2>
+    <button
+      class="text-blue-gray-dark text-2xl focus:outline-none p-3 rounded-full hover:bg-beige-light transition duration-200">
+      <i class="fas fa-filter"></i>
+    </button>
+  </div>
+
+  <!-- New Requests Section -->
+  <h3 class="text-blue-gray-dark text-2xl font-semibold mb-4 border-b-2 border-primary-orange pb-2">Nuevas Solicitudes</h3>
+  <div id="new-requests-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Ejemplos -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-primary-orange">
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Origen:</span> Calle Falsa 123,
+        CABA</p>
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Destino:</span> Av. Siempre Viva
+        742, GBA</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Dimensiones:</span> 100x50x50 cm</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Peso:</span> 150 kg</p>
+      <p class="text-gray-700 text-base mb-4"><span class="font-medium">Fecha/Hora Recogida:</span> 28/06/2025 14:00</p>
+      <button
+        class="w-full bg-primary-orange text-white py-3 rounded-lg text-lg font-medium transform transition duration-300 hover:scale-105">
+        Realizar Cotización
+      </button>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md border border-primary-orange">
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Origen:</span> Av. Corrientes 800,
+        CABA</p>
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Destino:</span> Calle Rivadavia
+        1500, GBA</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Dimensiones:</span> 80x80x120 cm</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Peso:</span> 75 kg</p>
+      <p class="text-gray-700 text-base mb-4"><span class="font-medium">Fecha/Hora Recogida:</span> 29/06/2025 09:30</p>
+      <button
+        class="w-full bg-primary-orange text-white py-3 rounded-lg text-lg font-medium transform transition duration-300 hover:scale-105">
+        Realizar Cotización
+      </button>
+    </div>
+  </div>
+
+  <!-- Pending Requests Section -->
+  <h3 class="text-blue-gray-dark text-2xl font-semibold mb-4 border-b-2 border-blue-gray-dark pb-2">Solicitudes
+    Pendientes</h3>
+  <div id="pending-requests-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Ejemplos -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-300">
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Origen:</span> Av. Cabildo 200,
+        CABA</p>
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Destino:</span> Ruta 8 Km 50,
+        Pilar</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Dimensiones:</span> 200x100x100 cm</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Peso:</span> 500 kg</p>
+      <p class="text-gray-700 text-base mb-4"><span class="font-medium">Fecha/Hora Recogida:</span> 27/06/2025 11:00</p>
+      <div class="flex space-x-3">
+        <button
+          class="w-1/2 bg-primary-orange text-white py-3 rounded-lg text-lg font-medium transform transition duration-300 hover:scale-105">
+          Ver Detalles
+        </button>
+        <button
+          class="w-1/2 bg-primary-orange text-white py-3 rounded-lg text-lg font-medium transform transition duration-300 hover:scale-105 start-trip-button"
+          data-can-start="true">
+          Realizar Viaje
+        </button>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-300">
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Origen:</span> Calle Florida 100,
+        CABA</p>
+      <p class="text-blue-gray-dark text-lg font-medium mb-1"><span class="font-semibold">Destino:</span> Estación de Tren,
+        Tigre</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Dimensiones:</span> 30x20x15 cm</p>
+      <p class="text-gray-700 text-base mb-1"><span class="font-medium">Peso:</span> 10 kg</p>
+      <p class="text-gray-700 text-base mb-4"><span class="font-medium">Fecha/Hora Recogida:</span> 26/06/2025 16:00</p>
+      <div class="flex space-x-3">
+        <button
+          class="w-1/2 bg-primary-orange text-white py-3 rounded-lg text-lg font-medium transform transition duration-300 hover:scale-105">
+          Ver Detalles
+        </button>
+        <button
+          class="w-1/2 bg-gray-400 text-gray-700 py-3 rounded-lg text-lg font-medium cursor-not-allowed"
+          disabled
+          data-can-start="false">
+          Realizar Viaje
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <button
+    class="w-full bg-blue-gray-dark text-white text-xl font-bold py-5 px-8 rounded-xl shadow-md mt-6 flex items-center justify-center transform transition duration-300 hover:scale-105">
+    <i class="fas fa-history text-3xl mr-3"></i> Historial de Viajes Completados
+  </button>
+</main>
+
+<footer class="w-full bg-blue-gray-dark p-4 text-center text-white text-base rounded-b-lg">
+  &copy; 2025 Fletway. Todos los derechos reservados.
+</footer>
+

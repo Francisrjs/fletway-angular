@@ -1,11 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-fletero-component',
-  imports: [],
-  templateUrl: './fletero-component.html',
-  styleUrl: './fletero-component.scss'
+  selector: 'app-fletero',
+  templateUrl: './fletero.component.html',
+  styleUrls: ['./fletero.component.css']
 })
-export class FleteroComponent {
+export class FleteroComponent implements OnInit {
+
+  constructor() { }
+
+  ngOnInit(): void {
+  }
 
 }
