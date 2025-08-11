@@ -17,4 +17,7 @@ export class NavbarComponent {
     await this._authService.signOut();
     this._router.navigateByUrl('/auth/login');
   }
+  async irInicio() {
+    await this._authService.esFletero();
+  }
 }
