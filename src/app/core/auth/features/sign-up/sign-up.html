@@ -70,6 +70,27 @@
               formControlName="confirmPassword"
             />
           </div>
+
+          <!-- Campo extra para Cliente o Fletero -->
+          <div>
+            <label
+              for="tipo-usuario"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Tipo de usuario</label
+            >
+            <select
+              id="tipo-usuario"
+              name="tipo-usuario"
+              formControlName="tipoUsuario"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              required
+            >
+              <option value="">Seleccione...</option>
+              <option value="cliente">Cliente</option>
+              <option value="fletero">Fletero</option>
+            </select>
+          </div>
+
           <div class="flex items-start">
             <div class="flex items-center h-5">
               <input
