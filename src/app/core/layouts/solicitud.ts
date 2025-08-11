@@ -14,7 +14,8 @@ export interface Solicitud {
   borrado_logico?: boolean;
   creado_en?: string | null;
   actualizado_en?: string | null;
-
+  medidas?: string | null;
+  hora_recogida?: string | null;
   cliente?: Cliente | null; // <- puede faltar
   localidad_origen?: Localidad | null; // <- puede faltar
 }

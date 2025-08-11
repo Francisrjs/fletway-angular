@@ -9,6 +9,13 @@ export default [
       ),
   },
   {
+    path: 'fletero/detalle/:id',
+    loadComponent: () =>
+      import(
+        '../fletero/detalles-solicitud-fletero/detalles-solicitud-fletero'
+      ).then((m) => m.DetallesSolicitudFleteroComponent),
+  },
+  {
     path: 'cliente',
     loadComponent: () =>
       import('../cliente/cliente-component/cliente-component').then(

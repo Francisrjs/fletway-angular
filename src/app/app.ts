@@ -9,6 +9,7 @@ import { initFlowbite } from 'flowbite';
 import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
 import { filter } from 'rxjs';
 import { ClienteComponent } from './modules/cliente/cliente-component/cliente-component';
+import { DetallesSolicitudFleteroComponent } from './modules/fletero/detalles-solicitud-fletero/detalles-solicitud-fletero';
 
 @Component({
   selector: 'app-root',

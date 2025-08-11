@@ -2,12 +2,13 @@ import { Component, OnInit, Pipe, inject } from '@angular/core';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-fletero',
   templateUrl: './fletero-component.html',
   styleUrls: ['./fletero-component.scss'],
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
 })
 export class FleteroComponent implements OnInit {
   constructor() {}

@@ -212,4 +212,47 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: false }));
     }
   }
+  async getPedidoById(solicitudId: number | string): Promise<Solicitud | null> {
+    try {
+      this._state.update((s) => ({ ...s, loading: true, error: false }));
+
+      const { data, error } = await this._supabaseClient
+        .from('solicitud')
+        .select(
+          `
+        solicitud_id,
+        cliente_id,
+        presupuesto_aceptado,
+        localidad_origen_id,
+        direccion_origen,
+        direccion_destino,
+        fecha_creacion,
+        detalles_carga,
+        estado,
+        borrado_logico,
+        creado_en,
+        actualizado_en,
+        cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
+        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal)
+      `,
+        )
+        .eq('solicitud_id', solicitudId)
+        .maybeSingle() // devuelve null si no hay filas
+        .returns<Solicitud>();
+
+      if (error) {
+        console.error('Supabase error (getPedidoById):', error);
+        this._state.update((s) => ({ ...s, error: true }));
+        return null;
+      }
+
+      return data ?? null;
+    } catch (err) {
+      console.error('getPedidoById catch:', err);
+      this._state.update((s) => ({ ...s, error: true }));
+      return null;
+    } finally {
+      this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
 }
