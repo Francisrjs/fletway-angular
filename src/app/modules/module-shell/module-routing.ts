@@ -29,4 +29,11 @@ export default [
         (m) => m.SolicitudFormComponent,
       ),
   },
+  {
+    path: 'cliente/detallePresupuesto/:id',
+    loadComponent: () =>
+      import('../cliente/cliente-presupuesto/cliente-presupuesto').then(
+        (m) => m.ClientePresupuesto,
+      ),
+  },
 ] as Routes;
