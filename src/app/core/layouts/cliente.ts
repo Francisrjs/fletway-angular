@@ -11,4 +11,5 @@ export interface Cliente {
   fecha_registro?: string | null;
   contrasena_hash?: string | null;
   fecha_nacimiento?: string | null;
+  foto?:string | null;
 }

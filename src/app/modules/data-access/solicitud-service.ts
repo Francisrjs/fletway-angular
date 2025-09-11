@@ -350,4 +350,29 @@ export class SolcitudService {
       return [];
     }
   }
+
+  // agregado por mateo para actualizar la solicitud cuando se acepta un presupuesto.
+
+  async actualizarSolicitudConPresupuesto(
+  solicitudId: number,
+  presupuestoId: number
+): Promise<boolean> {
+  try {
+    const { error } = await this._supabaseClient
+      .from('solicitud')
+      .update({
+        presupuesto_aceptado: presupuestoId, // 👈 campo de tu tabla solicitud
+        estado: 'pendiente'
+      })
+      .eq('solicitud_id', solicitudId);
+
+    if (error) throw error;
+
+    return true;
+  } catch (err) {
+    console.error('Error al actualizar solicitud:', err);
+    return false;
+  }
+}
+
 }
