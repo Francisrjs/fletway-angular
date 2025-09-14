@@ -8,6 +8,7 @@ import {
 import { AuthService } from '../../data-access/auth-service';
 import { Router, RouterLink } from '@angular/router';
 import { Supabase } from '../../../../shared/data-access/supabase';
+import { Session } from '@supabase/supabase-js';
 
 // Tipado del formulario
 interface LoginForm {
@@ -49,9 +50,28 @@ export class LoginIn {
 
       if (authResponse.error) throw authResponse.error;
 
+      // Toma la sesión devuelta por Supabase, o consulta si no viene
+      let session: Session | null = authResponse.data.session ?? null;
+      if (!session) {
+        const { data } = await this._authService.session();
+        session = data.session ?? null;
+      }
+
+      if (!session || !session.user) {
+        throw new Error('No se pudo obtener la sesión después de login');
+      }
+
+      const userId = session.user.id;
+      const email = session.user.email ?? null;
+      const isFletero = await this._authService.esFletero(userId);
+
+      // Reflejar el estado para guards/UI
+      this._authService.userState.set({ userId, email, isFletero, session });
+
+      // Redirigir según rol
+      const target = isFletero ? '/fletero' : '/cliente';
+      await this._router.navigateByUrl(target);
       alert('Inicio de sesión exitoso');
-      this._authService.esFletero();
-      this._router.navigateByUrl('/');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
     }

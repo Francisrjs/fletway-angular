@@ -1,18 +1,78 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Supabase } from '../../../shared/data-access/supabase';
-import { SignInWithPasswordCredentials } from '@supabase/supabase-js';
+import { Session, SignInWithPasswordCredentials } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
-
+export interface userState {
+  userId: string | null;
+  email?: string | null;
+  isFletero?: boolean | null;
+  isFleteroLoading?: boolean;
+  session?: Session | null;
+}
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private _supabaseClient = inject(Supabase).supabaseCLient;
   private _router = inject(Router);
-  //Escuchador de cambios
+  userState = signal<userState>({
+    userId: null,
+    email: null,
+    isFletero: null,
+    isFleteroLoading: false,
+    session: null,
+  });
+  isLoggingOut = signal<boolean>(false);
+  //Cada vez que se actualiza el sign in o signout, escucha los cambios
+  // esta suscrito a estos cambios
   constructor() {
-    this._supabaseClient.auth.onAuthStateChange((session) => {
-      console.log(session);
+    this._supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+      console.log('[onAuthStateChange] event:', _event, 'session:', session);
+      console.log('userState (antes):', this.userState());
+      if (session?.user) {
+        const userId = session.user.id;
+        const email = session.user.email ?? null;
+        // 1) Set inmediato para evitar carreras con guards/UI
+        this.userState.set({
+          userId,
+          email,
+          isFletero: null,
+          isFleteroLoading: true,
+          session,
+        });
+        console.log(
+          '[onAuthStateChange] userState set (preliminar):',
+          this.userState(),
+        );
+        // 2) Calcular isFletero en background y actualizar
+        try {
+          const isFletero = await this.esFletero(userId);
+          this.userState.update((prev) => ({
+            ...prev,
+            isFletero,
+            isFleteroLoading: false,
+          }));
+          console.log(
+            '[onAuthStateChange] userState actualizado isFletero:',
+            this.userState(),
+          );
+        } catch (e) {
+          this.userState.update((prev) => ({
+            ...prev,
+            isFletero: false,
+            isFleteroLoading: false,
+          }));
+          console.warn('esFletero fallo:', e);
+        }
+      } else {
+        this.userState.set({
+          userId: null,
+          email: null,
+          isFletero: null,
+          session: null,
+        });
+        console.log('[onAuthStateChange] userState reset:', this.userState());
+      }
     });
   }
   session() {
@@ -22,56 +82,80 @@ export class AuthService {
     return this._supabaseClient.auth.signUp(credentials);
   }
 
-  loginIn(credentials: SignInWithPasswordCredentials) {
-    return this._supabaseClient.auth.signInWithPassword(credentials);
+  async loginIn(credentials: SignInWithPasswordCredentials) {
+    console.log('[loginIn] credentials:', credentials);
+    const result =
+      await this._supabaseClient.auth.signInWithPassword(credentials);
+    console.log('[loginIn] result:', result);
+    return result;
   }
 
-  async signOut() {
-    const {
-      data: { session },
-    } = await this._supabaseClient.auth.getSession();
-    if (session) {
-      await this._supabaseClient.auth.signOut({ scope: 'local' });
+  async signOut(options?: { timeoutMs?: number }): Promise<boolean> {
+    const timeoutMs = options?.timeoutMs ?? 4000;
+    this.isLoggingOut.set(true);
+
+    // 1) Limpiar estado local al instante
+    this.userState.set({
+      userId: null,
+      email: null,
+      isFletero: null,
+      session: null,
+    });
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (storageError) {
+      console.warn('No se pudo limpiar el storage:', storageError);
     }
-    // Limpia datos locales
-    localStorage.clear();
-    sessionStorage.clear();
+
+    // 2) Disparar signOut LOCAL en background (no bloquear)
+    setTimeout(() => {
+      this._supabaseClient.auth
+        .signOut({ scope: 'local' } as any)
+        .catch((e) => console.warn('[signOut] error local:', e));
+    }, 0);
+
+    // 3) Intento de revoke GLOBAL en segundo plano con timeout (no bloquea)
+    setTimeout(() => {
+      Promise.race([
+        this._supabaseClient.auth.signOut(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('signOut timeout')), timeoutMs),
+        ),
+      ])
+        .then(() => console.log('2-Se deslogeo completamente (global revoke)'))
+        .catch((e) => console.warn('[signOut] revoke global no confirmado:', e))
+        .finally(() => this.isLoggingOut.set(false));
+    }, 0);
+
+    // Devolvemos inmediatamente; el UI no se bloquea
+    return true;
   }
-  async esFletero() {
-    const {
-      data: { session },
-      error: sessionError,
-    } = await this._supabaseClient.auth.getSession();
-
-    if (sessionError) {
-      console.error('Error obteniendo sesión:', sessionError);
-      return null;
-    }
-
-    if (!session || !session.user) {
-      console.warn('No hay usuario logueado');
-      return null;
-    }
-
-    const userId = session.user.id;
-
+  async esFletero(userId: string): Promise<boolean | null> {
+    // Si ya está cargando, evita recalcular
+    if (this.userState().isFleteroLoading) return null;
+    this.userState.update((prev) => ({ ...prev, isFleteroLoading: true }));
     const { data, error } = await this._supabaseClient.rpc('es_fletero', {
       uuid_param: userId,
     });
-
     if (error) {
       console.error('Error RPC es_fletero:', error);
+      this.userState.update((prev) => ({ ...prev, isFleteroLoading: false }));
       return null;
     }
-
-    console.log('Es fletero?', data);
-
-    if (data === true) {
-      this._router.navigate(['/fletero']);
-    } else {
-      this._router.navigate(['/cliente']);
+    let result = false;
+    if (typeof data === 'boolean') {
+      result = data;
+    } else if (Array.isArray(data)) {
+      result = !!(data[0]?.es_fletero === true);
+    } else if (data && typeof data === 'object' && 'es_fletero' in data) {
+      result = !!(data.es_fletero === true);
     }
-
-    return data;
+    this.userState.update((prev) => ({
+      ...prev,
+      isFletero: result,
+      isFleteroLoading: false,
+    }));
+    return result;
   }
 }
