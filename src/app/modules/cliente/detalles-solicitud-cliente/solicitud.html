@@ -1,218 +1,828 @@
-<!-- PASTA: src/app/features/solicitud/solicitud-form.component.html -->
-<div
-  class="flex flex-col flex-grow items-center justify-start w-full max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden"
->
-  <header
-    class="w-full bg-primary-orange p-4 flex items-center justify-between rounded-t-lg shadow-md"
-  >
-    <div class="flex items-center">
-      <button
-        (click)="cancel()"
-        class="text-white text-2xl mr-4 focus:outline-none"
-      >
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <h1 class="text-white text-xl font-semibold">Solicitar Flete</h1>
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    for="min-price"
+                    class="block text-sm font-medium text-dark-900"
+                  >
+                    Min Price
+                  </label>
+                  <input
+                    id="min-price"
+                    type="range"
+                    min="0"
+                    max="7000"
+                    value="300"
+                    step="1"
+                    class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 primary-beige-700"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    for="max-price"
+                    class="block text-sm font-medium text-dark-900"
+                  >
+                    Max Price
+                  </label>
+                  <input
+                    id="max-price"
+                    type="range"
+                    min="0"
+                    max="7000"
+                    value="3500"
+                    step="1"
+                    class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 primary-beige-700"
+                  />
+                </div>
+
+                <div
+                  class="col-span-2 flex items-center justify-between space-x-2"
+                >
+                  <input
+                    type="number"
+                    id="min-price-input"
+                    value="300"
+                    min="0"
+                    max="7000"
+                    class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-dark-900 focus:border-primary-500 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:placeholder:text-dark-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                    placeholder=""
+                    required
+                  />
+
+                  <div class="shrink-0 text-sm font-medium dark:text-dark-300">
+                    to
+                  </div>
+
+                  <input
+                    type="number"
+                    id="max-price-input"
+                    value="3500"
+                    min="0"
+                    max="7000"
+                    class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-dark-900 focus:border-primary-500 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:placeholder:text-dark-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                    placeholder=""
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label
+                    for="min-delivery-time"
+                    class="block text-sm font-medium text-dark-900"
+                  >
+                    Min Delivery Time (Days)
+                  </label>
+
+                  <input
+                    id="min-delivery-time"
+                    type="range"
+                    min="3"
+                    max="50"
+                    value="30"
+                    step="1"
+                    class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 primary-beige-700"
+                  />
+                </div>
+
+                <input
+                  type="number"
+                  id="min-delivery-time-input"
+                  value="30"
+                  min="3"
+                  max="50"
+                  class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-dark-900 focus:border-primary-500 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:placeholder:text-dark-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                  placeholder=""
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <h6 class="mb-2 text-sm font-medium text-black">Condition</h6>
+
+              <ul
+                class="flex w-full items-center rounded-lg border border-gray-200 bg-white text-sm font-medium text-dark-900 dark:border-orange-600 primary-beige-700"
+              >
+                <li
+                  class="w-full border-r border-gray-200 dark:border-orange-600"
+                >
+                  <div class="flex items-center pl-3">
+                    <input
+                      id="condition-all"
+                      type="radio"
+                      value=""
+                      name="list-radio"
+                      checked
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-500 primary-beige-600 dark:ring-offset-gray-700 dark:focus:ring-primary-600"
+                    />
+                    <label
+                      for="condition-all"
+                      class="ml-2 w-full py-3 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      All
+                    </label>
+                  </div>
+                </li>
+                <li
+                  class="w-full border-r border-gray-200 dark:border-orange-600"
+                >
+                  <div class="flex items-center pl-3">
+                    <input
+                      id="condition-new"
+                      type="radio"
+                      value=""
+                      name="list-radio"
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-500 primary-beige-600 dark:ring-offset-gray-700 dark:focus:ring-primary-600"
+                    />
+                    <label
+                      for="condition-new"
+                      class="ml-2 w-full py-3 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      New
+                    </label>
+                  </div>
+                </li>
+                <li class="w-full">
+                  <div class="flex items-center pl-3">
+                    <input
+                      id="condition-used"
+                      type="radio"
+                      value=""
+                      name="list-radio"
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-500 primary-beige-600 dark:ring-offset-gray-700 dark:focus:ring-primary-600"
+                    />
+                    <label
+                      for="condition-used"
+                      class="ml-2 w-full py-3 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      Used
+                    </label>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+              <div>
+                <h6 class="mb-2 text-sm font-medium text-black">Colour</h6>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <input
+                      id="blue"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="blue"
+                      class="ml-2 flex items-center text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      <div
+                        class="mr-2 h-3.5 w-3.5 rounded-full bg-primary-600"
+                      ></div>
+                      Blue
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="gray"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="gray"
+                      class="ml-2 flex items-center text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      <div
+                        class="mr-2 h-3.5 w-3.5 rounded-full bg-gray-400"
+                      ></div>
+                      Gray
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="green"
+                      type="checkbox"
+                      value=""
+                      checked
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="green"
+                      class="ml-2 flex items-center text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      <div
+                        class="mr-2 h-3.5 w-3.5 rounded-full bg-green-400"
+                      ></div>
+                      Green
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="pink"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="pink"
+                      class="ml-2 flex items-center text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      <div
+                        class="mr-2 h-3.5 w-3.5 rounded-full bg-pink-400"
+                      ></div>
+                      Pink
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="red"
+                      type="checkbox"
+                      value=""
+                      checked
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="red"
+                      class="ml-2 flex items-center text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      <div
+                        class="mr-2 h-3.5 w-3.5 rounded-full bg-red-500"
+                      ></div>
+                      Red
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h6 class="mb-2 text-sm font-medium text-black">Rating</h6>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <input
+                      id="five-stars"
+                      type="radio"
+                      value=""
+                      name="rating"
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+                    <label for="five-stars" class="ml-2 flex items-center">
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>First star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Second star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Third star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fourth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fifth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="four-stars"
+                      type="radio"
+                      value=""
+                      name="rating"
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+                    <label for="four-stars" class="ml-2 flex items-center">
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>First star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Second star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Third star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fourth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fifth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="three-stars"
+                      type="radio"
+                      value=""
+                      name="rating"
+                      checked
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+                    <label for="three-stars" class="ml-2 flex items-center">
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>First star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Second star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Third star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fourth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fifth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="two-stars"
+                      type="radio"
+                      value=""
+                      name="rating"
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+                    <label for="two-stars" class="ml-2 flex items-center">
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>First star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Second star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Third star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fourth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fifth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="one-star"
+                      type="radio"
+                      value=""
+                      name="rating"
+                      class="h-4 w-4 border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+                    <label for="one-star" class="ml-2 flex items-center">
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>First star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Second star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Third star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fourth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-dark-300 dark:text-dark-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>Fifth star</title>
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                      </svg>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h6 class="mb-2 text-sm font-medium text-black">Weight</h6>
+
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <input
+                      id="under-1-kg"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="under-1-kg"
+                      class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      Under 1 kg
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="1-1-5-kg"
+                      type="checkbox"
+                      value=""
+                      checked
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="1-1-5-kg"
+                      class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      1-1,5 kg
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="1-5-2-kg"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="1-5-2-kg"
+                      class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      1,5-2 kg
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="2-5-3-kg"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="2-5-3-kg"
+                      class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      2,5-3 kg
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      id="over-3-kg"
+                      type="checkbox"
+                      value=""
+                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:border-orange-600 primary-beige-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                    />
+
+                    <label
+                      for="over-3-kg"
+                      class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-300"
+                    >
+                      Over 3 kg
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h6 class="mb-2 text-sm font-medium text-black">Delivery type</h6>
+
+              <ul class="grid grid-cols-2 gap-4">
+                <li>
+                  <input
+                    type="radio"
+                    id="delivery-usa"
+                    name="delivery"
+                    value="delivery-usa"
+                    class="peer hidden"
+                    checked
+                  />
+                  <label
+                    for="delivery-usa"
+                    class="inline-flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-2 text-dark-500 hover:bg-orange-100 hover:text-dark-600 peer-checked:border-primary-600 peer-checked:text-primary-600 dark:border-orange-700 primary-beige-800 dark:text-dark-400 dark:hover:bg-orange-700 dark:hover:text-dark-300 dark:peer-checked:text-primary-500 md:p-5"
+                  >
+                    <div class="block">
+                      <div class="w-full text-lg font-semibold">USA</div>
+                      <div class="w-full">Delivery only for USA</div>
+                    </div>
+                  </label>
+                </li>
+                <li>
+                  <input
+                    type="radio"
+                    id="delivery-europe"
+                    name="delivery"
+                    value="delivery-europe"
+                    class="peer hidden"
+                  />
+                  <label
+                    for="delivery-europe"
+                    class="inline-flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-2 text-dark-500 hover:bg-orange-100 hover:text-dark-600 peer-checked:border-primary-600 peer-checked:text-primary-600 dark:border-orange-700 primary-beige-800 dark:text-dark-400 dark:hover:bg-orange-700 dark:hover:text-dark-300 dark:peer-checked:text-primary-500 md:p-5"
+                  >
+                    <div class="block">
+                      <div class="w-full text-lg font-semibold">Europe</div>
+                      <div class="w-full">Delivery only for USA</div>
+                    </div>
+                  </label>
+                </li>
+                <li>
+                  <input
+                    type="radio"
+                    id="delivery-asia"
+                    name="delivery"
+                    value="delivery-asia"
+                    class="peer hidden"
+                    checked
+                  />
+                  <label
+                    for="delivery-asia"
+                    class="inline-flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-2 text-dark-500 hover:bg-orange-100 hover:text-dark-600 peer-checked:border-primary-600 peer-checked:text-primary-600 dark:border-orange-700 primary-beige-800 dark:text-dark-400 dark:hover:bg-orange-700 dark:hover:text-dark-300 dark:peer-checked:text-primary-500 md:p-5"
+                  >
+                    <div class="block">
+                      <div class="w-full text-lg font-semibold">Asia</div>
+                      <div class="w-full">Delivery only for Asia</div>
+                    </div>
+                  </label>
+                </li>
+                <li>
+                  <input
+                    type="radio"
+                    id="delivery-australia"
+                    name="delivery"
+                    value="delivery-australia"
+                    class="peer hidden"
+                  />
+                  <label
+                    for="delivery-australia"
+                    class="inline-flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-2 text-dark-500 hover:bg-orange-100 hover:text-dark-600 peer-checked:border-primary-600 peer-checked:text-primary-600 dark:border-orange-700 primary-beige-800 dark:text-dark-400 dark:hover:bg-orange-700 dark:hover:text-dark-300 dark:peer-checked:text-primary-500 md:p-5"
+                  >
+                    <div class="block">
+                      <div class="w-full text-lg font-semibold">Australia</div>
+                      <div class="w-full">Delivery only for Australia</div>
+                    </div>
+                  </label>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div
+          class="flex items-center space-x-4 rounded-b p-4 dark:border-orange-600 md:p-5"
+        >
+          <button
+            type="submit"
+            class="rounded-lg bg-primary-700 px-5 py-2.5 text-center text-sm font-medium bg-primary-blue-800 text-white hover:bg-primary-blue-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-700 dark:hover:bg-primary-800 dark:focus:ring-primary-800"
+          >
+            Show 50 results
+          </button>
+          <button
+            type="reset"
+            class="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-dark-900 hover:bg-orange-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-orange-600 primary-beige-800 dark:text-dark-400 dark:hover:bg-orange-700 dark:hover:text-white dark:focus:ring-gray-700"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
     </div>
-    <button class="text-white text-2xl focus:outline-none">
-      <i class="fas fa-user-circle"></i>
-    </button>
-  </header>
-
-  <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
-    <h2 class="text-blue-gray-dark text-2xl font-bold mb-6 text-center">
-      Detalles de su Solicitud
-    </h2>
-
-    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
-      <!-- Origen -->
-      <div>
-        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-          >Ingrese la Localidad</label
-        >
-        <input
-          formControlName="origin"
-          (input)="onOriginInput($any($event.target).value)"
-          type="text"
-          placeholder="Ej: Zarate"
-          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-        />
-      </div>
-      <div>
-        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-          >Origen (Dirección o Mapa)</label
-        >
-        <input
-          formControlName="origin"
-          type="text"
-          placeholder="Ej: Calle Falsa 123, CABA"
-          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-        />
-        <div
-          *ngIf="form.get('origin')?.touched && form.get('origin')?.invalid"
-          class="text-sm text-red-600"
-        >
-          Origen requerido
-        </div>
-      </div>
-
-      <!-- campo oculto que guarda el id seleccionado -->
-      <input formControlName="localidadOrigenId" type="hidden" />
-
-      <!-- sugerencias -->
-      <ul
-        *ngIf="localidades?.length"
-        class="bg-white border mt-1 rounded-md max-h-48 overflow-auto"
-      >
-        <li
-          *ngFor="let loc of localidades"
-          (click)="selectLocalidad(loc)"
-          class="p-2 hover:bg-gray-100 cursor-pointer"
-        >
-          {{ loc.nombre }} — {{ loc.provincia }} (CP: {{ loc.codigo_postal }})
-        </li>
-      </ul>
-
-      <!-- botón para "no encontré la localidad" (opcional) -->
-      <div
-        *ngIf="localidades?.length === 0 && originTyped"
-        class="text-sm text-gray-500 mt-1"
-      >
-        No se encontraron localidades. Podés enviar igual y luego editar o
-        elegir "Crear nueva".
-      </div>
-      <!-- Destino -->
-      <div>
-        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-          >Destino (Dirección o Mapa)</label
-        >
-        <input
-          formControlName="destination"
-          type="text"
-          placeholder="Ej: Av. Siempre Viva 742, GBA"
-          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-        />
-        <div
-          *ngIf="
-            form.get('destination')?.touched && form.get('destination')?.invalid
-          "
-          class="text-sm text-red-600"
-        >
-          Destino requerido
-        </div>
-      </div>
-
-      <!-- Fecha / Hora -->
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-            >Fecha de Recogida</label
-          >
-          <input
-            formControlName="pickupDate"
-            type="date"
-            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-          />
-        </div>
-        <div>
-          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-            >Hora de Recogida</label
-          >
-          <input
-            formControlName="pickupTime"
-            type="time"
-            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-          />
-        </div>
-      </div>
-
-      <!-- Fotos -->
-      <div>
-        <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-          >Fotos de la Carga</label
-        >
-        <input
-          type="file"
-          (change)="onFilesChange($event)"
-          accept="image/*"
-          multiple
-          class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-orange file:text-white hover:file:bg-orange-600"
-        />
-        <p class="text-xs text-gray-500 mt-1">
-          Puedes seleccionar varias imágenes.
-        </p>
-      </div>
-
-      <!-- Detalle / Dimensiones / Peso -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-            >Titulo del pedido</label
-          >
-          <input
-            formControlName="detalle"
-            type="text"
-            placeholder="Ej: par de zapatillas"
-            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-          />
-        </div>
-
-        <div>
-          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-            >Dimensiones (cm)</label
-          >
-          <input
-            formControlName="dimensions"
-            type="text"
-            placeholder="Ej: 100x50x50"
-            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-          />
-        </div>
-
-        <div>
-          <label class="block text-blue-gray-dark text-sm font-medium mb-1"
-            >Peso (kg)</label
-          >
-          <input
-            formControlName="weight"
-            type="number"
-            placeholder="Ej: 200"
-            class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-          />
-        </div>
-      </div>
-
-      <!-- Mensajes -->
-      <div *ngIf="message.type === 'error'" class="text-red-600">
-        {{ message.text }}
-      </div>
-      <div *ngIf="message.type === 'success'" class="text-green-600">
-        {{ message.text }}
-      </div>
-
-      <!-- Botones -->
-      <div class="flex justify-around mt-8 space-x-4">
-        <button
-          type="button"
-          (click)="cancel()"
-          class="w-1/2 py-3 px-6 bg-white text-blue-gray-dark border border-blue-gray-dark rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none"
-        >
-          Cancelar
-        </button>
-        <button
-          [disabled]="submitting"
-          type="submit"
-          class="w-1/2 py-3 px-6 bg-secondary-orange text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none"
-        >
-          {{ submitting ? "Enviando..." : "Confirmar Solicitud" }}
-        </button>
-      </div>
-    </form>
-  </main>
-
-  <footer
-    class="w-full bg-blue-gray-dark p-3 text-center text-white text-sm rounded-b-lg"
-  >
-    &copy; 2025 Fletway. Todos los derechos reservados.
-  </footer>
-</div>
+  </form>
+</section>
