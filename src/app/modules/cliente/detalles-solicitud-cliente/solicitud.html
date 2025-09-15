@@ -23,7 +23,7 @@
         .text-primary-orange { color: var(--color-orange-primary); }
         .focus-ring-primary-orange:focus { outline: none; box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.5); }
         .focus-ring-blue-gray-dark:focus { outline: none; box-shadow: 0 0 0 2px rgba(69, 90, 100, 0.5); }
-
+dd
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
@@ -48,10 +48,16 @@
         <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
             <h2 class="text-blue-gray-dark text-2xl font-bold mb-6 text-center">Detalles del Flete</h2>
 
-            <form id="solicitudFleteForm" class="space-y-6">
+            <form id="solicitudFleteForm" [formGroup]="solicitudForm" (ngSubmit)="onSubmit()"  class="space-y-6" >
                 <div>
                     <label for="origin" class="block text-blue-gray-dark text-sm font-medium mb-1">Origen (Dirección o Mapa)</label>
-                    <input type="text" id="origin" name="origin" placeholder="Ej: Calle Falsa 123, CABA" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                    <input 
+                    type="text"
+                     id="origin"
+                    name="origin"
+                    formControlName="origen"
+                    placeholder="Ej: Calle Falsa 123, CABA" 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                     <div class="mt-2 text-sm text-gray-500">
                         <i class="fas fa-map-marker-alt mr-1"></i> (Integración de mapa aquí)
                     </div>
@@ -59,7 +65,7 @@
 
                 <div>
                     <label for="destination" class="block text-blue-gray-dark text-sm font-medium mb-1">Destino (Dirección o Mapa)</label>
-                    <input type="text" id="destination" name="destination" placeholder="Ej: Av. Siempre Viva 742, GBA" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                    <input type="text" id="destination" name="destination" formControlName="destino" placeholder="Ej: Av. Siempre Viva 742, GBA" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                     <div class="mt-2 text-sm text-gray-500">
                         <i class="fas fa-map-marker-alt mr-1"></i> (Integración de mapa aquí)
                     </div>
@@ -68,17 +74,17 @@
                 <!-- Nuevo campo Localidad -->
                 <div>
                     <label for="locality" class="block text-blue-gray-dark text-sm font-medium mb-1">Localidad</label>
-                    <input type="text" id="locality" name="locality" placeholder="Ej: CABA, Quilmes, La Plata" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                    <input type="text" id="locality" name="locality" formControlName="localidad_origen_id" placeholder="Ej: CABA, Quilmes, La Plata" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="pickupDate" class="block text-blue-gray-dark text-sm font-medium mb-1">Fecha de Recogida</label>
-                        <input type="date" id="pickupDate" name="pickupDate" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                        <input type="date" id="pickupDate" formcontrolName="fechaRecogida" name="pickupDate" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                     </div>
                     <div>
                         <label for="pickupTime" class="block text-blue-gray-dark text-sm font-medium mb-1">Hora de Recogida</label>
-                        <input type="time" id="pickupTime" name="pickupTime" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                        <input type="time" id="pickupTime" name="pickupTime" formControlName="horaRecogida" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                     </div>
                 </div>
 
@@ -93,11 +99,11 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="dimensions" class="block text-blue-gray-dark text-sm font-medium mb-1">Dimensiones (cm)</label>
-                            <input type="text" id="dimensions" name="dimensions" placeholder="Ej: 100x50x50" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                            <input type="text" id="dimensions" name="dimensions" formControlName="detalle" placeholder="Ej: 100x50x50" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                         </div>
                         <div>
                             <label for="weight" class="block text-blue-gray-dark text-sm font-medium mb-1">Peso (kg)</label>
-                            <input type="number" id="weight" name="weight" placeholder="Ej: 200" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
+                            <input type="number" id="weight" formControlName="peso" name="weight" placeholder="Ej: 200" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
                         </div>
                     </div>
                 </div>
@@ -106,7 +112,10 @@
                     <button type="button" id="cancelButton" class="w-1/2 py-3 px-6 bg-white text-blue-gray-dark border border-blue-gray-dark rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-gray-dark focus:ring-opacity-75">
                         Cancelar
                     </button>
-                    <button type="submit" id="confirmButton" class="w-1/2 py-3 px-6 bg-primary-orange text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-75">
+                    <button type="submit" 
+                    id="confirmButton" 
+                    (onSubmit)="onSubmit()"
+                    class="w-1/2 py-3 px-6 bg-primary-orange text-red rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-75">
                         Confirmar Solicitud
                     </button>
                 </div>

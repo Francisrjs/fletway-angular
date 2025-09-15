@@ -19,12 +19,12 @@ import {
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-solicitud-form',
+  selector: 'app-solicitud-solicitudForm',
   templateUrl: './solicitud.html',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
 })
 export class SolicitudFormComponent implements OnInit, OnDestroy {
-  form: FormGroup;
+  solicitudForm: FormGroup;//TENER EN TODO
   files: FileList | null = null;
   submitting = false;
   message: { type: 'success' | 'error' | null; text?: string } = { type: null };
@@ -40,15 +40,16 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     private solicitudService: SolcitudService,
     private router: Router,
   ) {
-    this.form = this.fb.group({
-      origin: ['', [Validators.required]],
-      localidadOrigenId: [null, [Validators.required]],
-      destination: ['', [Validators.required]],
-      pickupDate: [''],
-      pickupTime: [''],
+    this.solicitudForm = this.fb.group({
+      //crear los validadores !!!!
+      origen: ['', [Validators.required]],
+      localidad_origen_id:['',[Validators.required]],
+      destino: ['', [Validators.required]],
+      fechaRecogida: [null],
+      horaRecogida: [null],
       detalle: ['', [Validators.required]],
       dimensions: [''],
-      weight: [null],
+      peso: [null, Validators.required],
     });
   }
 
@@ -95,22 +96,25 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
   onOriginInput(value: string) {
     // limpiar el id si el usuario edita la dirección (evitar enviar id desincronizado)
-    this.form.get('localidadOrigenId')?.setValue(null);
+    this.solicitudForm.get('localidadOrigenId')?.setValue(null);
     this.originSearch$.next(value);
   }
 
   selectLocalidad(loc: any) {
     // pone el nombre en el input y setea el id
-    this.form.get('origin')?.setValue(`${loc.nombre}, ${loc.provincia}`);
-    this.form
+    this.solicitudForm.get('origin')?.setValue(`${loc.nombre}, ${loc.provincia}`);
+    this.solicitudForm
       .get('localidadOrigenId')
       ?.setValue(loc.localidad_id ?? loc.localidadId ?? loc.id);
     this.localidades = [];
   }
 
-  async submit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  async onSubmit() {
+    //Chequea si la solicitud es valida
+    if (this.solicitudForm.invalid) {
+      this.solicitudForm.markAllAsTouched();
+      console.log("Formulario invalido");
+      console.log(this.solicitudForm)
       this.message = { type: 'error', text: 'Revisá los campos obligatorios.' };
       return;
     }
@@ -118,20 +122,22 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.message = { type: null };
 
-    const v = this.form.value;
+    const v = this.solicitudForm.value;
 
     const payload = {
-      direccion_origen: v.origin,
-      direccion_destino: v.destination,
-      fecha_recogida: v.pickupDate || undefined,
-      hora_recogida_time: v.pickupTime || undefined,
-      detalles_carga: v.detalle,
-      medidas: v.dimensions || null,
-      peso: v.weight != null ? Number(v.weight) : null,
-      localidad_origen_id: v.localidadOrigenId ?? null,
+      direccion_origen: v.origen,
+      direccion_destino: v.destino,
+      fecha_recogida: v.fechaRecogida || undefined,
+      localidad_origen_id: v.localidad_origen_id,
+      hora_recogida_time: v.horaRecogida || undefined,
+      detalles_carga: v.titulo,//crear input detitulo
+      medidas: v.detalle || null,
+      peso: v.peso != null ? Number(v.weight) : null,
+      
     } as const;
 
     try {
+      console.log(this.solicitudForm.value)
       const { data, error } = await this.solicitudService.createSolicitud(
         payload,
         this.files,
@@ -155,7 +161,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       if (data?.solicitud_id) {
         this.router.navigate(['/mis-solicitudes']);
       } else {
-        this.form.reset();
+        this.solicitudForm.reset();
         this.files = null;
       }
     } catch (err) {

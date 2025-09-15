@@ -260,6 +260,7 @@ export class SolcitudService {
     payload: {
       direccion_origen: string;
       direccion_destino: string;
+      localidad_origen_id: number;
       fecha_recogida?: string; // yyyy-mm-dd
       hora_recogida_time?: string; // HH:mm
       detalles_carga?: string;
