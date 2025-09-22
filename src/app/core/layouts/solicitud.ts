@@ -18,4 +18,5 @@ export interface Solicitud {
   hora_recogida?: string | null;
   cliente?: Cliente | null; // <- puede faltar
   localidad_origen?: Localidad | null; // <- puede faltar
+  localidad_destino?: Localidad | null;
 }

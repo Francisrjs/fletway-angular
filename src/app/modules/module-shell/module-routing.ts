@@ -36,4 +36,9 @@ export default [
         (m) => m.ClientePresupuesto,
       ),
   },
+  {
+    path: 'map',
+    loadComponent: () =>
+      import('../../shared/features/map/map').then((m) => m.Map),
+  },
 ] as Routes;

@@ -32,11 +32,13 @@ export class AuthService {
       if (session?.user) {
         const userId = session.user.id;
         const email = session.user.email ?? null;
-        // 1) Set inmediato para evitar carreras con guards/UI
+        // Solo setear isFletero: null si el usuario cambió
+        const prev = this.userState();
+        const shouldReset = prev.userId !== userId;
         this.userState.set({
           userId,
           email,
-          isFletero: null,
+          isFletero: shouldReset ? null : prev.isFletero,
           isFleteroLoading: true,
           session,
         });

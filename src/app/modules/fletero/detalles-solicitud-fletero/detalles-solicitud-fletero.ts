@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolcitudService } from '../../data-access/solicitud-service';
+import { Map } from '../../../shared/features/map/map';
+
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Map],
   templateUrl: './detalles-solicitud-fletero.html',
 })
 export class DetallesSolicitudFleteroComponent implements OnInit {

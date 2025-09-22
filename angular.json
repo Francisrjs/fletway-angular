@@ -32,7 +32,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss", "src/style.css"]
+            "styles": [
+              "src/styles.scss",
+              "src/style.css",
+              "node_modules/leaflet/dist/leaflet.css"
+            ]
           },
           "configurations": {
             "production": {

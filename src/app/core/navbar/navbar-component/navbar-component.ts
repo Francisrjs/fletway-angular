@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-navbar-component',
+  standalone: true,
   imports: [RouterLink],
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
@@ -27,15 +28,29 @@ export class NavbarComponent {
   async irInicio() {
     console.log('click');
     const state = this.sesion;
-    console.log(this.sesion);
     if (!state.session) {
       await this._router.navigateByUrl('/auth/login');
       return;
     }
-    // Si isFletero es null o está cargando, espera a que se resuelva
+    // Si ya tenemos el valor, navega directo
+    if (state.isFletero !== null && typeof state.isFletero !== 'undefined') {
+      const target = state.isFletero ? '/fletero' : '/cliente';
+      console.log('Ir a inicio según rol (directo):', target);
+      await this._router.navigateByUrl(target);
+      return;
+    }
+    // Si está cargando, espera a que se resuelva
     let tries = 0;
-    while ((state.isFletero === null || typeof state.isFletero === 'undefined' || state.isFleteroLoading) && tries < 20) {
-      if (!state.isFleteroLoading && (state.isFletero === null || typeof state.isFletero === 'undefined')) {
+    while (
+      (state.isFletero === null ||
+        typeof state.isFletero === 'undefined' ||
+        state.isFleteroLoading) &&
+      tries < 20
+    ) {
+      if (
+        !state.isFleteroLoading &&
+        (state.isFletero === null || typeof state.isFletero === 'undefined')
+      ) {
         // Dispara el cálculo si aún no está en curso
         try {
           await this._authService.esFletero(state.userId!);
@@ -43,12 +58,12 @@ export class NavbarComponent {
           console.warn('No se pudo determinar isFletero:', e);
         }
       }
-      await new Promise(res => setTimeout(res, 100));
+      await new Promise((res) => setTimeout(res, 100));
       tries++;
     }
     const isFletero = this.sesion.isFletero;
     const target = isFletero ? '/fletero' : '/cliente';
-    console.log('Ir a inicio según rol:', target);
+    console.log('Ir a inicio según rol (espera):', target);
     await this._router.navigateByUrl(target);
   }
 }

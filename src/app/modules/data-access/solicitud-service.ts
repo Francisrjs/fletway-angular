@@ -47,7 +47,8 @@ export class SolcitudService {
           creado_en,
           actualizado_en,
           cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal)
+          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
         `,
         )
         .returns<Solicitud[]>();
@@ -95,7 +96,8 @@ export class SolcitudService {
           creado_en,
           actualizado_en,
           cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal)
+          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
         `,
         )
         .eq('estado', stateValue) // FILTRAMOS por la columna 'estado'
@@ -189,7 +191,8 @@ export class SolcitudService {
         creado_en,
         actualizado_en,
         cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal)
+        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+        localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
       `,
         )
         .eq('cliente_id', idUsuario)
@@ -233,7 +236,8 @@ export class SolcitudService {
         creado_en,
         actualizado_en,
         cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal)
+        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+        localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
       `,
         )
         .eq('solicitud_id', solicitudId)
@@ -355,25 +359,24 @@ export class SolcitudService {
   // agregado por mateo para actualizar la solicitud cuando se acepta un presupuesto.
 
   async actualizarSolicitudConPresupuesto(
-  solicitudId: number,
-  presupuestoId: number
-): Promise<boolean> {
-  try {
-    const { error } = await this._supabaseClient
-      .from('solicitud')
-      .update({
-        presupuesto_aceptado: presupuestoId, // 👈 campo de tu tabla solicitud
-        estado: 'pendiente'
-      })
-      .eq('solicitud_id', solicitudId);
+    solicitudId: number,
+    presupuestoId: number,
+  ): Promise<boolean> {
+    try {
+      const { error } = await this._supabaseClient
+        .from('solicitud')
+        .update({
+          presupuesto_aceptado: presupuestoId, // 👈 campo de tu tabla solicitud
+          estado: 'pendiente',
+        })
+        .eq('solicitud_id', solicitudId);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    return true;
-  } catch (err) {
-    console.error('Error al actualizar solicitud:', err);
-    return false;
+      return true;
+    } catch (err) {
+      console.error('Error al actualizar solicitud:', err);
+      return false;
+    }
   }
-}
-
 }
