@@ -135,8 +135,8 @@
           Realizar Cotización
         </h3>
         <form
+          [formGroup]="presupuestoForm"
           (ngSubmit)="submitQuote()"
-          #quoteForm="ngForm"
           class="space-y-4"
           novalidate
         >
@@ -153,15 +153,8 @@
               placeholder="Ej: 5000"
               class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
               required
-              [(ngModel)]="quote.price"
-              #price="ngModel"
+              formControlName="precio"
             />
-            <div
-              *ngIf="price.invalid && price.touched"
-              class="text-red-600 text-sm mt-1"
-            >
-              El precio es requerido.
-            </div>
           </div>
           <div>
             <label
@@ -174,8 +167,8 @@
               name="notes"
               rows="3"
               placeholder="Ej: El precio incluye peajes."
+              formControlName="comentario"
               class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-              [(ngModel)]="quote.notes"
             ></textarea>
           </div>
           <div class="flex justify-around mt-6 space-x-4">
@@ -188,7 +181,7 @@
             </button>
             <button
               type="submit"
-              [disabled]="quoteForm.invalid"
+              [disabled]="presupuestoForm.invalid"
               class="w-1/2 py-3 px-6 bg-secondary-orange text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-75"
             >
               Enviar Cotización

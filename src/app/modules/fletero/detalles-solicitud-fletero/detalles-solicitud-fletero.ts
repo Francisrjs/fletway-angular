@@ -1,18 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { Map } from '../../../shared/features/map/map';
+import { PresupuestoService } from '../../data-access/presupuesto-service';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   standalone: true,
-  imports: [CommonModule, FormsModule, Map],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, Map],
   templateUrl: './detalles-solicitud-fletero.html',
 })
 export class DetallesSolicitudFleteroComponent implements OnInit {
+  presupuestoForm!: FormGroup;
+
   pedido: Solicitud | null = null;
   loading = false;
   error = false;
@@ -24,10 +33,20 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   };
 
   constructor(
+    private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private solicitudService: SolcitudService,
-  ) {}
+    private presupuestoService: PresupuestoService,
+  ) {
+    this.presupuestoForm = this.fb.group({
+      precio: [
+        '',
+        Validators.compose([Validators.required, Validators.min(1)]),
+      ],
+      comentario: ['', Validators.required],
+    });
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -72,26 +91,35 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   }
 
   async submitQuote() {
-    if (!this.pedido) return;
-    if (!this.quote.price) {
-      alert('Ingresá un precio válido');
+    if (!this.presupuestoForm.valid || !this.pedido) {
+      console.log(this.presupuestoForm.value);
+      alert('Formulario inválido o pedido no cargado');
       return;
     }
 
-    // Aquí podés llamar al service que considere tu lógica de "enviar cotización".
-    // Por ahora dejamos un console.log y podés reemplazar con la llamada real.
-    console.log(
-      'Enviar cotización para solicitud',
-      this.pedido.solicitud_id,
-      this.quote,
-    );
-
-    // EJEMPLO: si implementarás un método en SolcitudService que inserte una cotización:
-    // await this.solicitudService.enviarCotizacion(this.pedido.solicitud_id, { precio: this.quote.price, notas: this.quote.notes });
-
-    alert(
-      'Cotización enviada (sólo demo). Implementá enviarCotizacion en el service si querés persistir.',
-    );
-    this.cancelQuote();
+    this.loading = true;
+    this.error = false;
+    try {
+      const v = this.presupuestoForm.value;
+      const payload = {
+        solicitud: this.pedido.solicitud_id,
+        precio: v.precio,
+        comentario: v.comentario,
+      };
+      const result = await this.presupuestoService.addPresupuesto(payload);
+      if (!result) {
+        alert('Error al enviar el presupuesto.');
+        this.error = true;
+        return;
+      }
+      alert('Presupuesto enviado correctamente.');
+      this.router.navigate(['/fletero']);
+    } catch (err) {
+      console.error('submitQuote catch:', err);
+      alert('Error inesperado al enviar el presupuesto.');
+      this.error = true;
+    } finally {
+      this.loading = false;
+    }
   }
 }

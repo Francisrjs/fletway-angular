@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Supabase } from '../../shared/data-access/supabase';
 import { AuthService } from '../../core/auth/data-access/auth-service';
 import { Solicitud } from '../../core/layouts/solicitud';
+import { Localidad } from '../../core/layouts/localidad';
 
 interface SolicitudState {
   solicitudes: Solicitud[];
@@ -209,6 +210,42 @@ export class SolcitudService {
       return data ?? [];
     } catch (err) {
       console.error('getAllPedidosUsuario catch:', err);
+      this._state.update((s) => ({ ...s, error: true }));
+      return null;
+    } finally {
+      this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
+  async getAllLocalidades(): Promise<Localidad[] | null> {
+    try {
+      this._state.update((s) => ({ ...s, loading: true, error: false }));
+
+      const { data, error } = await this._supabaseClient
+        .from('localidad')
+        .select(
+          `
+          localidad_id,
+          nombre,
+          provincia,
+          codigo_postal,
+        `,
+        )
+        .returns<Localidad[]>();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        this._state.update((s) => ({ ...s, error: true }));
+        return null;
+      }
+
+      if (data) {
+        // actualizo la propiedad correcta
+        this._state.update((s) => ({ ...s, Localidad: data }));
+      }
+
+      return data ?? null;
+    } catch (err) {
+      console.error('getAllLocalidades catch:', err);
       this._state.update((s) => ({ ...s, error: true }));
       return null;
     } finally {
