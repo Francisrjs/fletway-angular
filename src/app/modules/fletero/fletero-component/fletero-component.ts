@@ -1,8 +1,9 @@
-import { Component, OnInit, Pipe, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject,OnInit, Pipe } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-fletero',

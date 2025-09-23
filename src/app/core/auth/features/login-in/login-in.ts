@@ -5,10 +5,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { AuthService } from '../../data-access/auth-service';
 import { Router, RouterLink } from '@angular/router';
-import { Supabase } from '../../../../shared/data-access/supabase';
 import { Session } from '@supabase/supabase-js';
+
+import { AuthService } from '../../data-access/auth-service';
 
 // Tipado del formulario
 interface LoginForm {

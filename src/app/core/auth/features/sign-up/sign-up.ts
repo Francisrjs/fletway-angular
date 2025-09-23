@@ -1,5 +1,5 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,9 +8,10 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { AuthService } from '../../data-access/auth-service';
-import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+
+import { AuthService } from '../../data-access/auth-service';
 
 // Tipado del formulario (incluye los campos extra)
 interface signUpForm {

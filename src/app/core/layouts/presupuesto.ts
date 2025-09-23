@@ -1,4 +1,4 @@
-import { Fletero } from "./fletero";
+import { Fletero } from './fletero';
 
 export interface Presupuesto {
   presupuesto_id: number;

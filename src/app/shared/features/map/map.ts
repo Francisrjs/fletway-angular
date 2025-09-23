@@ -1,7 +1,8 @@
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AfterViewInit, Component, inject, Input } from '@angular/core';
 import * as L from 'leaflet';
+
 import { MapService } from './map-service';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-map',

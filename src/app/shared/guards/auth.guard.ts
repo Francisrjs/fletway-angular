@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+
 import { AuthService } from '../../core/auth/data-access/auth-service';
 
 const routerInJection = () => inject(Router);

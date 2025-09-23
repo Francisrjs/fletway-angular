@@ -1,7 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Supabase } from '../../../shared/data-access/supabase';
-import { Session, SignInWithPasswordCredentials } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
+import { Session, SignInWithPasswordCredentials } from '@supabase/supabase-js';
+
+import { Supabase } from '../../../shared/data-access/supabase';
 export interface userState {
   userId: string | null;
   email?: string | null;
@@ -113,7 +114,7 @@ export class AuthService {
     // 2) Disparar signOut LOCAL en background (no bloquear)
     setTimeout(() => {
       this._supabaseClient.auth
-        .signOut({ scope: 'local' } as any)
+        .signOut({ scope: 'local' })
         .catch((e) => console.warn('[signOut] error local:', e));
     }, 0);
 

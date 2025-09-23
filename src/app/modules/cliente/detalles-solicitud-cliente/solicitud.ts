@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   FormBuilder,
@@ -7,18 +8,18 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { SolcitudService } from '../../data-access/solicitud-service';
 import {
-  Subject,
   debounceTime,
   distinctUntilChanged,
+  of,
+  Subject,
   switchMap,
   takeUntil,
-  of,
 } from 'rxjs';
-import { CommonModule } from '@angular/common';
+
 import { Localidad } from '../../../core/layouts/localidad';
 import { Map } from '../../../shared/features/map/map';
+import { SolcitudService } from '../../data-access/solicitud-service';
 
 @Component({
   selector: 'app-solicitud-solicitudForm',

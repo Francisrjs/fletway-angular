@@ -1,8 +1,9 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { Supabase } from '../../shared/data-access/supabase';
+import { computed,inject, Injectable, signal } from '@angular/core';
+
 import { AuthService } from '../../core/auth/data-access/auth-service';
-import { Solicitud } from '../../core/layouts/solicitud';
 import { Localidad } from '../../core/layouts/localidad';
+import { Solicitud } from '../../core/layouts/solicitud';
+import { Supabase } from '../../shared/data-access/supabase';
 
 interface SolicitudState {
   solicitudes: Solicitud[];

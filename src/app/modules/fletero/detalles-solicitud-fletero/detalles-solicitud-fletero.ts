@@ -6,11 +6,12 @@ import {
   FormsModule,
   Validators,
 } from '@angular/forms';
-import { Solicitud } from '../../../core/layouts/solicitud';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SolcitudService } from '../../data-access/solicitud-service';
+
+import { Solicitud } from '../../../core/layouts/solicitud';
 import { Map } from '../../../shared/features/map/map';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
+import { SolcitudService } from '../../data-access/solicitud-service';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',

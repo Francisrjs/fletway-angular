@@ -1,15 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
-import {
-  Router,
-  RouterOutlet,
-  Event as RouterEvent,
-  NavigationEnd,
-} from '@angular/router';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { initFlowbite } from 'flowbite';
-import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
 import { filter } from 'rxjs';
-import { ClienteComponent } from './modules/cliente/cliente-component/cliente-component';
-import { DetallesSolicitudFleteroComponent } from './modules/fletero/detalles-solicitud-fletero/detalles-solicitud-fletero';
+
+import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
 
 @Component({
   selector: 'app-root',
@@ -20,9 +14,7 @@ import { DetallesSolicitudFleteroComponent } from './modules/fletero/detalles-so
 })
 export class App implements OnInit {
   showNavbar = true;
-  constructor(private router: Router) {
-    // Escuchar eventos del router
-  }
+  private router = inject(Router);
 
   protected readonly title = signal('Fletway');
 

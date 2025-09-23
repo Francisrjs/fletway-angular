@@ -1,9 +1,10 @@
-import { Component, OnInit, Pipe, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+import { AuthService } from '../../../core/auth/data-access/auth-service';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/auth/data-access/auth-service';
 
 @Component({
   selector: 'app-cliente',
@@ -13,7 +14,7 @@ import { AuthService } from '../../../core/auth/data-access/auth-service';
 })
 export class ClienteComponent implements OnInit {
   private _solService = inject(SolcitudService);
-  private _authService = inject(AuthService)
+  private _authService = inject(AuthService);
   solicitudes: Solicitud[] = [];
   solicitudes_pendientes: Solicitud[] = [];
   loading = false;
@@ -28,8 +29,7 @@ export class ClienteComponent implements OnInit {
         // CÓDIGO CORRECTO
         this.solicitudes = data ?? []; // Si data es null, se asigna un array vacío.
         this.solicitudes_pendientes = dataPendiente ?? []; // Lo mismo para dataPendiente.
-        console.log("t@usuario ",this._authService.session())
-
+        console.log('t@usuario ', this._authService.session());
       } else {
         this.solicitudes = [];
         this.solicitudes_pendientes = [];

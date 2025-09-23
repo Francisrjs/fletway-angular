@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {FormsModule} from '@angular/forms';
+
 import { DetallesSolicitudFleteroComponent } from './detalles-solicitud-fletero';
-import {FormsModule} from '@angular/forms'
 describe('DetallesSolicitudFleteroComponent', () => {
   let component: DetallesSolicitudFleteroComponent;
   let fixture: ComponentFixture<DetallesSolicitudFleteroComponent>;

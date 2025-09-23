@@ -1,4 +1,4 @@
-import { Cliente } from "./cliente";
+import { Cliente } from './cliente';
 
 export interface Fletero{
     transportista_id: number;

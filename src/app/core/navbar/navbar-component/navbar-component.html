@@ -128,7 +128,7 @@
             />
           </svg>
 
-          <span class="ml-3" (click)="logOut()">Desconectarse</span>
+          <span class="ml-3" (click)="logOut()" tabindex="0" (keydown)="($event.key === 'Enter' || $event.key === ' ') && logOut()" role="button">Desconectarse</span>
         </a>
       </li>
     </ul>
