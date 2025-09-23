@@ -62,7 +62,23 @@ dd
                         <i class="fas fa-map-marker-alt mr-1"></i> (Integración de mapa aquí)
                     </div>
                 </div>
-
+        <div>
+            <form class="max-w-sm mx-auto">
+            <label for="localidadDestino" class="block mb-2 text-sm font-medium text-blue-gray-dark">
+        Localidad del Destino
+            </label>
+        <select 
+            id="localidadDestino" 
+            name="localidadDestino" 
+            formControlName="localidad_destino_id"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 
+                dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
+                dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <option value="">Selecciona una localidad</option>
+  </select> 
+            </form>
+            </div>
                 <div>
                     <label for="destination" class="block text-blue-gray-dark text-sm font-medium mb-1">Destino (Dirección o Mapa)</label>
                     <input type="text" id="destination" name="destination" formControlName="destino" placeholder="Ej: Av. Siempre Viva 742, GBA" class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark">
