@@ -4,7 +4,6 @@ import {
   FormBuilder,
   FormGroup,
   FormsModule,
-  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { Solicitud } from '../../../core/layouts/solicitud';
@@ -16,7 +15,7 @@ import { PresupuestoService } from '../../data-access/presupuesto-service';
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, Map],
+  imports: [CommonModule, FormsModule, Map],
   templateUrl: './detalles-solicitud-fletero.html',
 })
 export class DetallesSolicitudFleteroComponent implements OnInit {

@@ -227,7 +227,7 @@ export class SolcitudService {
           localidad_id,
           nombre,
           provincia,
-          codigo_postal,
+          codigo_postal
         `,
         )
         .returns<Localidad[]>();
@@ -242,7 +242,7 @@ export class SolcitudService {
         // actualizo la propiedad correcta
         this._state.update((s) => ({ ...s, Localidad: data }));
       }
-
+      console.log('LOCALIDADES:', data);
       return data ?? null;
     } catch (err) {
       console.error('getAllLocalidades catch:', err);
