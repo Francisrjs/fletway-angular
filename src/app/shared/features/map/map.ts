@@ -1,4 +1,4 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, inject, Input } from '@angular/core';
 import * as L from 'leaflet';
 

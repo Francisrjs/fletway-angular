@@ -47,13 +47,12 @@ export class PresupuestoService {
 
       const transportista_id = userData.usuario_id;
 
-      const row: any = {
+      const row: Partial<Presupuesto> = {
         transportista_id,
         solicitud_id: payload.solicitud,
         precio_estimado: payload.precio,
         comentario: payload.comentario,
       };
-
       const { data: insertData, error: insertError } =
         await this._supabaseClient
           .from('presupuesto')

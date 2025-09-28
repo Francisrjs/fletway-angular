@@ -1,4 +1,4 @@
-import { computed,inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { AuthService } from '../../core/auth/data-access/auth-service';
 import { Localidad } from '../../core/layouts/localidad';
@@ -310,8 +310,7 @@ export class SolcitudService {
       peso?: number | null;
     },
     // files queda para compatibilidad pero lo ignoramos
-    files?: FileList | null,
-  ): Promise<{ data?: Solicitud | null; error?: any }> {
+  ): Promise<{ data?: Solicitud | null; error?: unknown }> {
     try {
       const {
         data: { session },
@@ -342,7 +341,7 @@ export class SolcitudService {
         ).toISOString();
       }
 
-      const row: any = {
+      const row: Partial<Solicitud> = {
         cliente_id,
         direccion_origen: payload.direccion_origen,
         direccion_destino: payload.direccion_destino,
@@ -350,12 +349,8 @@ export class SolcitudService {
         medidas: payload.medidas ?? null,
         estado: 'sin transportista',
         hora_recogida: hora_recogida_iso,
+        localidad_origen_id: payload.localidad_origen_id,
       };
-
-      // si el payload trae localidad_origen_id, lo agregamos
-      if ((payload as any).localidad_origen_id) {
-        row.localidad_origen_id = (payload as any).localidad_origen_id;
-      }
 
       const { data: insertData, error: insertError } =
         await this._supabaseClient
@@ -372,7 +367,7 @@ export class SolcitudService {
       return { error: err };
     }
   }
-  async searchLocalidades(query: string): Promise<any[] | []> {
+  async searchLocalidades(query: string): Promise<Localidad[]> {
     try {
       const q = query.trim();
       if (!q) return [];

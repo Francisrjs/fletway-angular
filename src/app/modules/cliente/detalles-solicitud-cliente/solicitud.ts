@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -38,12 +38,10 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
   originTyped = false;
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private fb: FormBuilder,
-    private solicitudService: SolcitudService,
-    private router: Router,
-  ) {
+  private fb = inject(FormBuilder);
+  private solicitudService = inject(SolcitudService);
+  private router = inject(Router);
+  constructor() {
     this.solicitudForm = this.fb.group({
       origen: ['', [Validators.required]],
       localidad_origen_id: ['', [Validators.required]],
@@ -76,7 +74,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe({
-        next: (res: any[]) => {
+        next: (res: Localidad[]) => {
           this.localidades = res ?? [];
         },
         error: (err) => {
@@ -134,16 +132,14 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       hora_recogida_time: v.horaRecogida || undefined,
       detalles_carga: v.detalle_carga || null,
       medidas: v.detalle || null,
-      peso: v.peso != null ? Number(v.peso) : null,
+      peso: v.peso !== null ? Number(v.peso) : null,
       // Si usas título, agrega: titulo: v.titulo
     } as const;
 
     try {
       console.log(this.solicitudForm.value);
-      const { data, error } = await this.solicitudService.createSolicitud(
-        payload,
-        this.files,
-      );
+      const { data, error } =
+        await this.solicitudService.createSolicitud(payload);
 
       if (error) {
         console.error('Error creando solicitud:', error);

@@ -21,15 +21,19 @@ module.exports = tseslint.config(
     },
 
     rules: {
-      "@angular-eslint/template/click-events-have-key-events": "off",
-      "@angular-eslint/template/interactive-supports-focus": "off",
+      //1 - ";" al finalizar cad alinea
       semi: ["error", "always"],
+      //2 - Obliga a usar === y !== en lugar de == y !=
+      eqeqeq: ["error", "always"],
+      //3 - Limita la cantidad de parámetros en funciones/métodos a 8.
       "max-params": ["error", 8],
-      //Usar comillas simples
+      //4 - Usar comillas simples
       quotes: ["error", "single"],
-      //No dejar variables sin usar
-      //Requerir el uso de const o let
+      //5 - No dejar variables sin usar
+      //6 - Requerir el uso de const o let
       "no-var": "error",
+      //7- Implementación de aviso WARN si dejamos console.log
+      // "no-console": "warn",
     },
   },
   {

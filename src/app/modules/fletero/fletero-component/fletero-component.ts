@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject,OnInit, Pipe } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Solicitud } from '../../../core/layouts/solicitud';
@@ -12,8 +12,6 @@ import { SolcitudService } from '../../data-access/solicitud-service';
   imports: [CommonModule, RouterLink],
 })
 export class FleteroComponent implements OnInit {
-  constructor() {}
-
   private _solService = inject(SolcitudService);
 
   solicitudes: Solicitud[] = [];

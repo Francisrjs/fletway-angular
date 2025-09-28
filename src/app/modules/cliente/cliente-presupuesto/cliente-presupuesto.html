@@ -8,55 +8,70 @@
 
 @if (!cargando && !error && presupuestos.length > 0) {
   <div class="bg-gray-900 rounded-xl shadow-lg p-4 flex flex-col h-screen">
-
     <!-- LISTA SCROLLEABLE -->
-    <ul 
-      role="list" 
+    <ul
+      role="list"
       class="divide-y divide-white/10 flex-grow overflow-y-auto pr-1"
     >
       @for (p of presupuestos; track p.presupuesto_id) {
-        <li 
-          class="flex justify-between gap-x-6 py-4 px-3 rounded-lg cursor-pointer transition hover:bg-gray-800"
-          [class.bg-gray-700]="presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id"
-          [class.ring-2]="presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id"
-          [class.ring-blue-500]="presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id"
-          (click)="presupuestoSeleccionado = p"
-        >
-          <!-- 🔑 INFO PRESUPUESTO (IZQUIERDA - PROTAGONISTA) -->
-          <div class="flex flex-col justify-center">
-            <p class="text-lg font-bold text-white">
-              {{ p.precio_estimado | currency:'USD':'symbol' }}
-            </p>
-            <p class="text-xs text-gray-400">
-              {{ p.fecha_creacion | date:'dd/MM/yyyy' }}
-            </p>
-            <p class="mt-1 text-sm text-gray-300 italic">
-              {{ p.comentario }}
-            </p>
-          </div>
-
-          <!-- INFO TRANSPORTISTA (DERECHA) -->
-          <div class="flex min-w-0 gap-x-4 text-right">
-            <div class="min-w-0 flex-auto">
-              <p class="text-sm font-semibold text-white">
-                {{ p.transportista?.usuario?.nombre }} {{ p.transportista?.usuario?.apellido }}
+        <li>
+          <button
+            type="button"
+            class="flex justify-between gap-x-6 py-4 px-3 rounded-lg cursor-pointer transition hover:bg-gray-800 w-full text-left"
+            [class.bg-gray-700]="
+              presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id
+            "
+            [class.ring-2]="
+              presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id
+            "
+            [class.ring-blue-500]="
+              presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id
+            "
+            (click)="presupuestoSeleccionado = p"
+          >
+            <!-- 🔑 INFO PRESUPUESTO (IZQUIERDA) -->
+            <div class="flex flex-col justify-center">
+              <p class="text-lg font-bold text-white">
+                {{ p.precio_estimado | currency: "USD" : "symbol" }}
               </p>
-              <p class="mt-1 truncate text-xs text-gray-400">
-                {{ p.transportista?.usuario?.telefono || 'Teléfono no informado' }}
+              <p class="text-xs text-gray-400">
+                {{ p.fecha_creacion | date: "dd/MM/yyyy" }}
               </p>
-              <p class="text-xs italic text-gray-500">
-                "{{ p.transportista?.descripcion || 'Sin descripción' }}"
-              </p>
-              <p class="text-yellow-400 text-sm">
-                ⭐ {{ p.transportista?.calificacion_promedio || 'N/A' }}
+              <p class="mt-1 text-sm text-gray-300 italic">
+                {{ p.comentario }}
               </p>
             </div>
-            <img 
-              [src]="p.transportista?.usuario?.foto || 'https://via.placeholder.com/48'"
-              alt="foto"
-              class="size-12 flex-none rounded-full bg-gray-800 outline outline-1 outline-white/10"
-            />
-          </div>
+
+            <!-- INFO TRANSPORTISTA (DERECHA) -->
+            <div class="flex min-w-0 gap-x-4 text-right">
+              <div class="min-w-0 flex-auto">
+                <p class="text-sm font-semibold text-white">
+                  {{ p.transportista?.usuario?.nombre }}
+                  {{ p.transportista?.usuario?.apellido }}
+                </p>
+                <p class="mt-1 truncate text-xs text-gray-400">
+                  {{
+                    p.transportista?.usuario?.telefono ||
+                      "Teléfono no informado"
+                  }}
+                </p>
+                <p class="text-xs italic text-gray-500">
+                  "{{ p.transportista?.descripcion || "Sin descripción" }}"
+                </p>
+                <p class="text-yellow-400 text-sm">
+                  ⭐ {{ p.transportista?.calificacion_promedio || "N/A" }}
+                </p>
+              </div>
+              <img
+                [src]="
+                  p.transportista?.usuario?.foto ||
+                  'https://via.placeholder.com/48'
+                "
+                alt="foto"
+                class="size-12 flex-none rounded-full bg-gray-800 outline outline-1 outline-white/10"
+              />
+            </div>
+          </button>
         </li>
       }
     </ul>
@@ -64,22 +79,23 @@
     <!-- BOTONES FIJOS ABAJO -->
     <div class="pt-4 border-t border-gray-700 sticky bottom-0 bg-gray-900">
       <div class="flex justify-end gap-3">
-        <button 
+        <button
           class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
           [disabled]="!presupuestoSeleccionado"
-          (click)="onAceptar(presupuestoSeleccionado!)">
-           Aceptar
+          (click)="onAceptar(presupuestoSeleccionado!)"
+        >
+          Aceptar
         </button>
 
-        <button 
+        <button
           class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
           [disabled]="!presupuestoSeleccionado"
-          (click)="onRechazar(presupuestoSeleccionado!)">
-           Rechazar
+          (click)="onRechazar(presupuestoSeleccionado!)"
+        >
+          Rechazar
         </button>
       </div>
     </div>
-
   </div>
 } @else if (!cargando && !error && presupuestos.length === 0) {
   <div>No hay presupuestos para esta solicitud.</div>

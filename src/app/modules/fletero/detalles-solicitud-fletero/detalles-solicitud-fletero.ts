@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -31,14 +31,12 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
     price: null as number | null,
     notes: '' as string,
   };
-
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private solicitudService: SolcitudService,
-    private presupuestoService: PresupuestoService,
-  ) {
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private solicitudService = inject(SolcitudService);
+  private presupuestoService = inject(PresupuestoService);
+  constructor() {
     this.presupuestoForm = this.fb.group({
       precio: [
         '',
