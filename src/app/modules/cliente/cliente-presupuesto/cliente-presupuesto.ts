@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Presupuesto } from '../../../core/layouts/presupuesto';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolcitudService } from '../../data-access/solicitud-service';
+import { PopupModalService } from '../../../shared/modal/popup';
 
 @Component({
   selector: 'app-cliente-presupuesto',
@@ -21,6 +22,8 @@ export class ClientePresupuesto implements OnInit {
   private presupuestoService = inject(PresupuestoService);
   private solicitudService = inject(SolcitudService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private popupModalService = inject(PopupModalService);
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -66,38 +69,60 @@ export class ClientePresupuesto implements OnInit {
 
   //
   async onAceptar(presupuesto: Presupuesto) {
-    const ok = await this.presupuestoService.aceptarPresupuesto(
-      presupuesto.presupuesto_id,
-      presupuesto.solicitud_id,
-    );
-
-    if (ok) {
-      // ahora actualizamos la solicitud con el presupuesto aceptado
-      const okSolicitud =
-        await this.solicitudService.actualizarSolicitudConPresupuesto(
-          presupuesto.solicitud_id,
+    this.popupModalService.showSuccess(
+      '¿Aceptar presupuesto?',
+      'Confirma que deseas aceptar este presupuesto. Una vez aceptado, el transportista será notificado.',
+      async () => {
+        // Función onAccept
+        const ok = await this.presupuestoService.aceptarPresupuesto(
           presupuesto.presupuesto_id,
+          presupuesto.solicitud_id,
         );
 
-      if (okSolicitud) {
-        alert('Presupuesto aceptado y solicitud actualizada correctamente');
-      } else {
-        alert('Presupuesto aceptado, pero no se pudo actualizar la solicitud');
-      }
-    } else {
-      alert('Error al aceptar presupuesto');
-    }
+        if (ok) {
+          // ahora actualizamos la solicitud con el presupuesto aceptado
+          const okSolicitud =
+            await this.solicitudService.actualizarSolicitudConPresupuesto(
+              presupuesto.solicitud_id,
+              presupuesto.presupuesto_id,
+            );
+
+          if (okSolicitud) {
+            this.router.navigate(['/cliente']);
+          } else {
+            alert('Presupuesto aceptado, pero no se pudo actualizar la solicitud');
+          }
+        } else {
+          alert('Error al aceptar presupuesto');
+        }
+      },
+      () => {
+        // Función onCancel
+        console.log('Usuario canceló la aceptación');
+      },
+    );
   }
 
   async onRechazar(p: Presupuesto) {
-    const ok = await this.presupuestoService.rechazarPresupuesto(
-      p.presupuesto_id,
-      p.solicitud_id,
+    this.popupModalService.showDanger(
+      '¿Rechazar presupuesto?',
+      'Esta acción rechazará el presupuesto del transportista. Esta acción no se puede deshacer.',
+      async () => {
+        // Función onAccept
+        const ok = await this.presupuestoService.rechazarPresupuesto(
+          p.presupuesto_id,
+          p.solicitud_id,
+        );
+        if (ok) {
+          this.router.navigate(['/cliente']);
+        } else {
+          alert('Error al rechazar presupuesto');
+        }
+      },
+      () => {
+        // Función onCancel
+        console.log('Usuario canceló el rechazo');
+      },
     );
-    if (ok) {
-      alert('Presupuesto rechazado correctamente');
-    } else {
-      alert('Error al rechazar presupuesto');
-    }
   }
 }
