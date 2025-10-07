@@ -30,6 +30,20 @@ export class SolcitudService {
   loading = computed(() => this._state().loading);
   error = computed(() => this._state().error);
 
+  // Computed para solicitudes pendientes y en viaje
+  solicitudes_pendientes = computed(() =>
+    this._state().solicitudes.filter(
+      (s) => s.estado === 'pendiente' || s.estado === 'en viaje',
+    ),
+  );
+
+  solicitudes_disponibles = computed(() =>
+    this._state().solicitudes.filter((s) => s.estado === 'sin transportista'),
+  );
+
+  solicitudes_completadas = computed(() =>
+    this._state().solicitudes.filter((s) => s.estado === 'completado'),
+  );
   // ahora devuelve la data y maneja errores
   async getAllPedidos(): Promise<Solicitud[] | null> {
     try {
@@ -251,6 +265,57 @@ export class SolcitudService {
       return null;
     } finally {
       this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
+
+  async solicitudEnViaje(solicitudId: number): Promise<boolean> {
+    try {
+      const { error } = await this._supabaseClient
+        .from('solicitud')
+        .update({ estado: 'en viaje' })
+        .eq('solicitud_id', solicitudId);
+
+      if (error) throw error;
+
+      // Actualiza la señal local si la solicitud está en el array
+      this._state.update((s) => ({
+        ...s,
+        solicitudes: s.solicitudes.map((sol) =>
+          sol.solicitud_id === solicitudId
+            ? { ...sol, estado: 'en viaje' }
+            : sol,
+        ),
+      }));
+
+      return true;
+    } catch (err) {
+      console.error('Error al marcar solicitud en viaje:', err);
+      return false;
+    }
+  }
+  async solicitudCompletada(solicitudId: number): Promise<boolean> {
+    try {
+      const { error } = await this._supabaseClient
+        .from('solicitud')
+        .update({ estado: 'completado' })
+        .eq('solicitud_id', solicitudId);
+
+      if (error) throw error;
+
+      // Actualiza la señal local si la solicitud está en el array
+      this._state.update((s) => ({
+        ...s,
+        solicitudes: s.solicitudes.map((sol) =>
+          sol.solicitud_id === solicitudId
+            ? { ...sol, estado: 'completado' }
+            : sol,
+        ),
+      }));
+
+      return true;
+    } catch (err) {
+      console.error('Error al marcar solicitud en viaje:', err);
+      return false;
     }
   }
   async getPedidoById(solicitudId: number | string): Promise<Solicitud | null> {

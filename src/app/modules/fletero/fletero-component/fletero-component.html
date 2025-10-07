@@ -250,7 +250,7 @@
       </div>
 
       <div
-        *ngFor="let s of solicitudes"
+        *ngFor="let s of solicitudes_disponibles"
         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
       >
         <div class="md:flex md:items-start md:gap-8">
@@ -644,30 +644,60 @@
 
               Ver en el Mapa
             </button>
-            <button
-              type="button"
-              (click)="openMap(s, true)"
-              class="mt-4 inline-flex w-full text-white items-center justify-center rounded-lg border border-gray-300 bg-green-700 px-5 py-2.5 text-sm font-medium hover:bg-blue-900 focus:outline-none focus:ring-4 focus:ring-gray-100"
-            >
-              <svg
-                class="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+            <!-- Viaje botones -->
+            @if (s.estado === "pendiente") {
+              <button
+                type="button"
+                (click)="realizarViaje(s)"
+                class="mt-4 inline-flex w-full text-white items-center justify-center rounded-lg border border-gray-300 bg-blue-900 px-5 py-2.5 text-sm font-medium hover:bg-blue-900 focus:outline-none focus:ring-4 focus:ring-gray-100"
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M4 4a2 2 0 0 0-2 2v9a1 1 0 0 0 1 1h.535a3.5 3.5 0 1 0 6.93 0h3.07a3.5 3.5 0 1 0 6.93 0H21a1 1 0 0 0 1-1v-4a.999.999 0 0 0-.106-.447l-2-4A1 1 0 0 0 19 6h-5a2 2 0 0 0-2-2H4Zm14.192 11.59.016.02a1.5 1.5 0 1 1-.016-.021Zm-10 0 .016.02a1.5 1.5 0 1 1-.016-.021Zm5.806-5.572v-2.02h4.396l1 2.02h-5.396Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
+                <svg
+                  class="w-6 h-6 text-gray-800 dark:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M4 4a2 2 0 0 0-2 2v9a1 1 0 0 0 1 1h.535a3.5 3.5 0 1 0 6.93 0h3.07a3.5 3.5 0 1 0 6.93 0H21a1 1 0 0 0 1-1v-4a.999.999 0 0 0-.106-.447l-2-4A1 1 0 0 0 19 6h-5a2 2 0 0 0-2-2H4Zm14.192 11.59.016.02a1.5 1.5 0 1 1-.016-.021Zm-10 0 .016.02a1.5 1.5 0 1 1-.016-.021Zm5.806-5.572v-2.02h4.396l1 2.02h-5.396Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
 
-              <br />
-              Realizar viaje
-            </button>
+                <br />
+                Realizar viaje
+              </button>
+            } @else {
+              <button
+                type="button"
+                (click)="viajeCompletado(s)"
+                class="mt-4 inline-flex w-full text-white items-center justify-center rounded-lg border border-gray-300 bg-green-700 px-5 py-2.5 text-sm font-medium hover:bg-blue-900 focus:outline-none focus:ring-4 focus:ring-gray-100"
+              >
+                <span class="inline-flex items-center gap-2">
+                  <svg
+                    class="w-6 h-6 text-white-600"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span class="font-semibold text-white-700"
+                    >Viaje Completado</span
+                  >
+                </span>
+              </button>
+            }
           </div>
         </div>
       </div>

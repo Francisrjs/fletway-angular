@@ -4,12 +4,13 @@ import { initFlowbite } from 'flowbite';
 import { filter } from 'rxjs';
 
 import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
+import { PopupModalContainer } from './shared/modal/popup/popup-modal-container';
 import { ToastContainer } from './shared/modal/toast/toast-container';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, ToastContainer],
+  imports: [RouterOutlet, NavbarComponent, ToastContainer, PopupModalContainer],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
