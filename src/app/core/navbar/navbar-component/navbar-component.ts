@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth/data-access/auth-service';
 
 @Component({
   selector: 'app-navbar-component',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
 })
@@ -27,12 +27,14 @@ export class NavbarComponent {
     console.log('estado actual:', this.sesion);
   }
   async irInicio() {
-    console.log('click');
-    const state = this.sesion;
+    let state = this.sesion; // Cambiar const por let
+    console.log('click', state);
+
     if (!state.session) {
       await this._router.navigateByUrl('/auth/login');
       return;
     }
+
     // Si ya tenemos el valor, navega directo
     if (state.isFletero !== null && typeof state.isFletero !== 'undefined') {
       const target = state.isFletero ? '/fletero' : '/cliente';
@@ -40,14 +42,21 @@ export class NavbarComponent {
       await this._router.navigateByUrl(target);
       return;
     }
+
     // Si está cargando, espera a que se resuelva
     let tries = 0;
-    while (
-      (state.isFletero === null ||
-        typeof state.isFletero === 'undefined' ||
-        state.isFleteroLoading) &&
-      tries < 20
-    ) {
+    while (tries < 20) {
+      state = this.sesion; // 🔥 LEER EL ESTADO ACTUALIZADO EN CADA ITERACIÓN
+
+      // Si ya tenemos el valor, salir del bucle
+      if (
+        state.isFletero !== null &&
+        typeof state.isFletero !== 'undefined' &&
+        !state.isFleteroLoading
+      ) {
+        break;
+      }
+
       if (
         !state.isFleteroLoading &&
         (state.isFletero === null || typeof state.isFletero === 'undefined')
@@ -57,14 +66,18 @@ export class NavbarComponent {
           await this._authService.esFletero(state.userId!);
         } catch (e) {
           console.warn('No se pudo determinar isFletero:', e);
+          break;
         }
       }
+
       await new Promise((res) => setTimeout(res, 100));
       tries++;
     }
-    const isFletero = this.sesion.isFletero;
-    const target = isFletero ? '/fletero' : '/cliente';
-    console.log('Ir a inicio según rol (espera):', target);
+
+    const finalState = this.sesion; // Leer estado final
+    const target = finalState.isFletero ? '/fletero' : '/cliente';
+
+    console.log('Ir a inicio según rol (espera):', target, finalState);
     await this._router.navigateByUrl(target);
   }
 }

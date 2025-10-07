@@ -9,6 +9,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Session } from '@supabase/supabase-js';
 
 import { AuthService } from '../../data-access/auth-service';
+import { ToastService } from '../../../../shared/modal/toast';
 
 // Tipado del formulario
 interface LoginForm {
@@ -26,6 +27,7 @@ interface LoginForm {
 export class LoginIn {
   private _formBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
+  private toastService = inject(ToastService);
   private _router = inject(Router);
   // --- Formulario con validadores ---
   form = this._formBuilder.group<LoginForm>({
@@ -39,6 +41,10 @@ export class LoginIn {
   async submit() {
     if (this.form.invalid) {
       console.warn('Formulario inválido', this.form.errors, this.form.value);
+      this.toastService.showDanger(
+        'formulario Invalido',
+        'Revise los campos: ' + this.form.errors,
+      );
       return;
     }
 
@@ -71,9 +77,13 @@ export class LoginIn {
       // Redirigir según rol
       const target = isFletero ? '/fletero' : '/cliente';
       await this._router.navigateByUrl(target);
-      alert('Inicio de sesión exitoso');
+
+      this.toastService.showSuccess('¡Éxito!', 'Inicio de sesión exitoso');
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
+      this.toastService.showDanger(
+        'Error al iniciar sesión',
+        'Revise los campos' + error,
+      );
     }
   }
 }

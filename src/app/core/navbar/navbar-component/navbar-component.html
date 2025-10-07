@@ -30,10 +30,14 @@
   <div class="overflow-y-auto px-4">
     <ul class="space-y-2">
       <li>
-        <a
-          href="#"
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        <span
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
           (click)="irInicio()"
+          tabindex="0"
+          (keydown)="
+            ($event.key === 'Enter' || $event.key === ' ') && irInicio()
+          "
+          role="button"
         >
           <svg
             class="w-6 h-6 text-gray-500"
@@ -52,12 +56,13 @@
           </svg>
 
           <span class="ml-3">Inicio</span>
-        </a>
+        </span>
       </li>
       <li>
-        <a
-          href="#"
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        <span
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
+          tabindex="0"
+          role="button"
         >
           <svg
             className="w-6 h-6  text-gray-500"
@@ -77,12 +82,13 @@
           </svg>
 
           <span class="ml-3 text-orange">Hacer un pedido</span>
-        </a>
+        </span>
       </li>
       <li>
         <a
           href="#"
           class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+          routerLink="/cliente/nuevaSolicitud"
         >
           <svg
             class="w-6 h-6 text-gray-500"
@@ -106,9 +112,10 @@
         </a>
       </li>
       <li>
-        <a
-          href="#"
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        <span
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
+          tabindex="0"
+          role="button"
         >
           <svg
             class="w-6 h-6 text-gray-500"
@@ -128,8 +135,17 @@
             />
           </svg>
 
-          <span class="ml-3" (click)="logOut()" tabindex="0" (keydown)="($event.key === 'Enter' || $event.key === ' ') && logOut()" role="button">Desconectarse</span>
-        </a>
+          <span
+            class="ml-3"
+            (click)="logOut()"
+            tabindex="0"
+            (keydown)="
+              ($event.key === 'Enter' || $event.key === ' ') && logOut()
+            "
+            role="button"
+            >Desconectarse</span
+          >
+        </span>
       </li>
     </ul>
   </div>

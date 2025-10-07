@@ -3,20 +3,21 @@ import { Component, inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
-  FormsModule,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { Map } from '../../../shared/features/map/map';
+import { ToastService } from '../../../shared/modal/toast/toast.service';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolcitudService } from '../../data-access/solicitud-service';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   standalone: true,
-  imports: [CommonModule, FormsModule, Map],
+  imports: [CommonModule, ReactiveFormsModule, Map],
   templateUrl: './detalles-solicitud-fletero.html',
 })
 export class DetallesSolicitudFleteroComponent implements OnInit {
@@ -36,6 +37,7 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   private router = inject(Router);
   private solicitudService = inject(SolcitudService);
   private presupuestoService = inject(PresupuestoService);
+  private toastService = inject(ToastService);
   constructor() {
     this.presupuestoForm = this.fb.group({
       precio: [
@@ -91,7 +93,10 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   async submitQuote() {
     if (!this.presupuestoForm.valid || !this.pedido) {
       console.log(this.presupuestoForm.value);
-      alert('Formulario inválido o pedido no cargado');
+      this.toastService.showWarning(
+        'Formulario inválido',
+        'Por favor completa todos los campos requeridos',
+      );
       return;
     }
 
@@ -106,15 +111,24 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
       };
       const result = await this.presupuestoService.addPresupuesto(payload);
       if (!result) {
-        alert('Error al enviar el presupuesto.');
+        this.toastService.showDanger(
+          'Error',
+          'No se pudo enviar el presupuesto',
+        );
         this.error = true;
         return;
       }
-      alert('Presupuesto enviado correctamente.');
+      this.toastService.showSuccess(
+        '¡Éxito!',
+        'Presupuesto enviado correctamente',
+      );
       this.router.navigate(['/fletero']);
     } catch (err) {
       console.error('submitQuote catch:', err);
-      alert('Error inesperado al enviar el presupuesto.');
+      this.toastService.showDanger(
+        'Error inesperado',
+        'Ocurrió un error al enviar el presupuesto',
+      );
       this.error = true;
     } finally {
       this.loading = false;

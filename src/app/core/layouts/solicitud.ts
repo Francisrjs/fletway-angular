@@ -10,6 +10,7 @@ export interface Solicitud {
   direccion_destino?: string | null;
   fecha_creacion?: string | null;
   detalles_carga?: string | null;
+  peso?: number;
   estado?: string | null; // <- ahora puede ser null
   borrado_logico?: boolean;
   creado_en?: string | null;
