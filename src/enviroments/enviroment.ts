@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  //corrigo
   // supabaseUrl: 'https://cscsodzphvosifgduqtc.supabase.co',
   supabaseUrl: 'https://cscsodzphvosifgduqt',
   supabaseKey:
