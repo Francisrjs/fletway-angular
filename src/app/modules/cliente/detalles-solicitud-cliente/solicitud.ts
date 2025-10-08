@@ -153,7 +153,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
       this.message = {
         type: 'success',
-        text: 'Solicitud creada correctamente.',
+        text: 'Pedido creado correctamente.',
       };
 
       if (data?.solicitud_id) {
