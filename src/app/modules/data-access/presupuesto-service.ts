@@ -94,8 +94,8 @@ export class PresupuestoService {
         .from('presupuesto')
         .select('*')
         .eq('solicitud_id', solicitudId)
-        .eq('estado', 'pendiente') // 👈 filtro
-        .returns<Presupuesto[]>();
+        //.eq('estado', 'pendiente') // 👈 filtro -----> Comente esta linea para que cuando se abran los presupuestos de una solicitud, se vea el presupuesto aceptado.
+        .returns<Presupuesto[]>();  //                   Siempre y cuando haya un presupuesto aceptado. Sino se mostraran todos los pendientes.
 
       if (error) {
         console.error('Supabase error:', error);
