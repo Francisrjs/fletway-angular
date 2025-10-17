@@ -5,6 +5,8 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/data-access/auth-service';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
+import { PresupuestoService } from '../../data-access/presupuesto-service';
+
 
 @Component({
   selector: 'app-cliente',
@@ -15,6 +17,7 @@ import { SolcitudService } from '../../data-access/solicitud-service';
 export class ClienteComponent implements OnInit {
   private _solService = inject(SolcitudService);
   private _authService = inject(AuthService);
+  private _presupuestoService = inject(PresupuestoService);
   solicitudes: Solicitud[] = [];
   solicitudes_pendientes: Solicitud[] = [];
   loading = false;
@@ -30,6 +33,7 @@ export class ClienteComponent implements OnInit {
         this.solicitudes = data ?? []; // Si data es null, se asigna un array vacío.
         this.solicitudes_pendientes = dataPendiente ?? []; // Lo mismo para dataPendiente.
         console.log('t@usuario ', this._authService.session());
+        await this.anotarResumenesPresupuestos();
       } else {
         this.solicitudes = [];
         this.solicitudes_pendientes = [];
@@ -64,5 +68,23 @@ export class ClienteComponent implements OnInit {
     const query = encodeURIComponent(`${direccion} ${localidad}`);
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
     window.open(url, '_blank');
+  }
+
+  private async anotarResumenesPresupuestos() {
+    if (!Array.isArray(this.solicitudes) || this.solicitudes.length === 0) return;
+
+    const resúmenes = await Promise.all(
+      this.solicitudes.map((s: any) =>
+        this._presupuestoService
+          .getResumenPresupuestos(s.solicitud_id)
+          .catch(() => ({ total: 0, hayAceptado: false }))
+      )
+    );
+
+    this.solicitudes = this.solicitudes.map((s: any, i: number) => ({
+      ...s,
+      _totalPresupuestos: resúmenes[i].total,
+      _hayAceptado: resúmenes[i].hayAceptado,
+    }));
   }
 }

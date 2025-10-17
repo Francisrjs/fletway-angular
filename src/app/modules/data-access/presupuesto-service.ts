@@ -69,6 +69,20 @@ export class PresupuestoService {
     }
   }
 
+  // Esto es para saber si hay presupuestos y si alguno está aceptado
+  async getResumenPresupuestos(solicitudId: number) {
+    const { data, error } = await this._supabaseClient
+      .from('presupuesto')
+      .select('estado')
+      .eq('solicitud_id', solicitudId);
+
+    if (error) throw error;
+
+    const total = data?.length ?? 0;
+    const hayAceptado = (data ?? []).some(p => p.estado === 'aceptado');
+    return { total, hayAceptado };
+  }
+
   // 🔎 Filtrar presupuestos por solicitud_id
   async getPresupuestosBySolicitudId(
     solicitudId: number,
