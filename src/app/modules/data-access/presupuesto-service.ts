@@ -78,9 +78,14 @@ export class PresupuestoService {
 
     if (error) throw error;
 
-    const total = data?.length ?? 0;
-    const hayAceptado = (data ?? []).some(p => p.estado === 'aceptado');
-    return { total, hayAceptado };
+    const estados = (data ?? []).map(d => d.estado);
+    const hayAceptado = estados.includes('aceptado');
+
+    const mostrables = estados.filter(
+      e => e === 'pendiente'
+    ).length;
+
+    return { mostrables, hayAceptado };
   }
 
   // 🔎 Filtrar presupuestos por solicitud_id

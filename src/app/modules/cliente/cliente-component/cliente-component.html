@@ -272,11 +272,12 @@
 
               <br />
               <span *ngIf="$any(s)._hayAceptado">Presupuesto aceptado ✅</span>
-              <span *ngIf="!$any(s)._hayAceptado && ($any(s)._totalPresupuestos ?? 0) === 0">
-                Aún no hay presupuestos
+              <span *ngIf="!$any(s)._hayAceptado && ($any(s)._totalMostrables ?? 0) === 0">
+              Aún no hay presupuestos
               </span>
-              <span *ngIf="!$any(s)._hayAceptado && ($any(s)._totalPresupuestos ?? 0) > 0">
-                Ver presupuestos recibidos ({{ $any(s)._totalPresupuestos }})
+
+              <span *ngIf="!$any(s)._hayAceptado && ($any(s)._totalMostrables ?? 0) > 0">
+                Ver presupuestos recibidos ({{ $any(s)._totalMostrables }})
               </span>
             </button>
             <button

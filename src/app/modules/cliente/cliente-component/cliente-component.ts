@@ -77,13 +77,13 @@ export class ClienteComponent implements OnInit {
       this.solicitudes.map((s: any) =>
         this._presupuestoService
           .getResumenPresupuestos(s.solicitud_id)
-          .catch(() => ({ total: 0, hayAceptado: false }))
+          .catch(() => ({ mostrables: 0, hayAceptado: false }))
       )
     );
 
     this.solicitudes = this.solicitudes.map((s: any, i: number) => ({
       ...s,
-      _totalPresupuestos: resúmenes[i].total,
+      _totalMostrables: resúmenes[i].mostrables,
       _hayAceptado: resúmenes[i].hayAceptado,
     }));
   }

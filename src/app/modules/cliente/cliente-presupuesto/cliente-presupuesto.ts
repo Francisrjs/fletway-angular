@@ -19,6 +19,7 @@ export class ClientePresupuesto implements OnInit {
   cargando = false;
   error = '';
   presupuestoSeleccionado: Presupuesto | null = null;
+  hayPresupuestoAceptado = false;
   private presupuestoService = inject(PresupuestoService);
   private solicitudService = inject(SolcitudService);
   private route = inject(ActivatedRoute);
@@ -68,6 +69,7 @@ export class ClientePresupuesto implements OnInit {
       }
       this.presupuestos = aMostrar;
       this.presupuestoSeleccionado = this.presupuestos[0] ?? null;
+      this.hayPresupuestoAceptado = this.presupuestos.some(p => p.estado === 'aceptado');
 
     } catch (err) {
       console.error(err);
