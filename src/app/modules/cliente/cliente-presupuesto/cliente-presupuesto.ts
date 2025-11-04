@@ -43,34 +43,48 @@ export class ClientePresupuesto implements OnInit {
 
     try {
       console.log('Cargando presupuestos para solicitudId:', this.solicitudId);
-      const data = await this.presupuestoService.getPresupuestosBySolicitudId(this.solicitudId);
+      const data = await this.presupuestoService.getPresupuestosBySolicitudId(
+        this.solicitudId,
+      );
       const todos = Array.isArray(data) ? data : [];
       console.log('Total presupuestos en DB:', todos.length);
 
-      const aceptados = todos.filter(p => p.estado === 'aceptado');
-      const pendientes = todos.filter(p => p.estado === 'pendiente');
+      const aceptados = todos.filter((p) => p.estado === 'aceptado');
+      const pendientes = todos.filter((p) => p.estado === 'pendiente');
 
       let aMostrar = aceptados.length > 0 ? aceptados : pendientes;
-      console.log('Mostrando:', aceptados.length > 0 ? 'ACEPTADOS' : 'PENDIENTES', '— cantidad:', aMostrar.length);
+      console.log(
+        'Mostrando:',
+        aceptados.length > 0 ? 'ACEPTADOS' : 'PENDIENTES',
+        '— cantidad:',
+        aMostrar.length,
+      );
 
       if (aMostrar.length > 0) {
         aMostrar = await Promise.all(
           aMostrar.map(async (p) => {
             if (!p.transportista_id) return p;
             try {
-              const fletero = await this.presupuestoService.getFleteroById(p.transportista_id);
+              const fletero = await this.presupuestoService.getFleteroById(
+                p.transportista_id,
+              );
               return { ...p, transportista: fletero };
             } catch (e) {
-              console.warn('No se pudo cargar fletero para', p.presupuesto_id, e);
+              console.warn(
+                'No se pudo cargar fletero para',
+                p.presupuesto_id,
+                e,
+              );
               return p;
             }
-          })
+          }),
         );
       }
       this.presupuestos = aMostrar;
       this.presupuestoSeleccionado = this.presupuestos[0] ?? null;
-      this.hayPresupuestoAceptado = this.presupuestos.some(p => p.estado === 'aceptado');
-
+      this.hayPresupuestoAceptado = this.presupuestos.some(
+        (p) => p.estado === 'aceptado',
+      );
     } catch (err) {
       console.error(err);
       this.error = 'No se pudieron cargar los presupuestos.';
@@ -102,7 +116,9 @@ export class ClientePresupuesto implements OnInit {
           if (okSolicitud) {
             this.router.navigate(['/cliente']);
           } else {
-            alert('Presupuesto aceptado, pero no se pudo actualizar la solicitud');
+            alert(
+              'Presupuesto aceptado, pero no se pudo actualizar la solicitud',
+            );
           }
         } else {
           alert('Error al aceptar presupuesto');
