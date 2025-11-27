@@ -69,6 +69,25 @@ export class PresupuestoService {
     }
   }
 
+  // Esto es para saber si hay presupuestos y si alguno está aceptado
+  async getResumenPresupuestos(solicitudId: number) {
+    const { data, error } = await this._supabaseClient
+      .from('presupuesto')
+      .select('estado')
+      .eq('solicitud_id', solicitudId);
+
+    if (error) throw error;
+
+    const estados = (data ?? []).map(d => d.estado);
+    const hayAceptado = estados.includes('aceptado');
+
+    const mostrables = estados.filter(
+      e => e === 'pendiente'
+    ).length;
+
+    return { mostrables, hayAceptado };
+  }
+
   // 🔎 Filtrar presupuestos por solicitud_id
   async getPresupuestosBySolicitudId(
     solicitudId: number,
@@ -80,8 +99,8 @@ export class PresupuestoService {
         .from('presupuesto')
         .select('*')
         .eq('solicitud_id', solicitudId)
-        .eq('estado', 'pendiente') // 👈 filtro
-        .returns<Presupuesto[]>();
+        //.eq('estado', 'pendiente') // 👈 filtro -----> Comenté esta linea para que cuando se abran los presupuestos de una solicitud, se vea el presupuesto aceptado.
+        .returns<Presupuesto[]>();  //                   Siempre y cuando haya un presupuesto aceptado. Sino se mostraran todos los pendientes.
 
       if (error) {
         console.error('Supabase error:', error);

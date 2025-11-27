@@ -18,18 +18,44 @@
 
 <!-- Sidebar -->
 <aside
-  id="default-sidebar"
-  class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-[#f9f5f0] border-r border-gray-200"
+id="default-sidebar"
+class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-[#f9f5f0] border-r border-gray-200"
 >
-  <div class="flex flex-col items-center py-6">
-    <!-- Logo + Título -->
-    <img src="fletway-icon.png" alt="Fletway Logo" class="w-24 h-24 mb-2" />
-  </div>
+<div class="flex flex-col items-center py-6">
+  <!-- Logo + Título -->
+  <img src="fletway-icon.png" alt="Fletway Logo" class="w-24 h-24 mb-2" />
+</div>
 
-  <!-- Menú -->
-  <div class="overflow-y-auto px-4">
-    <ul class="space-y-2">
-      <li>
+<!-- Menú -->
+<div class="overflow-y-auto px-4">
+  <ul class="space-y-2">
+    <li>
+      <a
+        href="#"
+        class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
+        routerLink="/cliente/nuevaSolicitud"
+      >
+        <svg
+          className="w-6 h-6  text-gray-500"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+            clip-rule="evenodd"
+          />
+          <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+        </svg>
+
+        <span class="ml-3 text-orange">Hacer un pedido</span>
+      </a>
+    </li>
+    <li>
         <span
           class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
           (click)="irInicio()"
@@ -38,57 +64,6 @@
             ($event.key === 'Enter' || $event.key === ' ') && irInicio()
           "
           role="button"
-        >
-          <svg
-            class="w-6 h-6 text-gray-500"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z"
-              clip-rule="evenodd"
-            />
-          </svg>
-
-          <span class="ml-3">Inicio</span>
-        </span>
-      </li>
-      <li>
-        <span
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
-          tabindex="0"
-          role="button"
-        >
-          <svg
-            className="w-6 h-6  text-gray-500"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-              clip-rule="evenodd"
-            />
-            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-          </svg>
-
-          <span class="ml-3 text-orange">Hacer un pedido</span>
-        </span>
-      </li>
-      <li>
-        <a
-          href="#"
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
-          routerLink="/cliente/nuevaSolicitud"
         >
           <svg
             class="w-6 h-6 text-gray-500"
@@ -108,9 +83,34 @@
             />
           </svg>
 
-          <span class="ml-3 text-orange">Historial de viajes</span>
-        </a>
+          <span class="ml-3">Historial de pedidos</span>
+        </span>
       </li>
+      <!--<li>
+        <span
+          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
+          tabindex="0"
+          role="button"
+        >
+        <svg
+          class="w-6 h-6 text-gray-500"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+
+          <span class="ml-3 text-orange">Inicio</span>
+        </span>
+      </li>-->
       <li>
         <span
           class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
@@ -143,7 +143,7 @@
               ($event.key === 'Enter' || $event.key === ' ') && logOut()
             "
             role="button"
-            >Desconectarse</span
+            >Cerrar sesión</span
           >
         </span>
       </li>

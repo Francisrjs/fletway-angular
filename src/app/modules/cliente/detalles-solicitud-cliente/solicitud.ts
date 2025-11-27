@@ -86,6 +86,53 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       this.localidades = res ?? [];
       console.log(res);
     });
+
+    // Escuchar cambios en los campos del formulario para actualizar el mapa
+    this.solicitudForm
+      .get('origen')
+      ?.valueChanges.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        // Trigger mapa update cuando cambia origen
+        this.refreshMap();
+      });
+
+    this.solicitudForm
+      .get('destino')
+      ?.valueChanges.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        // Trigger mapa update cuando cambia destino
+        this.refreshMap();
+      });
+
+    this.solicitudForm
+      .get('localidad_origen_id')
+      ?.valueChanges.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        this.refreshMap();
+      });
+
+    this.solicitudForm
+      .get('localidad_destino_id')
+      ?.valueChanges.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        this.refreshMap();
+      });
   }
 
   ngOnDestroy(): void {
@@ -153,7 +200,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
       this.message = {
         type: 'success',
-        text: 'Solicitud creada correctamente.',
+        text: 'Pedido creado correctamente.',
       };
 
       if (data?.solicitud_id) {
@@ -193,6 +240,13 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       undefined
     );
   }
+
+  refreshMap(): void {
+    // Fuerza la actualización del mapa cuando cambian los valores
+    // Angular detectará cambios en los @Input del componente app-map
+    this.solicitudForm.updateValueAndValidity();
+  }
+
   cancel() {
     history.back();
   }

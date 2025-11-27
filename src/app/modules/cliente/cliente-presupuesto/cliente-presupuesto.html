@@ -17,7 +17,7 @@
         <li>
           <button
             type="button"
-            class="flex justify-between gap-x-6 py-4 px-3 rounded-lg cursor-pointer transition hover:bg-gray-100 w-full text-left text-black"
+            class="flex justify-between gap-x-6 py-4 px-3 rounded-lg cursor-pointer transition hover:bg-gray-100 w-full text-left text-black border border-black px-4 py-2 rounded"
             [class.bg-gray-200]="
               presupuestoSeleccionado?.presupuesto_id === p.presupuesto_id
             "
@@ -31,14 +31,14 @@
           >
             <!-- 🔑 INFO PRESUPUESTO (IZQUIERDA) -->
             <div class="flex flex-col justify-center">
-              <p class="text-lg font-bold text-black">
-                {{ p.precio_estimado | currency: "USD" : "symbol" }}
+              <p class="mt-1 text-sm text-gray-700">
+                <strong>Monto:</strong> {{ p.precio_estimado | currency: "USD" : "symbol" }}
               </p>
-              <p class="text-xs text-gray-600">
-                {{ p.fecha_creacion | date: "dd/MM/yyyy" }}
+              <p class="mt-1 text-sm text-gray-700">
+                <strong>Fecha:</strong> {{ p.fecha_creacion | date: "dd/MM/yyyy" }}
               </p>
-              <p class="mt-1 text-sm text-gray-700 italic">
-                {{ p.comentario }}
+              <p class="mt-1 text-sm text-gray-700">
+                <strong>Comentario:</strong> {{ p.comentario }}
               </p>
             </div>
 
@@ -69,6 +69,7 @@
               />
             </div>
           </button>
+          <br>
         </li>
       }
     </ul>
@@ -76,24 +77,28 @@
     <!-- BOTONES FIJOS ABAJO -->
     <div class="pt-4 border-t border-gray-300 sticky bottom-0 bg-white">
       <div class="flex justify-end gap-3">
-        <button
-          class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          [disabled]="!presupuestoSeleccionado"
-          (click)="onAceptar(presupuestoSeleccionado!)"
-        >
-          Aceptar
-        </button>
+
+        <ng-container *ngIf="!hayPresupuestoAceptado">
+          <button
+            class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="!presupuestoSeleccionado"
+            (click)="onAceptar(presupuestoSeleccionado!)"
+          >
+            Aceptar
+          </button>
+
+          <button
+            class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="!presupuestoSeleccionado"
+            (click)="onRechazar(presupuestoSeleccionado!)"
+          >
+            Rechazar
+          </button>
+        </ng-container>
         <button
           class="bg-orange-500 text-white px-4 py-2 rounded-lg shadow hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           CHAT
-        </button>
-        <button
-          class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          [disabled]="!presupuestoSeleccionado"
-          (click)="onRechazar(presupuestoSeleccionado!)"
-        >
-          Rechazar
         </button>
       </div>
     </div>
