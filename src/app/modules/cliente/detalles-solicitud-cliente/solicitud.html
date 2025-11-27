@@ -1,352 +1,270 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solicitar Flete - Fletway</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    />
-    <style>
-      :root {
-        --color-orange-primary: #ff6f00;
-        --color-blue-gray-dark: #455a64;
-        --color-white: #ffffff;
-        --color-beige-light: #fbe9e7;
-      }
-
-      .bg-primary-orange {
-        background-color: var(--color-orange-primary);
-      }
-      .text-blue-gray-dark {
-        color: var(--color-blue-gray-dark);
-      }
-      .bg-beige-light {
-        background-color: var(--color-beige-light);
-      }
-      .border-primary-orange {
-        border-color: var(--color-orange-primary);
-      }
-      .text-primary-orange {
-        color: var(--color-orange-primary);
-      }
-      .focus-ring-primary-orange:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.5);
-      }
-      .focus-ring-blue-gray-dark:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(69, 90, 100, 0.5);
-      }
-      dd body {
-        font-family: "Inter", sans-serif;
-      }
-    </style>
-  </head>
-  <body class="bg-beige-light min-h-screen flex flex-col">
-    <div
-      class="flex flex-col w-full h-full bg-white shadow-lg rounded-none overflow-hidden"
-    >
-      <!-- Top bar -->
-      <header
-        class="w-full bg-primary-orange p-4 flex items-center justify-between shadow-md"
-      >
-        <div class="flex items-center">
-          <button
-            id="backButton"
-            class="text-white text-2xl mr-4 focus:outline-none"
-          >
-            <i class="fas fa-arrow-left"></i>
-          </button>
-          <h1 class="text-white text-xl font-semibold">Solicitar Flete</h1>
-        </div>
-        <button class="text-white text-2xl focus:outline-none">
-          <i class="fas fa-user-circle"></i>
-        </button>
-      </header>
-
-      <!-- Main content: Request form -->
-      <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
-        <h2 class="text-blue-gray-dark text-2xl font-bold mb-6 text-center">
-          Detalles del pedido
-        </h2>
-
-        <form
-          id="solicitudFleteForm"
-          [formGroup]="solicitudForm"
-          (ngSubmit)="onSubmit()"
-          class="space-y-6"
+<div class="bg-primary-beige min-h-screen flex flex-col">
+  <div class="flex flex-col w-full h-full bg-white shadow-lg rounded-none overflow-hidden">
+    <!-- Top bar -->
+    <header class="w-full bg-secondary-orange p-4 flex items-center justify-between shadow-md">
+      <div class="flex items-center">
+        <button
+          (click)="cancel()"
+          class="text-white text-2xl mr-4 focus:outline-none hover:opacity-80"
+          title="Volver atrás"
         >
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1 class="text-white text-xl font-semibold">Solicitar Flete</h1>
+      </div>
+      <button class="text-white text-2xl focus:outline-none hover:opacity-80">
+        <i class="fas fa-user-circle"></i>
+      </button>
+    </header>
+
+    <!-- Main content: Request form -->
+    <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
+      <h2 class="text-blue-gray-dark text-2xl font-bold mb-6 text-center">
+        Detalles del pedido
+      </h2>
+
+      <!-- Message notification -->
+      @if (message.type) {
+        <div
+          [class]="'p-4 mb-4 rounded-lg text-sm font-medium ' + (message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')"
+          role="alert"
+        >
+          {{ message.text }}
+        </div>
+      }
+
+      <form
+        [formGroup]="solicitudForm"
+        (ngSubmit)="onSubmit()"
+        class="space-y-6"
+      >
+        <!-- Origen -->
+        <div>
+          <label for="origin" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            Origen (Dirección o Mapa)
+          </label>
+          <input
+            type="text"
+            id="origin"
+            name="origin"
+            formControlName="origen"
+            placeholder="Ej: Calle Falsa 123, CABA"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
+          />
+          @if (origen?.errors && origen?.touched) {
+            <p class="text-red-600 text-sm mt-1">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              Por favor ingrese una dirección de origen
+            </p>
+          }
+        </div>
+
+        <!-- Localidad origen -->
+        <div>
+          <label for="localidadOrigen" class="block mb-2 text-sm font-medium text-gray-dark">
+            Localidad origen *
+          </label>
+          <select
+            id="localidadOrigen"
+            formControlName="localidad_origen_id"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          >
+            <option value="">Selecciona una localidad</option>
+            @for (loc of localidadesFiltradas; track loc.localidad_id) {
+              <option [value]="loc.localidad_id">
+                {{ loc.nombre }}, {{ loc.provincia }}
+              </option>
+            }
+          </select>
+          @if (solicitudForm.get('localidad_origen_id')?.errors && solicitudForm.get('localidad_origen_id')?.touched) {
+            <p class="text-red-600 text-sm mt-1">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              Seleccione una localidad de origen
+            </p>
+          }
+        </div>
+
+        <!-- Destino -->
+        <div>
+          <label for="destination" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            Destino (Dirección o Mapa)
+          </label>
+          <input
+            type="text"
+            id="destination"
+            name="destination"
+            formControlName="destino"
+            placeholder="Ej: Av. Siempre Viva 742, GBA"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
+          />
+          @if (destino?.errors && destino?.touched) {
+            <p class="text-red-600 text-sm mt-1">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              Por favor ingrese una dirección de destino
+            </p>
+          }
+        </div>
+
+        <!-- Localidad destino -->
+        <div>
+          <label for="localidadDestino" class="block mb-2 text-sm font-medium text-gray-dark">
+            Localidad del Destino *
+          </label>
+          <select
+            id="localidadDestino"
+            formControlName="localidad_destino_id"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          >
+            <option value="">Selecciona una localidad</option>
+            @for (loc of localidadesFiltradas; track loc.localidad_id) {
+              <option [value]="loc.localidad_id">
+                {{ loc.nombre }}, {{ loc.provincia }}
+              </option>
+            }
+          </select>
+          @if (solicitudForm.get('localidad_destino_id')?.errors && solicitudForm.get('localidad_destino_id')?.touched) {
+            <p class="text-red-600 text-sm mt-1">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              Seleccione una localidad de destino
+            </p>
+          }
+        </div>
+
+        <!-- Fecha y hora de recogida -->
+        <div class="grid grid-cols-2 gap-4">
           <div>
-            <label
-              for="origin"
-              class="block text-blue-gray-dark text-sm font-medium mb-1"
-              >Origen (Dirección o Mapa)</label
-            >
+            <label for="pickupDate" class="block text-blue-gray-dark text-sm font-medium mb-1">
+              Fecha de Recogida
+            </label>
             <input
-              type="text"
-              id="origin"
-              name="origin"
-              formControlName="origen"
-              placeholder="Ej: Calle Falsa 123, CABA"
-              class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+              type="date"
+              id="pickupDate"
+              formControlName="fechaRecogida"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
             />
           </div>
           <div>
-            <label
-              for="localidadDestino"
-              class="block mb-2 text-sm font-medium text-gray-dark"
-            >
-              Localidad origen
+            <label for="pickupTime" class="block text-blue-gray-dark text-sm font-medium mb-1">
+              Hora de Recogida
             </label>
-            <select
-              id="localidadDestino"
-              name="localidadDestino"
-              formControlName="localidad_origen_id"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            >
-              <option value="">Selecciona una localidad</option>
-              <option
-                *ngFor="let loc of localidades"
-                [value]="loc.localidad_id"
-              >
-                {{ loc.nombre }}, {{ loc.provincia }}
-              </option>
-            </select>
+            <input
+              type="time"
+              id="pickupTime"
+              formControlName="horaRecogida"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
+            />
           </div>
-          <div>
-            <label
-              for="destination"
-              class="block text-blue-gray-dark text-sm font-medium mb-1"
-              >Destino (Dirección o Mapa)</label
-            >
+        </div>
+
+        <!-- Mapa -->
+        <div class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6">
+          @if (puedeMostrarMapa) {
+            <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
+              Mapa de la ruta
+            </h3>
+            <app-map
+              [direccionOrigen]="solicitudForm.value.origen"
+              [ciudadOrigen]="getLocalidadNombre(solicitudForm.value.localidad_origen_id)"
+              [localidadOrigen]="getLocalidadProvincia(solicitudForm.value.localidad_origen_id)"
+              [direccionDestino]="solicitudForm.value.destino"
+              [ciudadDestino]="getLocalidadNombre(solicitudForm.value.localidad_destino_id)"
+              [localidadDestino]="getLocalidadProvincia(solicitudForm.value.localidad_destino_id)"
+              (direccionOrigenChange)="onMapOrigenChange($event)"
+              (direccionDestinoChange)="onMapDestinoChange($event)"
+            />
+          } @else {
+            <p class="text-gray-500 text-sm">
+              Completa los campos de origen y destino para ver el mapa.
+            </p>
+          }
+        </div>
+
+        <!-- Características de la carga -->
+        <div>
+          <label class="block text-blue-gray-dark text-sm font-medium mb-2">
+            Características de la Carga
+          </label>
+
+          <div class="mb-4">
+            <label for="detalle_carga" class="block text-blue-gray-dark text-sm font-medium mb-1">
+              Título de la carga *
+            </label>
             <input
               type="text"
-              id="destination"
-              name="destination"
-              formControlName="destino"
-              placeholder="Ej: Av. Siempre Viva 742, GBA"
-              class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+              id="detalle_carga"
+              formControlName="detalle_carga"
+              placeholder="Ej: Un par de sillas"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
             />
           </div>
 
-          <div>
-            <label
-              for="localidadDestino"
-              class="block mb-2 text-sm font-medium text-gray-dark"
-            >
-              Localidad del Destino
+          <div class="mb-4">
+            <label for="loadPhotos" class="block text-blue-gray-dark text-sm font-medium mb-1">
+              Fotos de la Carga
             </label>
-            <select
-              id="localidadDestino"
-              name="localidadDestino"
-              formControlName="localidad_destino_id"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            >
-              <option value="">Selecciona una localidad</option>
-              <option
-                *ngFor="let loc of localidades"
-                [value]="loc.localidad_id"
-              >
-                {{ loc.nombre }}, {{ loc.provincia }}
-              </option>
-            </select>
+            <input
+              type="file"
+              id="loadPhotos"
+              accept="image/*"
+              multiple
+              (change)="onFilesChange($event)"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange text-blue-gray-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary-orange file:text-white hover:file:bg-orange-600"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Puedes seleccionar varias imágenes.
+            </p>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label
-                for="pickupDate"
-                class="block text-blue-gray-dark text-sm font-medium mb-1"
-                >Fecha de Recogida</label
-              >
+              <label for="dimensions" class="block text-blue-gray-dark text-sm font-medium mb-1">
+                Dimensiones (cm) *
+              </label>
               <input
-                type="date"
-                id="pickupDate"
-                formcontrolName="fechaRecogida"
-                name="pickupDate"
-                class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+                type="text"
+                id="dimensions"
+                formControlName="detalle"
+                placeholder="Ej: 100x50x50"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
               />
             </div>
             <div>
-              <label
-                for="pickupTime"
-                class="block text-blue-gray-dark text-sm font-medium mb-1"
-                >Hora de Recogida</label
-              >
+              <label for="weight" class="block text-blue-gray-dark text-sm font-medium mb-1">
+                Peso (kg) *
+              </label>
               <input
-                type="time"
-                id="pickupTime"
-                name="pickupTime"
-                formControlName="horaRecogida"
-                class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
+                type="number"
+                id="weight"
+                formControlName="peso"
+                placeholder="Ej: 200"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
               />
             </div>
           </div>
-          <div
-            class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex justify-around mt-8 space-x-4">
+          <button
+            type="button"
+            (click)="cancel()"
+            class="w-1/2 py-3 px-6 bg-white text-blue-gray-dark border border-blue-gray-dark rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            @if (puedeMostrarMapa) {
-              <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
-                Mapa
-              </h3>
-              <app-map
-                [direccionOrigen]="solicitudForm.value.origen"
-                [ciudadOrigen]="
-                  getLocalidadNombre(solicitudForm.value.localidad_origen_id)
-                "
-                [localidadOrigen]="
-                  getLocalidadProvincia(solicitudForm.value.localidad_origen_id)
-                "
-                [direccionDestino]="solicitudForm.value.destino"
-                [ciudadDestino]="
-                  getLocalidadNombre(solicitudForm.value.localidad_destino_id)
-                "
-                [localidadDestino]="
-                  getLocalidadProvincia(
-                    solicitudForm.value.localidad_destino_id
-                  )
-                "
-              />
-            }
-          </div>
-          <div>
-            <label
-              class="block text-blue-gray-dark text-sm font-medium mb-2"
-              for="detalle_carga"
-              >Características de la Carga</label
-            >
-            <div class="gap-4 mb-4">
-              <div>
-                <label
-                  for="dimensions"
-                  class="block text-blue-gray-dark text-sm font-medium mb-1"
-                  >Titulo de la carga (detalle)</label
-                >
-                <input
-                  type="text"
-                  id="detalle_carga"
-                  name="dimensions"
-                  formControlName="detalle_carga"
-                  placeholder="Ej: Un par de sillas"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-                />
-              </div>
-            </div>
-            <div class="mb-4">
-              <label
-                for="loadPhotos"
-                class="block text-blue-gray-dark text-sm font-medium mb-1"
-                >Fotos de la Carga</label
-              >
-              <input
-                type="file"
-                id="loadPhotos"
-                name="loadPhotos"
-                accept="image/*"
-                multiple
-                class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-orange file:text-white hover:file:bg-orange-600"
-              />
-              <p class="text-xs text-gray-500 mt-1">
-                Puedes seleccionar varias imágenes.
-              </p>
-            </div>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="submitting"
+            class="w-1/2 py-3 px-6 bg-secondary-orange text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ submitting ? 'Enviando...' : 'Confirmar pedido' }}
+          </button>
+        </div>
+      </form>
+    </main>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label
-                  for="dimensions"
-                  class="block text-blue-gray-dark text-sm font-medium mb-1"
-                  >Dimensiones (cm)</label
-                >
-                <input
-                  type="text"
-                  id="dimensions"
-                  name="dimensions"
-                  formControlName="detalle"
-                  placeholder="Ej: 100x50x50"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-                />
-              </div>
-              <div>
-                <label
-                  for="weight"
-                  class="block text-blue-gray-dark text-sm font-medium mb-1"
-                  >Peso (kg)</label
-                >
-                <input
-                  type="number"
-                  id="weight"
-                  formControlName="peso"
-                  name="weight"
-                  placeholder="Ej: 200"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-around mt-8 space-x-4">
-            <button
-              type="button"
-              id="cancelButton"
-              class="w-1/2 py-3 px-6 bg-white text-blue-gray-dark border border-blue-gray-dark rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-gray-dark focus:ring-opacity-75"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              id="confirmButton"
-              (onSubmit)="onSubmit()"
-              class="w-1/2 py-3 px-6 bg-primary-orange text-red rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-75"
-            >
-              Confirmar pedido
-            </button>
-          </div>
-        </form>
-      </main>
-
-      <footer
-        class="w-full bg-blue-gray-dark p-3 text-center text-white text-sm"
-      >
-        &copy; 2025 Fletway. Todos los derechos reservados.
-      </footer>
-    </div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const backButton = document.getElementById("backButton");
-        const solicitudFleteForm =
-          document.getElementById("solicitudFleteForm");
-        const confirmButton = document.getElementById("confirmButton");
-        const cancelButton = document.getElementById("cancelButton");
-
-        backButton.addEventListener("click", () => {
-          console.log('Botón "Atrás" presionado.');
-        });
-
-        solicitudFleteForm.addEventListener("submit", (event) => {
-          event.preventDefault();
-          console.log("Solicitud de Flete Confirmada:", {
-            origin: document.getElementById("origin").value,
-            destination: document.getElementById("destination").value,
-            locality: document.getElementById("locality").value,
-            pickupDate: document.getElementById("pickupDate").value,
-            pickupTime: document.getElementById("pickupTime").value,
-            dimensions: document.getElementById("dimensions").value,
-            weight: document.getElementById("weight").value,
-            loadPhotos: document.getElementById("loadPhotos").files.length,
-          });
-        });
-
-        cancelButton.addEventListener("click", () => {
-          console.log("Solicitud de Flete Cancelada.");
-        });
-      });
-    </script>
-  </body>
-</html>
+    <footer class="w-full bg-blue-gray-dark p-3 text-center text-white text-sm">
+      &copy; 2025 Fletway. Todos los derechos reservados.
+    </footer>
+  </div>
+</div>

@@ -1,4 +1,8 @@
-tailwind.config = {
+module.exports = {
+  content: [
+    './src/**/*.{html,ts,tsx,scss,css}',
+    './node_modules/flowbite/**/*.js'
+  ],
   darkMode: "class",
   theme: {
     extend: {
@@ -16,10 +20,10 @@ tailwind.config = {
           900: "#1e3a8a",
           950: "#172554",
         },
-        "secondary-orange": "#FF6F00", // Naranja
-        "primary-primary-blue": "#455A64", // Azul grisáceo
-        "primary-white": "#FFFFFF", // Blanco
-        "primary-beige": "#FBE9E7", // Beige claro
+        "secondary-orange": "#FF6F00",
+        "primary-primary-blue": "#455A64",
+        "primary-white": "#FFFFFF",
+        "primary-beige": "#FBE9E7",
       },
     },
     fontFamily: {
@@ -59,4 +63,7 @@ tailwind.config = {
       ],
     },
   },
+  plugins: [
+    require('flowbite/plugin')
+  ]
 };

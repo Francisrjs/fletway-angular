@@ -2,15 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
+  EventEmitter,
   inject,
   Input,
   OnChanges,
   OnDestroy,
+  Output,
 } from '@angular/core';
 import * as L from 'leaflet';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { MapService } from './map-service';
+import { ToastService } from '../../modal/toast/toast.service';
 
 @Component({
   selector: 'app-map',
@@ -27,9 +30,11 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
   @Input() localidadDestino?: string = '';
   @Input() ciudadDestino?: string = '';
   @Input() direccionDestino?: string = '';
-
+  @Output() direccionOrigenChange = new EventEmitter<string>();
+  @Output() direccionDestinoChange = new EventEmitter<string>();
   private map: L.Map | undefined;
   private _mapService = inject(MapService);
+  private _toastService = inject(ToastService);
   private routeLine: L.Polyline | undefined;
   private origenMarker: L.Marker | undefined;
   private destinoMarker: L.Marker | undefined;
@@ -208,6 +213,8 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
       // Evento cuando se arrastra el marcador de origen
       this.origenMarker.on('dragend', () => {
         const newPos = this.origenMarker!.getLatLng();
+        this.direccionOrigenchange(newPos.lat, newPos.lng);
+        
         if (this.destinoMarker) {
           this.calculateRoute(
             [newPos.lat, newPos.lng],
@@ -239,6 +246,8 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
           // Evento cuando se arrastra el marcador de destino
           this.destinoMarker.on('dragend', () => {
             const newPos = this.destinoMarker!.getLatLng();
+            this.direccionDestinochange(newPos.lat, newPos.lng);
+           
             if (this.origenMarker) {
               this.calculateRoute(
                 [
@@ -253,6 +262,71 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
           // Calcular la ruta inicial
           this.calculateRoute(origenCoords, destinoCoords);
         });
+    });
+  }
+  direccionDestinochange(lat: number, lon: number) {
+    this._mapService.getAddress(lat, lon).subscribe({
+      next: (address) => {
+        if (address) {
+          console.log('Direccion destino cambiada a:', address);
+          this.direccionDestinoChange.emit(address);
+          
+          // Mostrar toast de éxito
+          this._toastService.showSuccess(
+            'Dirección de destino actualizada',
+            address,
+            3000
+          );
+        } else {
+          // Mostrar toast de error
+          this._toastService.showDanger(
+            'Dirección incorrecta',
+            'No se pudo calcular la dirección de destino.',
+            4000
+          );
+        }
+      },
+      error: (err) => {
+        console.error('Error obteniendo dirección de destino:', err);
+        this._toastService.showDanger(
+          'Error',
+          'Ocurrió un error al calcular la dirección de destino.',
+          4000
+        );
+      },
+    });
+  }
+
+  direccionOrigenchange(lat: number, lon: number) {
+    this._mapService.getAddress(lat, lon).subscribe({
+      next: (address) => {
+        if (address) {
+          console.log('Direccion origen cambiada a:', address);
+          this.direccionOrigenChange.emit(address);
+          
+          // Mostrar toast de éxito
+          this._toastService.showSuccess(
+            'Dirección de origen actualizada',
+            address,
+            3000
+          );
+        } else {
+          // Mostrar toast de error
+          this._toastService.showDanger(
+            'Dirección incorrecta',
+            'No se pudo calcular la dirección de origen.',
+            4000
+          );
+        }
+      },
+      error: (err) => {
+        console.error('Error obteniendo dirección de origen:', err);
+        this._toastService.showDanger(
+          'Error',
+          'Ocurrió un error al calcular la dirección de origen.',
+          4000
+        );
+      },
     });
   }
 }

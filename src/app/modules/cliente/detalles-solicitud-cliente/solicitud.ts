@@ -20,6 +20,7 @@ import {
 import { Localidad } from '../../../core/layouts/localidad';
 import { Map } from '../../../shared/features/map/map';
 import { SolcitudService } from '../../data-access/solicitud-service';
+import { MapService } from '../../../shared/features/map/map-service';
 
 @Component({
   selector: 'app-solicitud-solicitudForm',
@@ -27,38 +28,71 @@ import { SolcitudService } from '../../data-access/solicitud-service';
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, Map],
 })
 export class SolicitudFormComponent implements OnInit, OnDestroy {
-  solicitudForm: FormGroup; //TENER EN TODO
+  solicitudForm: FormGroup;
   files: FileList | null = null;
-  localidades: Localidad[] = [];
+  
+  // Separar localidades: todas vs filtradas
+  todasLasLocalidades: Localidad[] = [];
+  localidadesFiltradas: Localidad[] = [];
+  
   submitting = false;
   message: { type: 'success' | 'error' | null; text?: string } = { type: null };
 
   // para búsqueda de localidades
   private originSearch$ = new Subject<string>();
+  private destinoSearch$ = new Subject<string>();
 
   originTyped = false;
+  destinoTyped = false;
+  
   private destroy$ = new Subject<void>();
   private fb = inject(FormBuilder);
   private solicitudService = inject(SolcitudService);
   private router = inject(Router);
+  private mapService = inject(MapService);
+
   constructor() {
     this.solicitudForm = this.fb.group({
       origen: ['', [Validators.required]],
-      localidad_origen_id: ['', [Validators.required]],
+      localidad_origen_id: ['', Validators.required],
       destino: ['', [Validators.required]],
-      localidad_destino_id: ['', [Validators.required]],
+      localidad_destino_id: ['', Validators.required],
       fechaRecogida: [null],
       horaRecogida: [null],
       detalle_carga: ['', Validators.required],
-      detalle: ['', [Validators.required]], // será usado como medidas
+      detalle: ['', [Validators.required]],
       peso: [null, Validators.required],
-      // Si necesitas un título, descomenta la siguiente línea y agrégalo al form
-      // titulo: ['', Validators.required],
     });
   }
 
+  get origen() {
+    return this.solicitudForm.get('origen');
+  }
+
+  get destino() {
+    return this.solicitudForm.get('destino');
+  }
+
   ngOnInit(): void {
-    // escucha el subject para buscar localidades con debounce
+    // Cargar TODAS las localidades al inicio
+    this.solicitudService.getAllLocalidades().then((res) => {
+      this.todasLasLocalidades = res ?? [];
+      this.localidadesFiltradas = [...this.todasLasLocalidades];
+      console.log('Localidades cargadas:', res);
+    });
+
+    // === BÚSQUEDA DE ORIGEN ===
+    this.solicitudForm
+      .get('origen')
+      ?.valueChanges.pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((value) => {
+        this.originSearch$.next(value || '');
+      });
+
     this.originSearch$
       .pipe(
         debounceTime(350),
@@ -66,8 +100,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         switchMap((term) => {
           this.originTyped = term.trim().length > 0;
           if (!term || term.trim().length < 2) {
-            // limpiar resultados si term muy corto
-            return of([]);
+            return of(this.todasLasLocalidades);
           }
           return this.solicitudService.searchLocalidades(term);
         }),
@@ -75,17 +108,71 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res: Localidad[]) => {
-          this.localidades = res ?? [];
+          // Actualizar solo las filtradas, no todas
+          this.localidadesFiltradas = res ?? [];
+          
+          // IMPORTANTE: Si hay una localidad seleccionada, mantenerla en la lista
+          const origenId = this.solicitudForm.get('localidad_origen_id')?.value;
+          if (origenId) {
+            const localidadSeleccionada = this.todasLasLocalidades.find(
+              l => l.localidad_id === Number(origenId)
+            );
+            if (localidadSeleccionada && !this.localidadesFiltradas.find(l => l.localidad_id === localidadSeleccionada.localidad_id)) {
+              this.localidadesFiltradas = [localidadSeleccionada, ...this.localidadesFiltradas];
+            }
+          }
         },
         error: (err) => {
           console.error('Error buscando localidades:', err);
-          this.localidades = [];
+          this.localidadesFiltradas = [...this.todasLasLocalidades];
         },
       });
-    this.solicitudService.getAllLocalidades().then((res) => {
-      this.localidades = res ?? [];
-      console.log(res);
-    });
+
+    // === BÚSQUEDA DE DESTINO (opcional, si quieres filtrar por destino también) ===
+    this.solicitudForm
+      .get('destino')
+      ?.valueChanges.pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((value) => {
+        this.destinoSearch$.next(value || '');
+      });
+
+    this.destinoSearch$
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        switchMap((term) => {
+          this.destinoTyped = term.trim().length > 0;
+          if (!term || term.trim().length < 2) {
+            return of(this.todasLasLocalidades);
+          }
+          return this.solicitudService.searchLocalidades(term);
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (res: Localidad[]) => {
+          this.localidadesFiltradas = res ?? [];
+          
+          // Mantener localidad de destino seleccionada
+          const destinoId = this.solicitudForm.get('localidad_destino_id')?.value;
+          if (destinoId) {
+            const localidadSeleccionada = this.todasLasLocalidades.find(
+              l => l.localidad_id === Number(destinoId)
+            );
+            if (localidadSeleccionada && !this.localidadesFiltradas.find(l => l.localidad_id === localidadSeleccionada.localidad_id)) {
+              this.localidadesFiltradas = [localidadSeleccionada, ...this.localidadesFiltradas];
+            }
+          }
+        },
+        error: (err) => {
+          console.error('Error buscando localidades:', err);
+          this.localidadesFiltradas = [...this.todasLasLocalidades];
+        },
+      });
 
     // Escuchar cambios en los campos del formulario para actualizar el mapa
     this.solicitudForm
@@ -96,7 +183,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
-        // Trigger mapa update cuando cambia origen
         this.refreshMap();
       });
 
@@ -108,7 +194,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
-        // Trigger mapa update cuando cambia destino
         this.refreshMap();
       });
 
@@ -149,14 +234,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     );
   }
 
-  onOriginInput(value: string) {
-    // limpiar el id si el usuario edita la dirección (evitar enviar id desincronizado)
-    this.solicitudForm.get('localidad_origen_id')?.setValue(null);
-    this.originSearch$.next(value);
-  }
-
   async onSubmit() {
-    //Chequea si la solicitud es valida
     if (this.solicitudForm.invalid) {
       this.solicitudForm.markAllAsTouched();
       console.log('Formulario invalido');
@@ -180,7 +258,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       detalles_carga: v.detalle_carga || null,
       medidas: v.detalle || null,
       peso: v.peso !== null ? Number(v.peso) : null,
-      // Si usas título, agrega: titulo: v.titulo
     } as const;
 
     try {
@@ -216,6 +293,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       this.submitting = false;
     }
   }
+
   get puedeMostrarMapa(): boolean {
     const v = this.solicitudForm.value;
     return !!(
@@ -225,10 +303,11 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       v.localidad_destino_id
     );
   }
+
   getLocalidadNombre(id: number | string): string | undefined {
     const numId = Number(id);
     return (
-      this.localidades.find((l) => l.localidad_id === numId)?.nombre ||
+      this.todasLasLocalidades.find((l) => l.localidad_id === numId)?.nombre ||
       undefined
     );
   }
@@ -236,15 +315,31 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   getLocalidadProvincia(id: number | string): string | undefined {
     const numId = Number(id);
     return (
-      this.localidades.find((l) => l.localidad_id === numId)?.provincia ||
+      this.todasLasLocalidades.find((l) => l.localidad_id === numId)?.provincia ||
       undefined
     );
   }
 
   refreshMap(): void {
-    // Fuerza la actualización del mapa cuando cambian los valores
-    // Angular detectará cambios en los @Input del componente app-map
     this.solicitudForm.updateValueAndValidity();
+  }
+
+  onMapOrigenChange(nuevaDireccion: string): void {
+    if (nuevaDireccion) {
+      this.solicitudForm.patchValue(
+        { origen: nuevaDireccion },
+        { emitEvent: false }
+      );
+    }
+  }
+
+  onMapDestinoChange(nuevaDireccion: string): void {
+    if (nuevaDireccion) {
+      this.solicitudForm.patchValue(
+        { destino: nuevaDireccion },
+        { emitEvent: false }
+      );
+    }
   }
 
   cancel() {
