@@ -17,13 +17,13 @@ export class FleteroComponent implements OnInit {
   private _solService = inject(SolcitudService);
   private popupModalService = inject(PopupModalService);
   private _solicitudFlaskService = inject(SolicitudFlaskService);
-  
+
   solicitudes: Solicitud[] = [];
   solicitudes_pendientes: Solicitud[] = [];
   solicitudes_disponibles: Solicitud[] = [];
   loading = false;
   error: string | null = null;
-  
+
   // Para el modal de fotos
   fotoModalAbierta = false;
   fotoModalUrl: string | null = null;
@@ -39,11 +39,13 @@ export class FleteroComponent implements OnInit {
       this.solicitudes_pendientes = this._solService.solicitudes_pendientes
         ? this._solService.solicitudes_pendientes()
         : [];
+      console.log(this.solicitudes_pendientes);
     });
     effect(() => {
       this.solicitudes_disponibles = this._solService.solicitudes_disponibles
         ? this._solService.solicitudes_disponibles()
         : [];
+      console.log(this.solicitudes_disponibles);
     });
   }
 
@@ -148,7 +150,8 @@ export class FleteroComponent implements OnInit {
     const url = this.obtenerUrlFoto(solicitud);
     if (url) {
       this.fotoModalUrl = url;
-      this.fotoModalTitulo = solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
+      this.fotoModalTitulo =
+        solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
       this.fotoModalAbierta = true;
     }
   }
