@@ -199,6 +199,11 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
     this._mapService.getCoordinates(origenAddress).subscribe((origenCoords) => {
       if (!origenCoords || !this.map) {
         console.error('No se encontraron coordenadas para el origen.');
+          this._toastService.showDanger(
+            'Dirección incorrecta',
+            '',
+            3000
+          );
         return;
       }
 
@@ -232,6 +237,11 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
         .subscribe((destinoCoords) => {
           if (!destinoCoords || !this.map) {
             console.error('No se encontraron coordenadas para el destino.');
+                    this._toastService.showDanger(
+            'Dirección incorrecta',
+          '',
+            3000
+          );
             return;
           }
 

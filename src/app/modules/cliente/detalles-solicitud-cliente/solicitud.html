@@ -38,29 +38,7 @@
         (ngSubmit)="onSubmit()"
         class="space-y-6"
       >
-        <!-- Origen -->
-        <div>
-          <label for="origin" class="block text-blue-gray-dark text-sm font-medium mb-1">
-            Origen (Dirección o Mapa)
-          </label>
-          <input
-            type="text"
-            id="origin"
-            name="origin"
-            formControlName="origen"
-            placeholder="Ej: Calle Falsa 123, CABA"
-            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
-          />
-          @if (origen?.errors && origen?.touched) {
-            <p class="text-red-600 text-sm mt-1">
-              <i class="fas fa-exclamation-circle mr-1"></i>
-              Por favor ingrese una dirección de origen
-            </p>
-          }
-        </div>
-
-        <!-- Localidad origen -->
-        <div>
+         <div>
           <label for="localidadOrigen" class="block mb-2 text-sm font-medium text-gray-dark">
             Localidad origen *
           </label>
@@ -70,7 +48,7 @@
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           >
             <option value="">Selecciona una localidad</option>
-            @for (loc of localidadesFiltradas; track loc.localidad_id) {
+            @for (loc of localidadesOrigenFiltradas; track loc.localidad_id) {
               <option [value]="loc.localidad_id">
                 {{ loc.nombre }}, {{ loc.provincia }}
               </option>
@@ -83,30 +61,38 @@
             </p>
           }
         </div>
-
-        <!-- Destino -->
+        <!-- Origen -->
         <div>
-          <label for="destination" class="block text-blue-gray-dark text-sm font-medium mb-1">
-            Destino (Dirección o Mapa)
+          <label for="origin" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            Origen (Dirección o Mapa)
           </label>
           <input
             type="text"
-            id="destination"
-            name="destination"
-            formControlName="destino"
-            placeholder="Ej: Av. Siempre Viva 742, GBA"
-            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
+            id="origin"
+            name="origin"
+            formControlName="origen"
+            placeholder="Ej: Calle Falsa 123, CABA"
+            class="w-full p-3 border rounded-lg focus:ring-2 focus:border-secondary-orange text-blue-gray-dark"
+            [class.border-red-500]="origen?.invalid && origen?.touched"
+            [class.border-green-500]="origen?.valid && origen?.touched && origen?.value"
+            [class.border-gray-300]="!origen?.touched"
+            [class.focus:ring-red-500]="origen?.invalid && origen?.touched"
+            [class.focus:ring-green-500]="origen?.valid && origen?.touched"
           />
-          @if (destino?.errors && destino?.touched) {
+          @if (origen?.errors && origen?.touched) {
             <p class="text-red-600 text-sm mt-1">
               <i class="fas fa-exclamation-circle mr-1"></i>
-              Por favor ingrese una dirección de destino
+              Por favor ingrese una dirección de origen válida
             </p>
           }
+
         </div>
 
-        <!-- Localidad destino -->
-        <div>
+        <!-- Localidad origen -->
+     
+
+        <!-- Destino -->
+             <div>
           <label for="localidadDestino" class="block mb-2 text-sm font-medium text-gray-dark">
             Localidad del Destino *
           </label>
@@ -116,7 +102,7 @@
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           >
             <option value="">Selecciona una localidad</option>
-            @for (loc of localidadesFiltradas; track loc.localidad_id) {
+            @for (loc of localidadesDestinoFiltradas; track loc.localidad_id) {
               <option [value]="loc.localidad_id">
                 {{ loc.nombre }}, {{ loc.provincia }}
               </option>
@@ -129,6 +115,33 @@
             </p>
           }
         </div>
+        <div>
+          <label for="destination" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            Destino (Dirección o Mapa)
+          </label>
+          <input
+            type="text"
+            id="destination"
+            name="destination"
+            formControlName="destino"
+            placeholder="Ej: Av. Siempre Viva 742, GBA"
+            class="w-full p-3 border rounded-lg focus:ring-2 focus:border-secondary-orange text-blue-gray-dark"
+            [class.border-red-500]="destino?.invalid && destino?.touched"
+            [class.border-green-500]="destino?.valid && destino?.touched && destino?.value"
+            [class.border-gray-300]="!destino?.touched"
+            [class.focus:ring-red-500]="destino?.invalid && destino?.touched"
+            [class.focus:ring-green-500]="destino?.valid && destino?.touched"
+          />
+          @if (destino?.errors && destino?.touched) {
+            <p class="text-red-600 text-sm mt-1">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              Por favor ingrese una dirección de destino válida
+            </p>
+          }
+        </div>
+
+        <!-- Localidad destino -->
+    
 
         <!-- Fecha y hora de recogida -->
         <div class="grid grid-cols-2 gap-4">

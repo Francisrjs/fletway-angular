@@ -21,6 +21,7 @@ import { Localidad } from '../../../core/layouts/localidad';
 import { Map } from '../../../shared/features/map/map';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { MapService } from '../../../shared/features/map/map-service';
+import { ToastService } from '../../../shared/modal/toast/toast.service';
 
 @Component({
   selector: 'app-solicitud-solicitudForm',
@@ -33,7 +34,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   
   // Separar localidades: todas vs filtradas
   todasLasLocalidades: Localidad[] = [];
-  localidadesFiltradas: Localidad[] = [];
+  localidadesOrigenFiltradas: Localidad[] = [];
+  localidadesDestinoFiltradas: Localidad[] = [];
   
   submitting = false;
   message: { type: 'success' | 'error' | null; text?: string } = { type: null };
@@ -50,6 +52,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   private solicitudService = inject(SolcitudService);
   private router = inject(Router);
   private mapService = inject(MapService);
+  private toastService = inject(ToastService);
 
   constructor() {
     this.solicitudForm = this.fb.group({
@@ -77,7 +80,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     // Cargar TODAS las localidades al inicio
     this.solicitudService.getAllLocalidades().then((res) => {
       this.todasLasLocalidades = res ?? [];
-      this.localidadesFiltradas = [...this.todasLasLocalidades];
+      this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
+      this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
       console.log('Localidades cargadas:', res);
     });
 
@@ -91,6 +95,28 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((value) => {
         this.originSearch$.next(value || '');
+      });
+
+    // Validar dirección de origen después de escribir
+    this.solicitudForm
+      .get('origen')
+      ?.valueChanges.pipe(
+        debounceTime(800),
+        distinctUntilChanged(),
+        switchMap((value) => {
+          if (!value || value.trim().length < 3) {
+            return of(null);
+          }
+          return this.mapService.validateAddress(value, false);
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((isValid) => {
+        if (isValid === true) {
+          this.toastService.showSuccess('Dirección de origen válida', '', 2000);
+        } else if (isValid === false) {
+          this.toastService.showDanger('Dirección de origen inválida', 'Verifica que sea correcta', 3000);
+        }
       });
 
     this.originSearch$
@@ -108,8 +134,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res: Localidad[]) => {
-          // Actualizar solo las filtradas, no todas
-          this.localidadesFiltradas = res ?? [];
+          // Actualizar solo las filtradas de origen
+          this.localidadesOrigenFiltradas = res ?? [];
           
           // IMPORTANTE: Si hay una localidad seleccionada, mantenerla en la lista
           const origenId = this.solicitudForm.get('localidad_origen_id')?.value;
@@ -117,14 +143,14 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
             const localidadSeleccionada = this.todasLasLocalidades.find(
               l => l.localidad_id === Number(origenId)
             );
-            if (localidadSeleccionada && !this.localidadesFiltradas.find(l => l.localidad_id === localidadSeleccionada.localidad_id)) {
-              this.localidadesFiltradas = [localidadSeleccionada, ...this.localidadesFiltradas];
+            if (localidadSeleccionada && !this.localidadesOrigenFiltradas.find(l => l.localidad_id === localidadSeleccionada.localidad_id)) {
+              this.localidadesOrigenFiltradas = [localidadSeleccionada, ...this.localidadesOrigenFiltradas];
             }
           }
         },
         error: (err) => {
           console.error('Error buscando localidades:', err);
-          this.localidadesFiltradas = [...this.todasLasLocalidades];
+          this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
         },
       });
 
@@ -138,6 +164,28 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((value) => {
         this.destinoSearch$.next(value || '');
+      });
+
+    // Validar dirección de destino después de escribir
+    this.solicitudForm
+      .get('destino')
+      ?.valueChanges.pipe(
+        debounceTime(800),
+        distinctUntilChanged(),
+        switchMap((value) => {
+          if (!value || value.trim().length < 3) {
+            return of(null);
+          }
+          return this.mapService.validateAddress(value, false);
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((isValid) => {
+        if (isValid === true) {
+          this.toastService.showSuccess('Dirección de destino válida', '', 2000);
+        } else if (isValid === false) {
+          this.toastService.showDanger('Dirección de destino inválida', 'Verifica que sea correcta', 3000);
+        }
       });
 
     this.destinoSearch$
@@ -155,7 +203,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res: Localidad[]) => {
-          this.localidadesFiltradas = res ?? [];
+          this.localidadesDestinoFiltradas = res ?? [];
           
           // Mantener localidad de destino seleccionada
           const destinoId = this.solicitudForm.get('localidad_destino_id')?.value;
@@ -163,14 +211,14 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
             const localidadSeleccionada = this.todasLasLocalidades.find(
               l => l.localidad_id === Number(destinoId)
             );
-            if (localidadSeleccionada && !this.localidadesFiltradas.find(l => l.localidad_id === localidadSeleccionada.localidad_id)) {
-              this.localidadesFiltradas = [localidadSeleccionada, ...this.localidadesFiltradas];
+            if (localidadSeleccionada && !this.localidadesDestinoFiltradas.find(l => l.localidad_id === localidadSeleccionada.localidad_id)) {
+              this.localidadesDestinoFiltradas = [localidadSeleccionada, ...this.localidadesDestinoFiltradas];
             }
           }
         },
         error: (err) => {
           console.error('Error buscando localidades:', err);
-          this.localidadesFiltradas = [...this.todasLasLocalidades];
+          this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
         },
       });
 
