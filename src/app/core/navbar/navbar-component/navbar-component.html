@@ -1,152 +1,186 @@
-<!-- Botón Toggle para móviles -->
-<button
-  data-drawer-target="default-sidebar"
-  data-drawer-toggle="default-sidebar"
-  aria-controls="default-sidebar"
-  type="button"
-  class="inline-flex items-center p-2 mt-2 ml-3 text-sm text-gray-700 rounded-lg sm:hidden hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-300"
->
-  <span class="sr-only">Abrir sidebar</span>
-  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-    <path
-      clip-rule="evenodd"
-      fill-rule="evenodd"
-      d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
-    />
-  </svg>
-</button>
-
-<!-- Sidebar -->
+<!-- Sidebar compacto (solo iconos) - SIEMPRE VISIBLE -->
 <aside
-id="default-sidebar"
-class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-[#f9f5f0] border-r border-gray-200"
+  class="fixed top-0 left-0 z-40 w-20 h-screen bg-[#f9f5f0] border-r border-gray-200 shadow-sm transition-all duration-300"
+  (mouseenter)="mostrarSidebar()"
 >
-<div class="flex flex-col items-center py-6">
-  <!-- Logo + Título -->
-  <img src="fletway-icon.png" alt="Fletway Logo" class="w-24 h-24 mb-2" />
-</div>
+  <div class="flex flex-col items-center py-6">
+    <!-- Logo pequeño -->
+    <img src="fletway-icon.png" alt="Fletway" class="w-15 h-15 mb-6" />
+  </div>
 
-<!-- Menú -->
-<div class="overflow-y-auto px-4">
-  <ul class="space-y-2">
-    <li>
-      <a
-        href="#"
-        class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition"
-        routerLink="/cliente/nuevaSolicitud"
+  <!-- Menú de iconos -->
+  <nav class="flex flex-col items-center space-y-4 px-3">
+    <!-- Hacer pedido -->
+    <button
+      type="button"
+      routerLink="/cliente/nuevaSolicitud"
+      class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all group relative"
+      title="Hacer un pedido"
+    >
+      <svg
+        class="w-6 h-6"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <svg
-          className="w-6 h-6  text-gray-500"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-            clip-rule="evenodd"
-          />
-          <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-        </svg>
+        <path
+          fill-rule="evenodd"
+          d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+          clip-rule="evenodd"
+        />
+        <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+      </svg>
+      <!-- Tooltip -->
+      <span
+        class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+      >
+        Hacer un pedido
+      </span>
+    </button>
 
-        <span class="ml-3 text-orange">Hacer un pedido</span>
-      </a>
-    </li>
-    <li>
-        <span
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
-          (click)="irInicio()"
-          tabindex="0"
-          (keydown)="
-            ($event.key === 'Enter' || $event.key === ' ') && irInicio()
-          "
-          role="button"
+    <!-- Historial -->
+    <button
+      type="button"
+      (click)="irInicio()"
+      class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all group relative"
+      title="Historial de pedidos"
+    >
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 8v4l3 3M3.22302 14C4.13247 18.008 7.71683 21 12 21c4.9706 0 9-4.0294 9-9 0-4.97056-4.0294-9-9-9-3.72916 0-6.92858 2.26806-8.29409 5.5M7 9H3V5"
+        />
+      </svg>
+      <!-- Tooltip -->
+      <span
+        class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+      >
+        Historial de pedidos
+      </span>
+    </button>
+
+    <!-- Cerrar sesión -->
+    <button
+      type="button"
+      (click)="logOut()"
+      class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-red-100 hover:text-red-600 transition-all group relative"
+      title="Cerrar sesión"
+    >
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"
+        />
+      </svg>
+      <!-- Tooltip -->
+      <span
+        class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+      >
+        Cerrar sesión
+      </span>
+    </button>
+  </nav>
+</aside>
+
+<!-- Sidebar expandido (con texto) - SE MUESTRA AL HOVER -->
+<aside
+  #sidebar
+  id="sidebar-expandido"
+  class="fixed top-0 left-16 z-50 w-56 h-screen bg-[#f9f5f0] border-r border-gray-200 shadow-xl transition-all duration-300 ease-out transform -translate-x-full opacity-0"
+  (mouseenter)="mantenerSidebar()"
+  (mouseleave)="ocultarSidebar()"
+>
+  <div class="flex flex-col items-center py-6 border-b border-gray-200">
+    <!-- Logo grande -->
+    <img src="fletway-icon.png" alt="Fletway Logo" class="w-20 h-20 mb-2" />
+    <h2 class="text-lg font-bold text-gray-800">Fletway</h2>
+  </div>
+
+  <!-- Menú expandido -->
+  <nav class="px-4 py-6">
+    <ul class="space-y-3">
+      <li>
+        <a
+          routerLink="/cliente/nuevaSolicitud"
+          class="flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all"
         >
           <svg
-            class="w-6 h-6 text-gray-500"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
+            class="w-6 h-6 flex-shrink-0"
+            fill="currentColor"
             viewBox="0 0 24 24"
           >
             <path
-              stroke="currentColor"
+              fill-rule="evenodd"
+              d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+              clip-rule="evenodd"
+            />
+            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+          </svg>
+          <span class="ml-3">Hacer un pedido</span>
+        </a>
+      </li>
+
+      <li>
+        <button
+          type="button"
+          (click)="irInicio()"
+          class="w-full flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all"
+        >
+          <svg
+            class="w-6 h-6 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
               d="M12 8v4l3 3M3.22302 14C4.13247 18.008 7.71683 21 12 21c4.9706 0 9-4.0294 9-9 0-4.97056-4.0294-9-9-9-3.72916 0-6.92858 2.26806-8.29409 5.5M7 9H3V5"
             />
           </svg>
-
           <span class="ml-3">Historial de pedidos</span>
-        </span>
+        </button>
       </li>
-      <!--<li>
-        <span
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
-          tabindex="0"
-          role="button"
-        >
-        <svg
-          class="w-6 h-6 text-gray-500"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z"
-            clip-rule="evenodd"
-          />
-        </svg>
 
-          <span class="ml-3 text-orange">Inicio</span>
-        </span>
-      </li>-->
-      <li>
-        <span
-          class="flex items-center p-2 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition cursor-pointer"
-          tabindex="0"
-          role="button"
+      <li class="pt-4 mt-4 border-t border-gray-200">
+        <button
+          type="button"
+          (click)="logOut()"
+          class="w-full flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-red-100 hover:text-red-600 transition-all"
         >
           <svg
-            class="w-6 h-6 text-gray-500"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            class="w-6 h-6 flex-shrink-0"
             fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
-              stroke="currentColor"
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
               d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"
             />
           </svg>
-
-          <span
-            class="ml-3"
-            (click)="logOut()"
-            tabindex="0"
-            (keydown)="
-              ($event.key === 'Enter' || $event.key === ' ') && logOut()
-            "
-            role="button"
-            >Cerrar sesión</span
-          >
-        </span>
+          <span class="ml-3">Cerrar sesión</span>
+        </button>
       </li>
     </ul>
-  </div>
+  </nav>
 </aside>

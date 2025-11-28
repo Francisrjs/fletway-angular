@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
 import { AuthService } from '../../../core/auth/data-access/auth-service';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
-
+import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 
 @Component({
   selector: 'app-cliente',
@@ -18,20 +17,40 @@ export class ClienteComponent implements OnInit {
   private _solService = inject(SolcitudService);
   private _authService = inject(AuthService);
   private _presupuestoService = inject(PresupuestoService);
+  private _solicitudFlaskService = inject(SolicitudFlaskService);
+
   solicitudes: Solicitud[] = [];
   solicitudes_pendientes: Solicitud[] = [];
   loading = false;
   error: string | null = null;
+  
+  // Para el modal de fotos
+  fotoModalAbierta = false;
+  fotoModalUrl: string | null = null;
+  fotoModalTitulo: string | null = null;
 
   async ngOnInit(): Promise<void> {
     this.loading = true;
     try {
       const data = await this._solService.getAllPedidosUsuario();
       const dataPendiente = await this._solService.getAllPedidosEnViaje();
+
       if (data) {
-        // CÓDIGO CORRECTO
-        this.solicitudes = data ?? []; // Si data es null, se asigna un array vacío.
-        this.solicitudes_pendientes = dataPendiente ?? []; // Lo mismo para dataPendiente.
+        this.solicitudes = data ?? [];
+        this.solicitudes_pendientes = dataPendiente ?? [];
+
+        // DEBUG: Verificar que las solicitudes tienen el campo foto
+        console.log('📦 Solicitudes cargadas:', this.solicitudes);
+        this.solicitudes.forEach((s, i) => {
+          console.log(`Solicitud ${i + 1}:`, {
+            id: s.solicitud_id,
+            detalles: s.detalles_carga,
+            foto: s.foto,
+            tieneFoto: this.tieneFoto(s),
+            url: this.obtenerUrlFoto(s),
+          });
+        });
+
         console.log('t@usuario ', this._authService.session());
         await this.anotarResumenesPresupuestos();
       } else {
@@ -44,6 +63,59 @@ export class ClienteComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  /**
+   * Obtiene la URL completa de la foto de una solicitud
+   */
+  obtenerUrlFoto(solicitud: Solicitud): string | null {
+    // Verifica que la solicitud tenga foto
+    if (!solicitud.foto) {
+      return null;
+    }
+
+    // Usa el servicio Flask para obtener la URL
+    return this._solicitudFlaskService.obtenerUrlFoto(solicitud.foto);
+  }
+
+  /**
+   * Verifica si la solicitud tiene foto
+   */
+  tieneFoto(solicitud: Solicitud): boolean {
+    const tieneFoto = !!solicitud.foto && solicitud.foto.trim().length > 0;
+
+    return tieneFoto;
+  }
+
+  /**
+   * Maneja el error de carga de imagen
+   */
+  handleImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'boxes.png';
+    }
+  }
+
+  /**
+   * Abre el modal de visualización de foto
+   */
+  abrirFotoModal(solicitud: Solicitud): void {
+    const url = this.obtenerUrlFoto(solicitud);
+    if (url) {
+      this.fotoModalUrl = url;
+      this.fotoModalTitulo = solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
+      this.fotoModalAbierta = true;
+    }
+  }
+
+  /**
+   * Cierra el modal de visualización de foto
+   */
+  cerrarFotoModal(): void {
+    this.fotoModalAbierta = false;
+    this.fotoModalUrl = null;
+    this.fotoModalTitulo = null;
   }
 
   // Devuelve clase para badge según estado
@@ -71,17 +143,18 @@ export class ClienteComponent implements OnInit {
   }
 
   private async anotarResumenesPresupuestos() {
-    if (!Array.isArray(this.solicitudes) || this.solicitudes.length === 0) return;
+    if (!Array.isArray(this.solicitudes) || this.solicitudes.length === 0)
+      return;
 
     const resúmenes = await Promise.all(
-      this.solicitudes.map((s: any) =>
+      this.solicitudes.map((s: Solicitud) =>
         this._presupuestoService
           .getResumenPresupuestos(s.solicitud_id)
-          .catch(() => ({ mostrables: 0, hayAceptado: false }))
-      )
+          .catch(() => ({ mostrables: 0, hayAceptado: false })),
+      ),
     );
 
-    this.solicitudes = this.solicitudes.map((s: any, i: number) => ({
+    this.solicitudes = this.solicitudes.map((s: Solicitud, i: number) => ({
       ...s,
       _totalMostrables: resúmenes[i].mostrables,
       _hayAceptado: resúmenes[i].hayAceptado,

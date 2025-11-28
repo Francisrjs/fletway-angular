@@ -4,6 +4,8 @@ import { AuthService } from '../../core/auth/data-access/auth-service';
 import { Localidad } from '../../core/layouts/localidad';
 import { Solicitud } from '../../core/layouts/solicitud';
 import { Supabase } from '../../shared/data-access/supabase';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 interface SolicitudState {
   solicitudes: Solicitud[];
@@ -18,7 +20,8 @@ export class SolcitudService {
   // CORRECCIÓN: asegúrate que tu provider exponga exactamente 'supabaseClient'
   private _supabaseClient = inject(Supabase).supabaseCLient;
   private _authService = inject(AuthService);
-
+  private http = inject(HttpClient);
+  private apiUrl = 'http://127.0.0.1:5000'; // Tu URL de Flask
   private _state = signal<SolicitudState>({
     solicitudes: [],
     loading: false,
@@ -53,15 +56,7 @@ export class SolcitudService {
         .from('solicitud')
         .select(
           `
-          solicitud_id,
-          direccion_origen,
-          direccion_destino,
-          fecha_creacion,
-          detalles_carga,
-          estado,
-          presupuesto_aceptado,
-          creado_en,
-          actualizado_en,
+         *,
           cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
           localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
           localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
@@ -80,7 +75,14 @@ export class SolcitudService {
         this._state.update((s) => ({ ...s, solicitudes: data }));
       }
 
-      return data ?? null;
+      if (
+        data &&
+        !Array.isArray(data) &&
+        !(typeof (data as { Error?: unknown }).Error !== 'undefined')
+      ) {
+        return data;
+      }
+      return null;
     } catch (err) {
       console.error('getAllPedidos catch:', err);
       this._state.update((s) => ({ ...s, error: true }));
@@ -99,18 +101,7 @@ export class SolcitudService {
         .from('solicitud')
         .select(
           `
-          solicitud_id,
-          cliente_id,
-          presupuesto_aceptado,
-          localidad_origen_id,
-          direccion_origen,
-          direccion_destino,
-          fecha_creacion,
-          detalles_carga,
-          estado,
-          borrado_logico,
-          creado_en,
-          actualizado_en,
+          *,
           cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
           localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
           localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
@@ -131,7 +122,10 @@ export class SolcitudService {
         this._state.update((s) => ({ ...s, solicitudes: [] }));
       }
 
-      return data ?? null;
+      if (data && Array.isArray(data)) {
+        return data;
+      }
+      return null;
     } catch (err) {
       console.error('getPedidosByEstado catch:', err);
       this._state.update((s) => ({ ...s, error: true }));
@@ -194,18 +188,7 @@ export class SolcitudService {
         .from('solicitud')
         .select(
           `
-        solicitud_id,
-        cliente_id,
-        presupuesto_aceptado,
-        localidad_origen_id,
-        direccion_origen,
-        direccion_destino,
-        fecha_creacion,
-        detalles_carga,
-        estado,
-        borrado_logico,
-        creado_en,
-        actualizado_en,
+       *,
         cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
         localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
         localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
@@ -326,26 +309,14 @@ export class SolcitudService {
         .from('solicitud')
         .select(
           `
-        solicitud_id,
-        cliente_id,
-        presupuesto_aceptado,
-        localidad_origen_id,
-        direccion_origen,
-        direccion_destino,
-        fecha_creacion,
-        detalles_carga,
-        estado,
-        borrado_logico,
-        creado_en,
-        actualizado_en,
+        *,
         cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
         localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
         localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
       `,
         )
         .eq('solicitud_id', solicitudId)
-        .maybeSingle() // devuelve null si no hay filas
-        .returns<Solicitud>();
+        .maybeSingle();
 
       if (error) {
         console.error('Supabase error (getPedidoById):', error);
@@ -353,7 +324,7 @@ export class SolcitudService {
         return null;
       }
 
-      return data ?? null;
+      return (data as Solicitud) ?? null;
     } catch (err) {
       console.error('getPedidoById catch:', err);
       this._state.update((s) => ({ ...s, error: true }));
@@ -368,6 +339,7 @@ export class SolcitudService {
       direccion_origen: string;
       direccion_destino: string;
       localidad_origen_id: number;
+      localidad_destino_id: number;
       fecha_recogida?: string; // yyyy-mm-dd
       hora_recogida_time?: string; // HH:mm
       detalles_carga?: string;
@@ -412,9 +384,11 @@ export class SolcitudService {
         direccion_destino: payload.direccion_destino,
         detalles_carga: payload.detalles_carga ?? null,
         medidas: payload.medidas ?? null,
+        peso: payload.peso ?? null,
         estado: 'sin transportista',
         hora_recogida: hora_recogida_iso,
         localidad_origen_id: payload.localidad_origen_id,
+        localidad_destino_id: payload.localidad_destino_id,
       };
 
       const { data: insertData, error: insertError } =
@@ -475,6 +449,58 @@ export class SolcitudService {
     } catch (err) {
       console.error('Error al actualizar solicitud:', err);
       return false;
+    }
+  }
+  /**
+   * Sube una foto para una solicitud específica
+   */
+  subirFoto(solicitudId: number, foto: File): Observable<object> {
+    const formData = new FormData();
+    formData.append('foto', foto);
+
+    return this.http.post(
+      `${this.apiUrl}/solicitudes/${solicitudId}/foto`,
+      formData,
+    );
+  }
+
+  /**
+   * Obtiene la URL de la foto
+   */
+  obtenerUrlFoto(nombreFoto: string): string {
+    return `${this.apiUrl}/uploads/${nombreFoto}`;
+  }
+  async updateSolicitud(
+    solicitudId: number,
+    datos: Partial<{
+      foto: string | null;
+      estado: string;
+      direccion_origen: string;
+      direccion_destino: string;
+      detalles_carga: string;
+      medidas: string;
+      peso: number;
+      hora_recogida: string;
+      localidad_origen_id: number;
+      localidad_destino_id: number;
+    }>,
+  ): Promise<{ data?: Solicitud | null; error?: unknown }> {
+    try {
+      const { data, error } = await this._supabaseClient
+        .from('solicitud')
+        .update(datos)
+        .eq('solicitud_id', solicitudId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error actualizando solicitud en Supabase:', error);
+      }
+
+      return { data, error };
+    } catch (err) {
+      console.error('Error en updateSolicitud:', err);
+      return { data: null, error: err };
     }
   }
 }

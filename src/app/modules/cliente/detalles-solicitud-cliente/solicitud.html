@@ -1,7 +1,11 @@
 <div class="bg-primary-beige min-h-screen flex flex-col">
-  <div class="flex flex-col w-full h-full bg-white shadow-lg rounded-none overflow-hidden">
+  <div
+    class="flex flex-col w-full h-full bg-white shadow-lg rounded-none overflow-hidden"
+  >
     <!-- Top bar -->
-    <header class="w-full bg-secondary-orange p-4 flex items-center justify-between shadow-md">
+    <header
+      class="w-full bg-secondary-orange p-4 flex items-center justify-between shadow-md"
+    >
       <div class="flex items-center">
         <button
           (click)="cancel()"
@@ -26,7 +30,12 @@
       <!-- Message notification -->
       @if (message.type) {
         <div
-          [class]="'p-4 mb-4 rounded-lg text-sm font-medium ' + (message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')"
+          [class]="
+            'p-4 mb-4 rounded-lg text-sm font-medium ' +
+            (message.type === 'success'
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800')
+          "
           role="alert"
         >
           {{ message.text }}
@@ -38,8 +47,11 @@
         (ngSubmit)="onSubmit()"
         class="space-y-6"
       >
-         <div>
-          <label for="localidadOrigen" class="block mb-2 text-sm font-medium text-gray-dark">
+        <div>
+          <label
+            for="localidadOrigen"
+            class="block mb-2 text-sm font-medium text-gray-dark"
+          >
             Localidad origen *
           </label>
           <select
@@ -54,7 +66,10 @@
               </option>
             }
           </select>
-          @if (solicitudForm.get('localidad_origen_id')?.errors && solicitudForm.get('localidad_origen_id')?.touched) {
+          @if (
+            solicitudForm.get("localidad_origen_id")?.errors &&
+            solicitudForm.get("localidad_origen_id")?.touched
+          ) {
             <p class="text-red-600 text-sm mt-1">
               <i class="fas fa-exclamation-circle mr-1"></i>
               Seleccione una localidad de origen
@@ -63,7 +78,10 @@
         </div>
         <!-- Origen -->
         <div>
-          <label for="origin" class="block text-blue-gray-dark text-sm font-medium mb-1">
+          <label
+            for="origin"
+            class="block text-blue-gray-dark text-sm font-medium mb-1"
+          >
             Origen (Dirección o Mapa)
           </label>
           <input
@@ -74,7 +92,9 @@
             placeholder="Ej: Calle Falsa 123, CABA"
             class="w-full p-3 border rounded-lg focus:ring-2 focus:border-secondary-orange text-blue-gray-dark"
             [class.border-red-500]="origen?.invalid && origen?.touched"
-            [class.border-green-500]="origen?.valid && origen?.touched && origen?.value"
+            [class.border-green-500]="
+              origen?.valid && origen?.touched && origen?.value
+            "
             [class.border-gray-300]="!origen?.touched"
             [class.focus:ring-red-500]="origen?.invalid && origen?.touched"
             [class.focus:ring-green-500]="origen?.valid && origen?.touched"
@@ -85,15 +105,16 @@
               Por favor ingrese una dirección de origen válida
             </p>
           }
-
         </div>
 
         <!-- Localidad origen -->
-     
 
         <!-- Destino -->
-             <div>
-          <label for="localidadDestino" class="block mb-2 text-sm font-medium text-gray-dark">
+        <div>
+          <label
+            for="localidadDestino"
+            class="block mb-2 text-sm font-medium text-gray-dark"
+          >
             Localidad del Destino *
           </label>
           <select
@@ -108,7 +129,10 @@
               </option>
             }
           </select>
-          @if (solicitudForm.get('localidad_destino_id')?.errors && solicitudForm.get('localidad_destino_id')?.touched) {
+          @if (
+            solicitudForm.get("localidad_destino_id")?.errors &&
+            solicitudForm.get("localidad_destino_id")?.touched
+          ) {
             <p class="text-red-600 text-sm mt-1">
               <i class="fas fa-exclamation-circle mr-1"></i>
               Seleccione una localidad de destino
@@ -116,7 +140,10 @@
           }
         </div>
         <div>
-          <label for="destination" class="block text-blue-gray-dark text-sm font-medium mb-1">
+          <label
+            for="destination"
+            class="block text-blue-gray-dark text-sm font-medium mb-1"
+          >
             Destino (Dirección o Mapa)
           </label>
           <input
@@ -127,7 +154,9 @@
             placeholder="Ej: Av. Siempre Viva 742, GBA"
             class="w-full p-3 border rounded-lg focus:ring-2 focus:border-secondary-orange text-blue-gray-dark"
             [class.border-red-500]="destino?.invalid && destino?.touched"
-            [class.border-green-500]="destino?.valid && destino?.touched && destino?.value"
+            [class.border-green-500]="
+              destino?.valid && destino?.touched && destino?.value
+            "
             [class.border-gray-300]="!destino?.touched"
             [class.focus:ring-red-500]="destino?.invalid && destino?.touched"
             [class.focus:ring-green-500]="destino?.valid && destino?.touched"
@@ -141,12 +170,14 @@
         </div>
 
         <!-- Localidad destino -->
-    
 
         <!-- Fecha y hora de recogida -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="pickupDate" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            <label
+              for="pickupDate"
+              class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >
               Fecha de Recogida
             </label>
             <input
@@ -157,7 +188,10 @@
             />
           </div>
           <div>
-            <label for="pickupTime" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            <label
+              for="pickupTime"
+              class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >
               Hora de Recogida
             </label>
             <input
@@ -170,18 +204,28 @@
         </div>
 
         <!-- Mapa -->
-        <div class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6">
+        <div
+          class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
+        >
           @if (puedeMostrarMapa) {
             <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
               Mapa de la ruta
             </h3>
             <app-map
               [direccionOrigen]="solicitudForm.value.origen"
-              [ciudadOrigen]="getLocalidadNombre(solicitudForm.value.localidad_origen_id)"
-              [localidadOrigen]="getLocalidadProvincia(solicitudForm.value.localidad_origen_id)"
+              [ciudadOrigen]="
+                getLocalidadNombre(solicitudForm.value.localidad_origen_id)
+              "
+              [localidadOrigen]="
+                getLocalidadProvincia(solicitudForm.value.localidad_origen_id)
+              "
               [direccionDestino]="solicitudForm.value.destino"
-              [ciudadDestino]="getLocalidadNombre(solicitudForm.value.localidad_destino_id)"
-              [localidadDestino]="getLocalidadProvincia(solicitudForm.value.localidad_destino_id)"
+              [ciudadDestino]="
+                getLocalidadNombre(solicitudForm.value.localidad_destino_id)
+              "
+              [localidadDestino]="
+                getLocalidadProvincia(solicitudForm.value.localidad_destino_id)
+              "
               (direccionOrigenChange)="onMapOrigenChange($event)"
               (direccionDestinoChange)="onMapDestinoChange($event)"
             />
@@ -194,12 +238,18 @@
 
         <!-- Características de la carga -->
         <div>
-          <label class="block text-blue-gray-dark text-sm font-medium mb-2">
+          <label
+            for="detalle_carga"
+            class="block text-blue-gray-dark text-sm font-medium mb-2"
+          >
             Características de la Carga
           </label>
 
           <div class="mb-4">
-            <label for="detalle_carga" class="block text-blue-gray-dark text-sm font-medium mb-1">
+            <label
+              for="detalle_carga"
+              class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >
               Título de la carga *
             </label>
             <input
@@ -211,38 +261,130 @@
             />
           </div>
 
+          <!-- Sección de Foto de la Carga (Agregar después del campo detalle_carga) -->
           <div class="mb-4">
-            <label for="loadPhotos" class="block text-blue-gray-dark text-sm font-medium mb-1">
-              Fotos de la Carga
+            <label
+              for="fotoSolicitud"
+              class="block text-blue-gray-dark text-sm font-medium mb-1"
+            >
+              Foto de la Carga (Opcional)
             </label>
-            <input
-              type="file"
-              id="loadPhotos"
-              accept="image/*"
-              multiple
-              (change)="onFilesChange($event)"
-              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange text-blue-gray-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary-orange file:text-white hover:file:bg-orange-600"
-            />
-            <p class="text-xs text-gray-500 mt-1">
-              Puedes seleccionar varias imágenes.
-            </p>
+
+            <div class="flex flex-col gap-3">
+              <!-- Input de archivo -->
+              <div class="relative">
+                <input
+                  type="file"
+                  id="fotoSolicitud"
+                  accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                  (change)="onFotoSeleccionada($event)"
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange text-blue-gray-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary-orange file:text-white hover:file:bg-orange-600 transition-all"
+                  [disabled]="subiendoFoto"
+                />
+              </div>
+
+              <!-- Información sobre el archivo -->
+              <div class="flex items-start gap-2">
+                <i class="fas fa-info-circle text-blue-500 text-sm mt-0.5"></i>
+                <p class="text-xs text-gray-600">
+                  Solo una imagen (máximo 5MB). Formatos permitidos: JPG, PNG,
+                  GIF, WEBP
+                </p>
+              </div>
+
+              <!-- Previsualización de la foto -->
+              @if (previsualizacionFoto) {
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex items-start justify-between gap-4">
+                    <!-- Imagen -->
+                    <div class="relative flex-shrink-0">
+                      <img
+                        [src]="previsualizacionFoto"
+                        alt="Previsualización de la carga"
+                        class="w-32 h-32 object-cover rounded-lg border-2 border-secondary-orange shadow-md"
+                      />
+                      @if (subiendoFoto) {
+                        <div
+                          class="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center"
+                        >
+                          <i
+                            class="fas fa-spinner fa-spin text-white text-2xl"
+                          ></i>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Información del archivo -->
+                    <div class="flex-grow">
+                      <p class="text-sm font-medium text-gray-700 mb-1">
+                        {{ fotoSeleccionada?.name }}
+                      </p>
+                      <p class="text-xs text-gray-500 mb-2">
+                        Tamaño:
+                        {{
+                          (fotoSeleccionada?.size || 0) / 1024 | number: "1.0-0"
+                        }}
+                        KB
+                      </p>
+                      @if (!subiendoFoto) {
+                        <button
+                          type="button"
+                          (click)="eliminarFoto()"
+                          class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition-colors"
+                        >
+                          <i class="fas fa-trash"></i>
+                          Eliminar foto
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  @if (subiendoFoto) {
+                    <div
+                      class="mt-3 flex items-center gap-2 text-sm text-blue-600"
+                    >
+                      <i class="fas fa-cloud-upload-alt"></i>
+                      <span>Subiendo foto...</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Estado de carga -->
+              @if (subiendoFoto) {
+                <div
+                  class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+                >
+                  <i class="fas fa-spinner fa-spin text-blue-600"></i>
+                  <span class="text-sm text-blue-700 font-medium">
+                    Subiendo foto al servidor...
+                  </span>
+                </div>
+              }
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="dimensions" class="block text-blue-gray-dark text-sm font-medium mb-1">
+              <label
+                for="dimensions"
+                class="block text-blue-gray-dark text-sm font-medium mb-1"
+              >
                 Dimensiones (cm) *
               </label>
               <input
                 type="text"
                 id="dimensions"
                 formControlName="detalle"
-                placeholder="Ej: 100x50x50"
+                placeholder="Ej: ALTO X ANCHO X PROFUNDIDAD, 150x130x3"
                 class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-orange focus:border-secondary-orange text-blue-gray-dark"
               />
             </div>
             <div>
-              <label for="weight" class="block text-blue-gray-dark text-sm font-medium mb-1">
+              <label
+                for="weight"
+                class="block text-blue-gray-dark text-sm font-medium mb-1"
+              >
                 Peso (kg) *
               </label>
               <input
@@ -268,9 +410,9 @@
           <button
             type="submit"
             [disabled]="submitting"
-            class="w-1/2 py-3 px-6 bg-secondary-orange text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-1/2 py-3 px-6 bg-secondary-orange text-orange rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ submitting ? 'Enviando...' : 'Confirmar pedido' }}
+            {{ submitting ? "Enviando..." : "Confirmar pedido" }}
           </button>
         </div>
       </form>

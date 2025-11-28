@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth/data-access/auth-service';
@@ -10,14 +10,18 @@ import { AuthService } from '../../auth/data-access/auth-service';
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnDestroy {
+  @ViewChild('sidebar') sidebar!: ElementRef<HTMLElement>;
+  
   private _authService = inject(AuthService);
+  private _router = inject(Router);
+  
+  private sidebarTimeout?: number;
+
   // Leer el signal bajo demanda para evitar snapshots obsoletos
   get sesion() {
     return this._authService.userState();
   }
-
-  private _router = inject(Router);
 
   async logOut() {
     console.log('click 1- Desconectase ');
@@ -79,5 +83,52 @@ export class NavbarComponent {
 
     console.log('Ir a inicio según rol (espera):', target, finalState);
     await this._router.navigateByUrl(target);
+  }
+
+  /**
+   * Muestra el sidebar cuando el mouse entra en el área de activación
+   */
+  mostrarSidebar(): void {
+    if (this.sidebarTimeout) {
+      clearTimeout(this.sidebarTimeout);
+      this.sidebarTimeout = undefined;
+    }
+    
+    if (this.sidebar?.nativeElement) {
+      this.sidebar.nativeElement.classList.remove('-translate-x-full');
+      this.sidebar.nativeElement.classList.add('translate-x-0');
+    }
+  }
+
+  /**
+   * Mantiene el sidebar visible cuando el mouse está sobre él
+   */
+  mantenerSidebar(): void {
+    if (this.sidebarTimeout) {
+      clearTimeout(this.sidebarTimeout);
+      this.sidebarTimeout = undefined;
+    }
+  }
+
+  /**
+   * Oculta el sidebar cuando el mouse sale del área
+   */
+  ocultarSidebar(): void {
+    // Agregar un pequeño delay para evitar parpadeos
+    this.sidebarTimeout = window.setTimeout(() => {
+      if (this.sidebar?.nativeElement) {
+        this.sidebar.nativeElement.classList.remove('translate-x-0');
+        this.sidebar.nativeElement.classList.add('-translate-x-full');
+      }
+    }, 300);
+  }
+
+  /**
+   * Limpia los timeouts al destruir el componente
+   */
+  ngOnDestroy(): void {
+    if (this.sidebarTimeout) {
+      clearTimeout(this.sidebarTimeout);
+    }
   }
 }

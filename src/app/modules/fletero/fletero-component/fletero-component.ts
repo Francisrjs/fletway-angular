@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { PopupModalService } from '../../../shared/modal/popup';
+import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 
 @Component({
   selector: 'app-fletero',
@@ -15,11 +16,18 @@ import { PopupModalService } from '../../../shared/modal/popup';
 export class FleteroComponent implements OnInit {
   private _solService = inject(SolcitudService);
   private popupModalService = inject(PopupModalService);
+  private _solicitudFlaskService = inject(SolicitudFlaskService);
+  
   solicitudes: Solicitud[] = [];
   solicitudes_pendientes: Solicitud[] = [];
   solicitudes_disponibles: Solicitud[] = [];
   loading = false;
   error: string | null = null;
+  
+  // Para el modal de fotos
+  fotoModalAbierta = false;
+  fotoModalUrl: string | null = null;
+  fotoModalTitulo: string | null = null;
 
   constructor() {
     // Efecto para escuchar cambios en solicitudes
@@ -104,5 +112,53 @@ export class FleteroComponent implements OnInit {
         console.log('Cancelado');
       },
     );
+  }
+
+  /**
+   * Obtiene la URL completa de la foto de una solicitud
+   */
+  obtenerUrlFoto(solicitud: Solicitud): string | null {
+    if (!solicitud.foto) {
+      return null;
+    }
+    return this._solicitudFlaskService.obtenerUrlFoto(solicitud.foto);
+  }
+
+  /**
+   * Verifica si la solicitud tiene foto
+   */
+  tieneFoto(solicitud: Solicitud): boolean {
+    return !!solicitud.foto && solicitud.foto.trim().length > 0;
+  }
+
+  /**
+   * Maneja el error de carga de imagen
+   */
+  handleImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'boxes.png';
+    }
+  }
+
+  /**
+   * Abre el modal de visualización de foto
+   */
+  abrirFotoModal(solicitud: Solicitud): void {
+    const url = this.obtenerUrlFoto(solicitud);
+    if (url) {
+      this.fotoModalUrl = url;
+      this.fotoModalTitulo = solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
+      this.fotoModalAbierta = true;
+    }
+  }
+
+  /**
+   * Cierra el modal de visualización de foto
+   */
+  cerrarFotoModal(): void {
+    this.fotoModalAbierta = false;
+    this.fotoModalUrl = null;
+    this.fotoModalTitulo = null;
   }
 }

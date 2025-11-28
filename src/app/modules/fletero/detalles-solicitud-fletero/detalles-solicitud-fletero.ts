@@ -13,6 +13,7 @@ import { Map } from '../../../shared/features/map/map';
 import { ToastService } from '../../../shared/modal/toast/toast.service';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolcitudService } from '../../data-access/solicitud-service';
+import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',
@@ -27,6 +28,11 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   loading = false;
   error = false;
 
+  // Para el modal de fotos
+  fotoModalAbierta = false;
+  fotoModalUrl: string | null = null;
+  fotoModalTitulo: string | null = null;
+
   // modelo para el formulario de cotización
   quote = {
     price: null as number | null,
@@ -38,6 +44,7 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   private solicitudService = inject(SolcitudService);
   private presupuestoService = inject(PresupuestoService);
   private toastService = inject(ToastService);
+  private _solicitudFlaskService = inject(SolicitudFlaskService);
   constructor() {
     this.presupuestoForm = this.fb.group({
       precio: [
@@ -133,5 +140,53 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  /**
+   * Obtiene la URL completa de la foto de una solicitud
+   */
+  obtenerUrlFoto(solicitud: Solicitud): string | null {
+    if (!solicitud.foto) {
+      return null;
+    }
+    return this._solicitudFlaskService.obtenerUrlFoto(solicitud.foto);
+  }
+
+  /**
+   * Verifica si la solicitud tiene foto
+   */
+  tieneFoto(solicitud: Solicitud): boolean {
+    return !!solicitud.foto && solicitud.foto.trim().length > 0;
+  }
+
+  /**
+   * Maneja el error de carga de imagen
+   */
+  handleImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'boxes.png';
+    }
+  }
+
+  /**
+   * Abre el modal de visualización de foto
+   */
+  abrirFotoModal(solicitud: Solicitud): void {
+    const url = this.obtenerUrlFoto(solicitud);
+    if (url) {
+      this.fotoModalUrl = url;
+      this.fotoModalTitulo = solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
+      this.fotoModalAbierta = true;
+    }
+  }
+
+  /**
+   * Cierra el modal de visualización de foto
+   */
+  cerrarFotoModal(): void {
+    this.fotoModalAbierta = false;
+    this.fotoModalUrl = null;
+    this.fotoModalTitulo = null;
   }
 }

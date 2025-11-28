@@ -1,0 +1,136 @@
+// Estilos para el navbar profesional con iconos visibles
+
+// Sidebar compacto (siempre visible)
+aside:first-of-type {
+  // Asegurar z-index apropiado
+  z-index: 40;
+
+  // Transición suave para hover effects
+  button {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Sidebar expandido
+#sidebar-expandido {
+  // Transiciones suaves
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Estado inicial (oculto)
+  &.-translate-x-full {
+    transform: translateX(-100%);
+  }
+
+  // Estado visible
+  &.translate-x-0 {
+    transform: translateX(0);
+  }
+
+  &.opacity-0 {
+    pointer-events: none;
+  }
+
+  &.opacity-100 {
+    pointer-events: auto;
+  }
+
+  // Animaciones suaves para los items del menú
+  ul li {
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Tooltips en hover
+.group {
+  position: relative;
+
+  span {
+    // Posicionar tooltip correctamente
+    z-index: 60;
+
+    // Animación suave
+    transition: opacity 0.2s ease;
+  }
+}
+
+// Overlay oscuro
+#sidebar-overlay {
+  transition: opacity 0.3s ease;
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:not(.hidden) {
+    opacity: 1;
+  }
+}
+
+// Ajustes responsive
+@media (max-width: 640px) {
+  // Ocultar sidebar compacto en móvil
+  aside:first-of-type {
+    display: none;
+  }
+
+  // Mostrar botón hamburguesa en móvil (si lo agregas)
+}
+
+// Hover effects mejorados
+button,
+a {
+  &:hover {
+    svg {
+      transform: scale(1.1);
+      transition: transform 0.2s ease;
+    }
+  }
+}
+
+// Scroll suave en el menú expandido
+nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+}
