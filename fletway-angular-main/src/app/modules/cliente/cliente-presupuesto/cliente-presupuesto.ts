@@ -20,6 +20,7 @@ export class ClientePresupuesto implements OnInit {
   error = '';
   presupuestoSeleccionado: Presupuesto | null = null;
   hayPresupuestoAceptado = false;
+  fechaActual = new Date();
   private presupuestoService = inject(PresupuestoService);
   private solicitudService = inject(SolcitudService);
   private route = inject(ActivatedRoute);
