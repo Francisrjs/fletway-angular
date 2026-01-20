@@ -186,14 +186,22 @@ export class SolcitudService {
 
       const { data, error } = await this._supabaseClient
         .from('solicitud')
-        .select(
-          `
-       *,
-        cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-        localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-      `,
-        )
+        .select(`
+          *,
+            presupuesto:presupuesto_aceptado (
+            presupuesto_id,
+            transportista:transportista_id (
+              transportista_id,
+              total_calificaciones,
+              cantidad_calificaciones,
+              usuario:usuario_id (
+                usuario_id,
+                nombre,
+                apellido
+              )
+            )
+          )
+        `)
         .eq('cliente_id', idUsuario)
         .returns<Solicitud[]>();
 

@@ -282,14 +282,54 @@
             <div
               class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center"
             >
-              <h3 class="mb-3 text-base font-semibold text-gray-900">
-                En busqueda de transportista
-              </h3>
-              <img
-                class="mx-auto mb-3 h-24 w-24 shadow-md"
-                src="question.png"
-                alt="Foto del cliente"
-              />
+              <ng-container *ngIf="$any(s)._hayAceptado; else buscandoTransportista">
+
+                <h3 class="mb-1 text-base font-semibold text-gray-900">
+                  Transportista asignado
+                </h3>
+
+                <img
+                  class="mx-auto mb-3 h-24 w-24 rounded-full shadow-md"
+                  src="boy.png"
+                  alt="Transportista"
+                />
+
+                <p class="text-sm font-medium text-gray-900">
+                  {{ $any(s).presupuesto.transportista.usuario.nombre }}
+                  {{ $any(s).presupuesto.transportista.usuario.apellido }}
+                </p>
+
+                <p class="text-sm text-gray-600">
+                  ⭐
+                  <ng-container
+                    *ngIf="$any(s).presupuesto.transportista.cantidad_calificaciones > 0; else sinCalificaciones"
+                  >
+                    {{
+                      ($any(s).presupuesto.transportista.total_calificaciones /
+                      $any(s).presupuesto.transportista.cantidad_calificaciones)
+                        | number:'1.1-1'
+                    }}
+                  </ng-container>
+
+                  <ng-template #sinCalificaciones>
+                    Sin calificaciones
+                  </ng-template>
+                </p>
+
+              </ng-container>
+
+
+              <ng-template #buscandoTransportista>
+                <h3 class="mb-3 text-base font-semibold text-gray-900">
+                  En búsqueda de transportista
+                </h3>
+
+                <img
+                  class="mx-auto mb-3 h-24 w-24 shadow-md"
+                  src="question.png"
+                  alt="Sin transportista"
+                />
+              </ng-template>
             </div>
 
             <button
@@ -377,6 +417,13 @@
                 />
               </svg>
               Cancelar pedido
+            </button>
+            <button
+              *ngIf="s.estado === 'completado' && $any(s).calificacion === null"
+              type="button"
+              class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-yellow-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300"
+            >
+              ⭐ Calificar
             </button>
           </div>
         </div>
