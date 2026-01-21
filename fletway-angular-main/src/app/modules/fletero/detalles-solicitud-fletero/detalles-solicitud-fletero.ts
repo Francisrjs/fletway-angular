@@ -9,7 +9,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Solicitud } from '../../../core/layouts/solicitud';
-import { Map } from '../../../shared/features/map/map';
+import { MapComponent } from '../../../shared/features/map/map';
 import { ToastService } from '../../../shared/modal/toast/toast.service';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolcitudService } from '../../data-access/solicitud-service';
@@ -18,7 +18,7 @@ import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Map],
+  imports: [CommonModule, ReactiveFormsModule, MapComponent],
   templateUrl: './detalles-solicitud-fletero.html',
 })
 export class DetallesSolicitudFleteroComponent implements OnInit {

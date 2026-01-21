@@ -8,22 +8,25 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  signal,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { MapService } from './map-service';
 import { ToastService } from '../../modal/toast/toast.service';
+import { SkeletonLoaderComponent } from '../../ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, SkeletonLoaderComponent],
   templateUrl: './map.html',
   styleUrl: './map.scss',
   providers: [HttpClient],
 })
-export class Map implements AfterViewInit, OnChanges, OnDestroy {
+export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() localidadOrigen?: string = '';
   @Input() ciudadOrigen?: string = '';
   @Input() direccionOrigen?: string = '';
@@ -32,6 +35,10 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
   @Input() direccionDestino?: string = '';
   @Output() direccionOrigenChange = new EventEmitter<string>();
   @Output() direccionDestinoChange = new EventEmitter<string>();
+
+  // Signal para el estado de carga
+  loading = signal(true);
+
   private map: L.Map | undefined;
   private _mapService = inject(MapService);
   private _toastService = inject(ToastService);
@@ -59,18 +66,34 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
     popupAnchor: [0, -32],
   });
 
-  private initMap(): void {
+  private initMap(
+    origenCoords?: [number, number],
+    destinoCoords?: [number, number],
+  ): void {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
       console.error('El contenedor del mapa no fue encontrado!');
       return;
     }
 
-    // Coordenadas de Cozumel, Quintana Roo
-    const cozumelCoords: L.LatLngExpression = [20.5083, -86.9458];
+    // Calcular punto medio entre origen y destino
+    let centerCoords: L.LatLngExpression;
+    let zoom = 13;
 
-    // Centramos el mapa en Cozumel
-    this.map = L.map('map').setView(cozumelCoords, 13);
+    if (origenCoords && destinoCoords) {
+      // Punto medio entre origen y destino
+      const centerLat = (origenCoords[0] + destinoCoords[0]) / 2;
+      const centerLng = (origenCoords[1] + destinoCoords[1]) / 2;
+      centerCoords = [centerLat, centerLng];
+      console.log('📍 Centro del mapa calculado:', centerCoords);
+    } else {
+      // Fallback a Cozumel si no hay coordenadas
+      centerCoords = [20.5083, -86.9458];
+      console.warn('⚠️ Sin coordenadas, usando Cozumel como fallback');
+    }
+
+    // Inicializar el mapa con el centro correcto
+    this.map = L.map('map').setView(centerCoords, zoom);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
@@ -80,9 +103,20 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.initMap();
-      this.showRouteOnMap();
-    });
+      console.log('🗺️ MapComponent - Inicializando mapa con datos:', {
+        origen: this.direccionOrigen,
+        destino: this.direccionDestino,
+      });
+
+      // Validar que tenemos los datos necesarios
+      if (this.direccionOrigen && this.direccionDestino) {
+        // PRIMERO: Obtener las coordenadas
+        this.loadCoordinatesAndInitMap();
+      } else {
+        console.warn('⚠️ Faltan datos de origen o destino');
+        this.loading.set(false);
+      }
+    }, 100);
 
     // Suscribirse al subject con debounce de 3 segundos
     this.updateMap$
@@ -90,6 +124,90 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
       .subscribe(() => {
         this.showRouteOnMap();
       });
+  }
+
+  private loadCoordinatesAndInitMap(): void {
+    console.log('📍 Obteniendo coordenadas...');
+
+    // Construir direcciones
+    const origenParts = [
+      this.direccionOrigen,
+      this.ciudadOrigen,
+      this.localidadOrigen,
+    ].filter(Boolean);
+    const destinoParts = [
+      this.direccionDestino,
+      this.ciudadDestino,
+      this.localidadDestino,
+    ].filter(Boolean);
+
+    const origenAddress = origenParts.join(', ');
+    const destinoAddress = destinoParts.join(', ');
+
+    console.log('🔍 Buscando coordenadas para:', {
+      origen: origenAddress,
+      destino: destinoAddress,
+    });
+
+    // Obtener coordenadas de origen
+    this._mapService.getCoordinates(origenAddress).subscribe((origenCoords) => {
+      if (!origenCoords) {
+        console.error('❌ No se encontraron coordenadas para el origen');
+        this._toastService.showDanger(
+          'Dirección de origen incorrecta',
+          '',
+          3000,
+        );
+        this.loading.set(false);
+        return;
+      }
+
+      console.log('✅ Coordenadas de origen obtenidas:', origenCoords);
+
+      // Obtener coordenadas de destino
+      this._mapService
+        .getCoordinates(destinoAddress)
+        .subscribe((destinoCoords) => {
+          if (!destinoCoords) {
+            console.error('❌ No se encontraron coordenadas para el destino');
+            this._toastService.showDanger(
+              'Dirección de destino incorrecta',
+              '',
+              3000,
+            );
+            this.loading.set(false);
+            return;
+          }
+
+          console.log('✅ Coordenadas de destino obtenidas:', destinoCoords);
+          console.log(
+            '✅ Todas las coordenadas obtenidas, ahora inicializando mapa...',
+          );
+
+          // AHORA: Marcar como cargado para renderizar el mapa en el DOM
+          this.loading.set(false);
+
+          // Esperar a que el DOM esté listo
+          setTimeout(() => {
+            console.log('📍 Buscando contenedor del mapa...');
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+              console.log(
+                '✅ Contenedor encontrado, inicializando mapa con coordenadas',
+              );
+              // Pasar las coordenadas obtenidas a initMap
+              this.initMap(
+                origenCoords as [number, number],
+                destinoCoords as [number, number],
+              );
+              this.showRouteOnMap();
+              console.log('✅ Mapa cargado completamente');
+            } else {
+              console.error('❌ El contenedor del mapa aún no está disponible');
+            }
+          }, 100);
+        });
+    });
   }
 
   ngOnChanges(): void {
@@ -103,14 +221,14 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   // Calcula la ruta usando OSRM
-  private calculateRoute(
+  private async calculateRoute(
     origenCoords: [number, number],
     destinoCoords: [number, number],
-  ): void {
+  ): Promise<void> {
     if (!this.map) return;
 
     // Llamar a OSRM para calcular la ruta
-    this._mapService
+    await this._mapService
       .getRoute(origenCoords, destinoCoords)
       .subscribe((routeData) => {
         if (!routeData || !this.map) {
@@ -199,11 +317,7 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
     this._mapService.getCoordinates(origenAddress).subscribe((origenCoords) => {
       if (!origenCoords || !this.map) {
         console.error('No se encontraron coordenadas para el origen.');
-          this._toastService.showDanger(
-            'Dirección incorrecta',
-            '',
-            3000
-          );
+        this._toastService.showDanger('Dirección incorrecta', '', 3000);
         return;
       }
 
@@ -219,7 +333,7 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
       this.origenMarker.on('dragend', () => {
         const newPos = this.origenMarker!.getLatLng();
         this.direccionOrigenchange(newPos.lat, newPos.lng);
-        
+
         if (this.destinoMarker) {
           this.calculateRoute(
             [newPos.lat, newPos.lng],
@@ -237,11 +351,7 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
         .subscribe((destinoCoords) => {
           if (!destinoCoords || !this.map) {
             console.error('No se encontraron coordenadas para el destino.');
-                    this._toastService.showDanger(
-            'Dirección incorrecta',
-          '',
-            3000
-          );
+            this._toastService.showDanger('Dirección incorrecta', '', 3000);
             return;
           }
 
@@ -257,7 +367,7 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
           this.destinoMarker.on('dragend', () => {
             const newPos = this.destinoMarker!.getLatLng();
             this.direccionDestinochange(newPos.lat, newPos.lng);
-           
+
             if (this.origenMarker) {
               this.calculateRoute(
                 [
@@ -280,19 +390,19 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
         if (address) {
           console.log('Direccion destino cambiada a:', address);
           this.direccionDestinoChange.emit(address);
-          
+
           // Mostrar toast de éxito
           this._toastService.showSuccess(
             'Dirección de destino actualizada',
             address,
-            3000
+            3000,
           );
         } else {
           // Mostrar toast de error
           this._toastService.showDanger(
             'Dirección incorrecta',
             'No se pudo calcular la dirección de destino.',
-            4000
+            4000,
           );
         }
       },
@@ -301,7 +411,7 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
         this._toastService.showDanger(
           'Error',
           'Ocurrió un error al calcular la dirección de destino.',
-          4000
+          4000,
         );
       },
     });
@@ -313,19 +423,19 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
         if (address) {
           console.log('Direccion origen cambiada a:', address);
           this.direccionOrigenChange.emit(address);
-          
+
           // Mostrar toast de éxito
           this._toastService.showSuccess(
             'Dirección de origen actualizada',
             address,
-            3000
+            3000,
           );
         } else {
           // Mostrar toast de error
           this._toastService.showDanger(
             'Dirección incorrecta',
             'No se pudo calcular la dirección de origen.',
-            4000
+            4000,
           );
         }
       },
@@ -334,7 +444,7 @@ export class Map implements AfterViewInit, OnChanges, OnDestroy {
         this._toastService.showDanger(
           'Error',
           'Ocurrió un error al calcular la dirección de origen.',
-          4000
+          4000,
         );
       },
     });

@@ -18,7 +18,7 @@ import {
 } from 'rxjs';
 
 import { Localidad } from '../../../core/layouts/localidad';
-import { Map } from '../../../shared/features/map/map';
+import { MapComponent } from '../../../shared/features/map/map';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { MapService } from '../../../shared/features/map/map-service';
 import { ToastService } from '../../../shared/modal/toast/toast.service';
@@ -27,7 +27,13 @@ import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service
 @Component({
   selector: 'app-solicitud-solicitudForm',
   templateUrl: './solicitud.html',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, Map],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MapComponent,
+  ],
 })
 export class SolicitudFormComponent implements OnInit, OnDestroy {
   solicitudForm: FormGroup;

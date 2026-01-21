@@ -39,6 +39,6 @@ export default [
   {
     path: 'map',
     loadComponent: () =>
-      import('../../shared/features/map/map').then((m) => m.Map),
+      import('../../shared/features/map/map').then((m) => m.MapComponent),
   },
 ] as Routes;

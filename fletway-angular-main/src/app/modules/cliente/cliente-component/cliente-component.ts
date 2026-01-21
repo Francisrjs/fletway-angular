@@ -8,19 +8,28 @@ import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 import { SolicitudesListComponent } from '../../../shared/features/solicitudes/solicitudes-list/solicitudes-list.component';
 import { SidebarComponent } from '../../../shared/features/sidebar';
+import { PopupComponent } from '../../../shared/features/popup/popup.component';
 import { ClientePresupuesto } from '../cliente-presupuesto/cliente-presupuesto';
+import { PopupModalService } from '../../../shared/modal/popup';
+import { MapComponent } from '../../../shared/features/map/map';
 
 @Component({
   selector: 'app-cliente',
   templateUrl: './cliente-component.html',
   standalone: true,
-  imports: [CommonModule, SolicitudesListComponent, SidebarComponent],
+  imports: [
+    CommonModule,
+    SolicitudesListComponent,
+    SidebarComponent,
+    PopupComponent,
+  ],
 })
 export class ClienteComponent implements OnInit {
   private _solService = inject(SolcitudService);
+  private _solFlaskService = inject(SolicitudFlaskService);
   private _authService = inject(AuthService);
   private _presupuestoService = inject(PresupuestoService);
-  private _solicitudFlaskService = inject(SolicitudFlaskService);
+  private popupModalService = inject(PopupModalService);
   private _router = inject(Router);
 
   //sidebar parametros
@@ -28,6 +37,11 @@ export class ClienteComponent implements OnInit {
   sidebarTitle = '';
   componentToLoad: Type<any> | undefined;
   sidebarInputs: any = {};
+
+  // popup mapa parametros
+  popupMapaAbierto = false;
+  popupMapaComponente: Type<any> | undefined;
+  popupMapaInputs: any = {};
 
   solicitudes: Solicitud[] = this._solService.solicitudes();
 
@@ -84,7 +98,7 @@ export class ClienteComponent implements OnInit {
     if (!solicitud.foto) {
       return null;
     }
-    return this._solicitudFlaskService.obtenerUrlFoto(solicitud.foto);
+    return this._solFlaskService.obtenerUrlFoto(solicitud.foto);
   }
 
   abrirFotoModal(solicitud: Solicitud): void {
@@ -107,8 +121,8 @@ export class ClienteComponent implements OnInit {
     this._router.navigate(['/cliente/nuevaSolicitud']);
   }
 
-  onVerMapa(solicitud: Solicitud): void {
-    this.openMap(solicitud, true);
+  onVerMapa(solicitud: Solicitud) {
+    this.verMapa(solicitud);
   }
 
   onVerPresupuestos(solicitud: Solicitud): void {
@@ -173,14 +187,6 @@ export class ClienteComponent implements OnInit {
     }
   }
 
-  openMap(s: Solicitud, useOrigen = true): void {
-    const direccion = useOrigen ? s.direccion_origen : s.direccion_destino;
-    const localidad = s.localidad_origen?.nombre ?? '';
-    const query = encodeURIComponent(`${direccion} ${localidad}`);
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    window.open(url, '_blank');
-  }
-
   private async anotarResumenesPresupuestos(
     solicitudes: Solicitud[],
   ): Promise<void> {
@@ -205,19 +211,15 @@ export class ClienteComponent implements OnInit {
   //sidebars callouts
   // Capturar TODOS los outputs
   handleSidebarOutputs(evento: { event: string; data: any }): void {
-    console.log('Evento:', evento.event, 'Data:', evento.data);
+    console.log('📤 Evento del sidebar:', evento.event, 'Data:', evento.data);
 
-    switch (
-      evento.event
-      // case 'presupuestoSeleccionado':
-      //   this.aceptarPresupuesto(evento.data);
-      //   this.sidebarVisible = false;
-      //   break;
-      // case 'pedidoGuardado':
-      //   this.recargarSolicitudes();
-      //   this.sidebarVisible = false;
-      //   break;
-    ) {
+    switch (evento.event) {
+      case 'onAceptar':
+        this.aceptarPresupuesto(evento.data);
+        this.sidebarVisible = false;
+        break;
+      default:
+        console.log('Evento no manejado:', evento.event);
     }
   }
 
@@ -226,5 +228,61 @@ export class ClienteComponent implements OnInit {
     this.componentToLoad = ClientePresupuesto;
     this.sidebarInputs = { solicitudId: solicitud.solicitud_id };
     this.sidebarVisible = true;
+  }
+  verMapa(solicitud: Solicitud): void {
+    console.log('🗺️ Abriendo mapa en popup:', solicitud);
+
+    this.popupMapaComponente = MapComponent;
+    this.popupMapaInputs = {
+      direccionOrigen: solicitud.direccion_origen,
+      ciudadOrigen: solicitud.localidad_origen?.nombre || '',
+      localidadOrigen: solicitud.localidad_origen?.provincia || '',
+      direccionDestino: solicitud.direccion_destino,
+      ciudadDestino: solicitud.localidad_destino?.nombre || '',
+      localidadDestino: solicitud.localidad_destino?.provincia || '',
+    };
+    this.popupMapaAbierto = true;
+  }
+  async aceptarPresupuesto(presupuesto: any): Promise<void> {
+    console.log('✅ Aceptando presupuesto:', presupuesto);
+
+    this.popupModalService.showSuccess(
+      '¿Aceptar presupuesto?',
+      'Confirma que deseas aceptar este presupuesto. Una vez aceptado, el transportista será notificado.',
+      async () => {
+        try {
+          const ok = await this._presupuestoService.aceptarPresupuesto(
+            presupuesto.presupuesto_id,
+            presupuesto.solicitud_id,
+          );
+
+          if (ok) {
+            const okSolicitud =
+              await this._solService.actualizarSolicitudConPresupuesto(
+                presupuesto.solicitud_id,
+                presupuesto.presupuesto_id,
+              );
+
+            if (okSolicitud) {
+              console.log('✅ Presupuesto aceptado y solicitud actualizada');
+              // Recargar solicitudes
+              await this.ngOnInit();
+            } else {
+              alert(
+                'Presupuesto aceptado, pero no se pudo actualizar la solicitud',
+              );
+            }
+          } else {
+            alert('Error al aceptar presupuesto');
+          }
+        } catch (error) {
+          console.error('❌ Error aceptando presupuesto:', error);
+          alert('Error al aceptar presupuesto');
+        }
+      },
+      () => {
+        console.log('❌ Usuario canceló la aceptación');
+      },
+    );
   }
 }

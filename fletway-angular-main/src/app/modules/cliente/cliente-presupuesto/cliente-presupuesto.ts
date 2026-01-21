@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, Input } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Presupuesto } from '../../../core/layouts/presupuesto';
@@ -16,6 +23,7 @@ import { Solicitud } from '../../../core/layouts/solicitud';
 })
 export class ClientePresupuesto implements OnInit {
   @Input() solicitudId!: number; // Input desde el sidebar
+  @Output() onAceptar = new EventEmitter<Presupuesto>();
   presupuestos: Presupuesto[] = [];
   cargando = false;
   error = '';
@@ -113,41 +121,8 @@ export class ClientePresupuesto implements OnInit {
   }
 
   //
-  async onAceptar(presupuesto: Presupuesto) {
-    this.popupModalService.showSuccess(
-      '¿Aceptar presupuesto?',
-      'Confirma que deseas aceptar este presupuesto. Una vez aceptado, el transportista será notificado.',
-      async () => {
-        // Función onAccept
-        const ok = await this.presupuestoService.aceptarPresupuesto(
-          presupuesto.presupuesto_id,
-          presupuesto.solicitud_id,
-        );
-
-        if (ok) {
-          // ahora actualizamos la solicitud con el presupuesto aceptado
-          const okSolicitud =
-            await this.solicitudService.actualizarSolicitudConPresupuesto(
-              presupuesto.solicitud_id,
-              presupuesto.presupuesto_id,
-            );
-
-          if (okSolicitud) {
-            this.router.navigate(['/cliente']);
-          } else {
-            alert(
-              'Presupuesto aceptado, pero no se pudo actualizar la solicitud',
-            );
-          }
-        } else {
-          alert('Error al aceptar presupuesto');
-        }
-      },
-      () => {
-        // Función onCancel
-        console.log('Usuario canceló la aceptación');
-      },
-    );
+  async onAceptarClick(presupuesto: Presupuesto) {
+    this.onAceptar.emit(presupuesto);
   }
 
   async onRechazar(p: Presupuesto) {

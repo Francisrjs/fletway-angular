@@ -91,7 +91,50 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: false }));
     }
   }
+  async getSolicitudByid(id: number): Promise<Solicitud | null> {
+    try {
+      this._state.update((s) => ({ ...s, loading: true, error: false }));
 
+      const { data, error } = await this._supabaseClient
+        .from('solicitud')
+        .select(
+          `
+          *,
+          cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
+          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
+        `,
+        )
+        .eq('solicitud_id', id)
+        .single<Solicitud>();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        this._state.update((s) => ({ ...s, error: true }));
+        return null;
+      }
+
+      if (data) {
+        // actualizo la propiedad correcta
+        this._state.update((s) => ({ ...s, solicitudes: [data] }));
+      }
+
+      if (
+        data &&
+        !Array.isArray(data) &&
+        !(typeof (data as { Error?: unknown }).Error !== 'undefined')
+      ) {
+        return data;
+      }
+      return null;
+    } catch (err) {
+      console.error('getSolicitudByid catch:', err);
+      this._state.update((s) => ({ ...s, error: true }));
+      return null;
+    } finally {
+      this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
   // Método genérico por estado (usa la columna 'estado')
   async getPedidosByEstado(stateValue: string): Promise<Solicitud[] | null> {
     try {
@@ -186,8 +229,11 @@ export class SolcitudService {
 
       const { data, error } = await this._supabaseClient
         .from('solicitud')
-        .select(`
+        .select(
+          `
           *,
+          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal),
             presupuesto:presupuesto_aceptado (
             presupuesto_id,
             transportista:transportista_id (
@@ -201,7 +247,8 @@ export class SolcitudService {
               )
             )
           )
-        `)
+        `,
+        )
         .eq('cliente_id', idUsuario)
         .returns<Solicitud[]>();
 
@@ -315,7 +362,7 @@ export class SolcitudService {
     transportistaId: number,
     calificacion: number,
     cantidadActual: number,
-    totalActual: number
+    totalActual: number,
   ): Promise<void> {
     /* Actualizar solicitud */
     const { error: errorSolicitud } = await this._supabaseClient
@@ -332,7 +379,7 @@ export class SolcitudService {
       .from('transportista')
       .update({
         cantidad_calificaciones: cantidadActual + 1,
-        total_calificaciones: totalActual + calificacion
+        total_calificaciones: totalActual + calificacion,
       })
       .eq('transportista_id', transportistaId);
 
