@@ -421,7 +421,8 @@
             <button
               *ngIf="s.estado === 'completado' && $any(s).calificacion === null"
               type="button"
-              class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-yellow-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300"
+              (click)="abrirModalCalificacion(s)"
+              class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-yellow-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-yellow-600"
             >
               ⭐ Calificar
             </button>
@@ -673,3 +674,59 @@
     </div>
   </div>
 }
+
+<!-- MODAL CALIFICAR A TRANSPORTISTA -->
+<div
+  *ngIf="modalCalificacionAbierto"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+>
+  <div
+    class="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm"
+  >
+    <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">
+      Calificar servicio
+    </h3>
+
+    <!-- BOTONES DE 0 A 10 -->
+    <div class="grid grid-cols-6 gap-2 mb-6">
+      <button
+        *ngFor="let n of numerosCalificacion"
+        type="button"
+        (click)="seleccionarCalificacion(n)"
+        class="py-2 rounded-md border text-sm font-medium"
+        [ngClass]="
+          calificacionSeleccionada === n
+            ? 'bg-orange-500 text-white border-orange-500'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+        "
+      >
+        {{ n }}
+      </button>
+    </div>
+    <!-- BOTONES DE ACEPTAR O CANCELAR -->
+    <div class="flex justify-end gap-3">
+      <button
+        type="button"
+        (click)="cerrarModalCalificacion()"
+        class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        [disabled]="calificacionSeleccionada === null"
+        (click)="aceptarCalificacion()"
+        class="px-4 py-2 rounded-lg text-white font-medium"
+        [ngClass]="
+          calificacionSeleccionada === null
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-orange-500 hover:bg-orange-600'
+        "
+      >
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>
+

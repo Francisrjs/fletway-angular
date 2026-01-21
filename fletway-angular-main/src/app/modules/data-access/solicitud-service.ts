@@ -309,6 +309,38 @@ export class SolcitudService {
       return false;
     }
   }
+
+  async calificarSolicitud(
+    solicitudId: number,
+    transportistaId: number,
+    calificacion: number,
+    cantidadActual: number,
+    totalActual: number
+  ): Promise<void> {
+    /* Actualizar solicitud */
+    const { error: errorSolicitud } = await this._supabaseClient
+      .from('solicitud')
+      .update({ calificacion })
+      .eq('solicitud_id', solicitudId);
+
+    if (errorSolicitud) {
+      throw errorSolicitud;
+    }
+
+    /* Actualizar transportista */
+    const { error: errorTransportista } = await this._supabaseClient
+      .from('transportista')
+      .update({
+        cantidad_calificaciones: cantidadActual + 1,
+        total_calificaciones: totalActual + calificacion
+      })
+      .eq('transportista_id', transportistaId);
+
+    if (errorTransportista) {
+      throw errorTransportista;
+    }
+  }
+
   async getPedidoById(solicitudId: number | string): Promise<Solicitud | null> {
     try {
       this._state.update((s) => ({ ...s, loading: true, error: false }));

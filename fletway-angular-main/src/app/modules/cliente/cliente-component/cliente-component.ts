@@ -23,11 +23,17 @@ export class ClienteComponent implements OnInit {
   solicitudes_pendientes: Solicitud[] = [];
   loading = false;
   error: string | null = null;
-  
+
   // Para el modal de fotos
   fotoModalAbierta = false;
   fotoModalUrl: string | null = null;
   fotoModalTitulo: string | null = null;
+
+  //Para calificaciones
+  modalCalificacionAbierto = false;
+  calificacionSeleccionada: number | null = null;
+  solicitudSeleccionada: any = null;
+  numerosCalificacion = Array.from({ length: 11 }, (_, i) => i);
 
   async ngOnInit(): Promise<void> {
     this.loading = true;
@@ -116,6 +122,54 @@ export class ClienteComponent implements OnInit {
     this.fotoModalAbierta = false;
     this.fotoModalUrl = null;
     this.fotoModalTitulo = null;
+  }
+
+  abrirModalCalificacion(solicitud: any): void {
+    this.solicitudSeleccionada = solicitud;
+    this.calificacionSeleccionada = null;
+    this.modalCalificacionAbierto = true;
+  }
+
+  cerrarModalCalificacion(): void {
+    this.modalCalificacionAbierto = false;
+    this.calificacionSeleccionada = null;
+  }
+
+  seleccionarCalificacion(valor: number): void {
+    this.calificacionSeleccionada = valor;
+  }
+
+  async aceptarCalificacion(): Promise<void> {
+    if (
+      this.calificacionSeleccionada === null ||
+      !this.solicitudSeleccionada
+    ) {
+      return;
+    }
+
+    const solicitud = this.solicitudSeleccionada;
+    const transportista = solicitud.presupuesto.transportista;
+
+    try {
+      await this._solService.calificarSolicitud(
+        solicitud.solicitud_id,
+        transportista.transportista_id,
+        this.calificacionSeleccionada,
+        transportista.cantidad_calificaciones ?? 0,
+        transportista.total_calificaciones ?? 0
+      );
+
+      /* actualizar UI local */
+      solicitud.calificacion = this.calificacionSeleccionada;
+      transportista.cantidad_calificaciones =
+        (transportista.cantidad_calificaciones ?? 0) + 1;
+      transportista.total_calificaciones =
+        (transportista.total_calificaciones ?? 0) + this.calificacionSeleccionada;
+
+      this.cerrarModalCalificacion();
+    } catch (error) {
+      console.error('Error al calificar solicitud', error);
+    }
   }
 
   // Devuelve clase para badge según estado
