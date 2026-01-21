@@ -1,0 +1,329 @@
+<div
+  class="group relative bg-white rounded-xl border border-gray-200/50 hover:border-orange-300/50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+>
+  <!-- Tag de estado en la esquina superior izquierda -->
+  <div class="absolute top-0 left-0 z-10">
+    <span
+      [ngClass]="badgeClass"
+      class="inline-flex items-center px-3 py-1.5 text-xs font-semibold border rounded-br-xl backdrop-blur-sm"
+    >
+      {{ solicitud.estado ?? "Sin estado" }}
+    </span>
+  </div>
+
+  <div class="p-6 pt-12">
+    <!-- Encabezado -->
+    <div class="flex items-start gap-4 mb-4">
+      <div
+        class="p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg"
+      >
+        <svg
+          class="w-6 h-6 text-orange-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          />
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="text-lg font-semibold text-gray-900 truncate">
+          {{ solicitud.detalles_carga || "Pedido #" + solicitud.solicitud_id }}
+        </h3>
+        <p class="text-sm text-gray-500 mt-0.5">
+          {{ solicitud.fecha_creacion | date: "dd/MM/yyyy HH:mm" }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Direcciones -->
+    <div class="space-y-3 mb-4">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 p-1.5 bg-blue-50 rounded-lg">
+          <svg
+            class="w-4 h-4 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Origen
+          </p>
+          <p class="text-sm text-gray-900 truncate">
+            {{ solicitud.direccion_origen
+            }}<span *ngIf="solicitud.localidad_origen"
+              >, {{ solicitud.localidad_origen.nombre }}</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 p-1.5 bg-orange-50 rounded-lg">
+          <svg
+            class="w-4 h-4 text-orange-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+            />
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Destino
+          </p>
+          <p class="text-sm text-gray-900 truncate">
+            {{ solicitud.direccion_destino
+            }}<span *ngIf="solicitud.localidad_destino"
+              >, {{ solicitud.localidad_destino.nombre }}</span
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Foto -->
+    <div *ngIf="tieneFoto()" class="mb-4">
+      <button
+        type="button"
+        (click)="onVerFoto()"
+        [attr.aria-label]="'Ver foto de ' + solicitud.detalles_carga"
+        class="w-full rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 group/img"
+      >
+        <img
+          [src]="solicitud.foto"
+          [alt]="'Foto de ' + (solicitud.detalles_carga || 'pedido')"
+          class="w-full h-48 object-cover bg-gray-100 transition-transform duration-300 group-hover/img:scale-105"
+        />
+      </button>
+
+      <!-- Tag de transportista notificado debajo de la foto -->
+      <div *ngIf="solicitud.estado === 'pendiente'" class="mt-2">
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 text-yellow-700 text-xs font-medium rounded-lg border border-yellow-200"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"
+            />
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+          </svg>
+          Transportista notificado
+        </span>
+      </div>
+    </div>
+    <div *ngIf="!tieneFoto()" class="mb-4">
+      <div
+        class="flex items-center justify-center h-48 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50/50"
+      >
+        <div class="text-center">
+          <svg
+            class="mx-auto h-10 w-10 text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <p class="mt-1 text-xs text-gray-400">Sin imagen</p>
+        </div>
+      </div>
+
+      <!-- Tag de transportista notificado para cuando no hay foto -->
+      <div *ngIf="solicitud.estado === 'pendiente'" class="mt-2">
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 text-yellow-700 text-xs font-medium rounded-lg border border-yellow-200"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"
+            />
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+          </svg>
+          Transportista notificado
+        </span>
+      </div>
+    </div>
+
+    <!-- Info del transportista -->
+    <div class="mb-4 p-4 bg-gray-50/50 rounded-lg border border-gray-100">
+      <div
+        *ngIf="estadoTransportista === 'asignado'"
+        class="flex items-center gap-3"
+      >
+        <img
+          class="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover"
+          src="boy.png"
+          alt="Transportista"
+        />
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-900 truncate">
+            {{ transportista.usuario.nombre }}
+            {{ transportista.usuario.apellido }}
+          </p>
+          <div class="flex items-center gap-1 mt-0.5">
+            <svg
+              class="w-4 h-4 text-yellow-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+              />
+            </svg>
+            <span class="text-xs text-gray-600">
+              {{
+                calificacionPromedio !== null
+                  ? (calificacionPromedio | number: "1.1-1")
+                  : "Sin calificaciones"
+              }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        *ngIf="estadoTransportista === 'buscando'"
+        class="flex items-center gap-3"
+      >
+        <img
+          class="w-12 h-12 opacity-40"
+          src="question.png"
+          alt="Sin transportista"
+        />
+        <div>
+          <p class="text-sm font-medium text-gray-500">
+            Buscando transportista
+          </p>
+          <p class="text-xs text-gray-400">Estamos procesando tu pedido</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div *ngIf="mostrarBotones" class="flex flex-col gap-2">
+      <button
+        type="button"
+        (click)="onVerMapa()"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-orange-300 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+      >
+        <svg
+          class="w-5 h-5 text-orange-500"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Ver en el mapa
+      </button>
+
+      <button
+        type="button"
+        (click)="onVerPresupuestos()"
+        [ngClass]="{
+          'bg-green-500 text-white hover:bg-green-600 border-green-500':
+            estadoTransportista === 'asignado',
+          'bg-blue-500 text-white hover:bg-blue-600 border-blue-500':
+            totalPresupuestos > 0 && estadoTransportista !== 'asignado',
+          'bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200':
+            totalPresupuestos === 0 && estadoTransportista !== 'asignado',
+        }"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span *ngIf="estadoTransportista === 'asignado'"
+          >Presupuesto aceptado ✓</span
+        >
+        <span
+          *ngIf="estadoTransportista !== 'asignado' && totalPresupuestos === 0"
+          >Sin presupuestos</span
+        >
+        <span
+          *ngIf="estadoTransportista !== 'asignado' && totalPresupuestos > 0"
+          >Ver presupuestos ({{ totalPresupuestos }})</span
+        >
+      </button>
+
+      <button
+        *ngIf="puedeCalificar"
+        type="button"
+        (click)="onCalificar()"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-400 border border-yellow-500 rounded-lg text-sm font-medium text-yellow-900 hover:bg-yellow-500 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+          />
+        </svg>
+        Calificar servicio
+      </button>
+
+      <button
+        type="button"
+        (click)="onCancelar()"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 hover:border-red-300 transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+        Cancelar pedido
+      </button>
+    </div>
+  </div>
+</div>
