@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Presupuesto } from '../../../core/layouts/presupuesto';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { PopupModalService } from '../../../shared/modal/popup';
+import { Solicitud } from '../../../core/layouts/solicitud';
 
 @Component({
   selector: 'app-cliente-presupuesto',
@@ -14,7 +15,7 @@ import { PopupModalService } from '../../../shared/modal/popup';
   templateUrl: './cliente-presupuesto.html',
 })
 export class ClientePresupuesto implements OnInit {
-  solicitudId!: number;
+  @Input() solicitudId!: number; // Input desde el sidebar
   presupuestos: Presupuesto[] = [];
   cargando = false;
   error = '';
@@ -28,13 +29,21 @@ export class ClientePresupuesto implements OnInit {
   private popupModalService = inject(PopupModalService);
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
-      const id = Number(params.get('id'));
-      if (id) {
-        this.solicitudId = id;
-        this.cargarPresupuestos();
-      }
-    });
+    console.log('ClientePresupuesto ngOnInit - solicitudId:', this.solicitudId);
+
+    // Si se usa como componente dinámico, solicitudId viene del @Input
+    if (this.solicitudId) {
+      this.cargarPresupuestos();
+    } else {
+      // Si se usa como ruta, obtener de route params
+      this.route.paramMap.subscribe((params) => {
+        const id = Number(params.get('id'));
+        if (id) {
+          this.solicitudId = id;
+          this.cargarPresupuestos();
+        }
+      });
+    }
   }
 
   //
@@ -42,8 +51,17 @@ export class ClientePresupuesto implements OnInit {
     this.cargando = true;
     this.error = '';
 
+    console.log('🔍 Cargando presupuestos para solicitudId:', this.solicitudId);
+
+    if (!this.solicitudId) {
+      console.error('❌ No hay solicitudId definido');
+      this.error = 'No se especificó la solicitud';
+      this.cargando = false;
+      return;
+    }
+
     try {
-      console.log('Cargando presupuestos para solicitudId:', this.solicitudId);
+      console.log('📡 Haciendo petición a la BD...');
       const data = await this.presupuestoService.getPresupuestosBySolicitudId(
         this.solicitudId,
       );

@@ -9,10 +9,8 @@
   <!-- Sidebar Panel -->
   <div
     [class]="
-      'relative bg-white shadow-2xl h-full flex flex-col ' +
+      'relative bg-white shadow-2xl h-full flex flex-col ml-auto ' +
       widthClasses +
-      ' ' +
-      positionClasses +
       ' ' +
       slideAnimation
     "
@@ -51,8 +49,19 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
-      <ng-content></ng-content>
-      <ng-template #dynamicComponentContainer></ng-template>
+      <!-- Skeleton loader mientras carga -->
+      <app-skeleton-loader
+        *ngIf="loading"
+        [count]="3"
+        [showHeader]="false"
+        [showFooter]="false"
+      ></app-skeleton-loader>
+
+      <!-- Contenido real -->
+      <div *ngIf="!loading">
+        <ng-content></ng-content>
+        <ng-template #dynamicComponentContainer></ng-template>
+      </div>
     </div>
   </div>
 </div>
@@ -70,30 +79,34 @@
   @keyframes slideInRight {
     from {
       transform: translateX(100%);
+      opacity: 0.8;
     }
     to {
       transform: translateX(0);
+      opacity: 1;
     }
   }
 
   @keyframes slideInLeft {
     from {
       transform: translateX(-100%);
+      opacity: 0.8;
     }
     to {
       transform: translateX(0);
+      opacity: 1;
     }
   }
 
   .animate-fadeIn {
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .animate-slideInRight {
-    animation: slideInRight 0.3s ease-out;
+    animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .animate-slideInLeft {
-    animation: slideInLeft 0.3s ease-out;
+    animation: slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 </style>

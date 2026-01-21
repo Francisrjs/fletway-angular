@@ -176,7 +176,8 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
     const url = this.obtenerUrlFoto(solicitud);
     if (url) {
       this.fotoModalUrl = url;
-      this.fotoModalTitulo = solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
+      this.fotoModalTitulo =
+        solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
       this.fotoModalAbierta = true;
     }
   }

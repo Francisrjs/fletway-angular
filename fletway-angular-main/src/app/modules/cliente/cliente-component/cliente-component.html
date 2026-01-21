@@ -138,3 +138,10 @@
     </div>
   </div>
 </div>
+<app-sidebar
+  [(isOpen)]="sidebarVisible"
+  [title]="sidebarTitle"
+  [customComponent]="componentToLoad"
+  [componentInputs]="sidebarInputs"
+  (componentOutputs)="handleSidebarOutputs($event)"
+></app-sidebar>

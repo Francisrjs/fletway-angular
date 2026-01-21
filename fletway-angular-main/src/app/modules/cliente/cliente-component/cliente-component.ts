@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Type } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/data-access/auth-service';
 import { Solicitud } from '../../../core/layouts/solicitud';
@@ -7,12 +7,14 @@ import { SolcitudService } from '../../data-access/solicitud-service';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 import { SolicitudesListComponent } from '../../../shared/features/solicitudes/solicitudes-list/solicitudes-list.component';
+import { SidebarComponent } from '../../../shared/features/sidebar';
+import { ClientePresupuesto } from '../cliente-presupuesto/cliente-presupuesto';
 
 @Component({
   selector: 'app-cliente',
   templateUrl: './cliente-component.html',
   standalone: true,
-  imports: [CommonModule, SolicitudesListComponent],
+  imports: [CommonModule, SolicitudesListComponent, SidebarComponent],
 })
 export class ClienteComponent implements OnInit {
   private _solService = inject(SolcitudService);
@@ -21,8 +23,14 @@ export class ClienteComponent implements OnInit {
   private _solicitudFlaskService = inject(SolicitudFlaskService);
   private _router = inject(Router);
 
-  solicitudes: Solicitud[] = [];
-  solicitudes_pendientes: Solicitud[] = [];
+  //sidebar parametros
+  sidebarVisible = false;
+  sidebarTitle = '';
+  componentToLoad: Type<any> | undefined;
+  sidebarInputs: any = {};
+
+  solicitudes: Solicitud[] = this._solService.solicitudes();
+
   loading = false;
   loadingPendientes = false;
   error: string | null = null;
@@ -50,21 +58,12 @@ export class ClienteComponent implements OnInit {
       ]);
 
       this.solicitudes = data ?? [];
-      this.solicitudes_pendientes = dataPendiente ?? [];
 
-      console.log('📦 Solicitudes cargadas:', this.solicitudes);
-      console.log('🚚 Solicitudes en viaje:', this.solicitudes_pendientes);
       console.log('👤 Usuario:', this._authService.session());
 
-      await Promise.all([
-        this.anotarResumenesPresupuestos(this.solicitudes),
-        this.anotarResumenesPresupuestos(this.solicitudes_pendientes),
-      ]);
+      await Promise.all([this.anotarResumenesPresupuestos(this.solicitudes)]);
 
       this.solicitudes = this.mapearConFotoUrl(this.solicitudes);
-      this.solicitudes_pendientes = this.mapearConFotoUrl(
-        this.solicitudes_pendientes,
-      );
     } catch (err) {
       console.error('❌ Error cargando solicitudes:', err);
       this.error = 'Error cargando solicitudes';
@@ -113,10 +112,11 @@ export class ClienteComponent implements OnInit {
   }
 
   onVerPresupuestos(solicitud: Solicitud): void {
-    this._router.navigate([
-      '/cliente/detallePresupuesto',
-      solicitud.solicitud_id,
-    ]);
+    // this._router.navigate([
+    //   '/cliente/detallePresupuesto',
+    //   solicitud.solicitud_id,
+    // ]);
+    this.verPresupuestos(solicitud);
   }
 
   onCancelarPedido(solicitud: Solicitud): void {
@@ -200,5 +200,31 @@ export class ClienteComponent implements OnInit {
       (s as any)._totalMostrables = resúmenes[i].mostrables;
       (s as any)._hayAceptado = resúmenes[i].hayAceptado;
     });
+  }
+
+  //sidebars callouts
+  // Capturar TODOS los outputs
+  handleSidebarOutputs(evento: { event: string; data: any }): void {
+    console.log('Evento:', evento.event, 'Data:', evento.data);
+
+    switch (
+      evento.event
+      // case 'presupuestoSeleccionado':
+      //   this.aceptarPresupuesto(evento.data);
+      //   this.sidebarVisible = false;
+      //   break;
+      // case 'pedidoGuardado':
+      //   this.recargarSolicitudes();
+      //   this.sidebarVisible = false;
+      //   break;
+    ) {
+    }
+  }
+
+  verPresupuestos(solicitud: Solicitud): void {
+    this.sidebarTitle = 'Presupuestos';
+    this.componentToLoad = ClientePresupuesto;
+    this.sidebarInputs = { solicitudId: solicitud.solicitud_id };
+    this.sidebarVisible = true;
   }
 }

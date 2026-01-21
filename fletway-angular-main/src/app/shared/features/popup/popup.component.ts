@@ -10,30 +10,37 @@ import {
   ViewContainerRef,
   ComponentRef,
   OnDestroy,
+  OnChanges,
+  AfterViewInit,
+  SimpleChanges,
 } from '@angular/core';
+import { SkeletonLoaderComponent } from '../../ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-popup',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SkeletonLoaderComponent],
   templateUrl: './popup.component.html',
 })
-export class PopupComponent implements OnDestroy {
+export class PopupComponent implements OnDestroy, OnChanges, AfterViewInit {
   @Input() isOpen: boolean = false;
   @Input() title: string = '';
   @Input() size: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'lg';
   @Input() showCloseButton: boolean = true;
   @Input() closeOnBackdrop: boolean = true;
+  @Input() loading: boolean = false; // Nuevo: muestra skeleton mientras carga
   @Input() customComponent?: Type<any>;
   @Input() componentInputs?: { [key: string]: any };
 
   @Output() close = new EventEmitter<void>();
+  @Output() isOpenChange = new EventEmitter<boolean>(); // Para two-way binding
   @Output() componentOutputs = new EventEmitter<{ event: string; data: any }>();
 
   @ViewChild('dynamicComponentContainer', { read: ViewContainerRef })
   dynamicComponentContainer!: ViewContainerRef;
 
   private componentRef?: ComponentRef<any>;
+  private viewInitialized = false;
 
   get sizeClasses(): string {
     const sizes = {
@@ -46,9 +53,21 @@ export class PopupComponent implements OnDestroy {
     return sizes[this.size];
   }
 
-  ngOnChanges(): void {
-    if (this.isOpen && this.customComponent && this.dynamicComponentContainer) {
+  ngAfterViewInit(): void {
+    this.viewInitialized = true;
+    if (this.isOpen && this.customComponent) {
       this.loadComponent();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Si se abre el popup, esperar a que el DOM se renderice
+    if (this.isOpen && this.customComponent) {
+      setTimeout(() => {
+        if (this.dynamicComponentContainer) {
+          this.loadComponent();
+        }
+      }, 0);
     }
   }
 
@@ -74,6 +93,9 @@ export class PopupComponent implements OnDestroy {
         }
       });
     }
+
+    // Detectar cambios manualmente
+    this.componentRef.changeDetectorRef.detectChanges();
 
     const instance = this.componentRef.instance;
     if (instance) {
@@ -103,6 +125,7 @@ export class PopupComponent implements OnDestroy {
 
   onClose(): void {
     this.destroyComponent();
+    this.isOpenChange.emit(false); // Emite para two-way binding
     this.close.emit();
   }
 
