@@ -10,40 +10,72 @@
 
   <!-- Menú de iconos -->
   <nav class="flex flex-col items-center space-y-4 px-3">
-    <!-- Hacer pedido -->
-    <button
-      type="button"
-      routerLink="/cliente/nuevaSolicitud"
-      class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all group relative"
-      title="Hacer un pedido"
-    >
-      <svg
-        class="w-6 h-6"
-        fill="currentColor"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
+    <!-- FLETERO: Icono Casita - Vista Principal -->
+    @if (esFletero) {
+      <button
+        type="button"
+        (click)="irPrincipalFletero()"
+        class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all group relative"
+        title="Solicitudes disponibles"
       >
-        <path
-          fill-rule="evenodd"
-          d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-          clip-rule="evenodd"
-        />
-        <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-      </svg>
-      <!-- Tooltip -->
-      <span
-        class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
-      >
-        Hacer un pedido
-      </span>
-    </button>
+        <svg
+          class="w-6 h-6"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.689Z"
+          />
+          <path
+            d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"
+          />
+        </svg>
+        <!-- Tooltip -->
+        <span
+          class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+        >
+          Solicitudes disponibles
+        </span>
+      </button>
+    }
 
-    <!-- Historial -->
+    <!-- CLIENTE: Hacer pedido (solo para clientes) -->
+    @if (esCliente) {
+      <button
+        type="button"
+        routerLink="/cliente/nuevaSolicitud"
+        class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all group relative"
+        title="Hacer un pedido"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+            clip-rule="evenodd"
+          />
+          <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+        </svg>
+        <!-- Tooltip -->
+        <span
+          class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+        >
+          Hacer un pedido
+        </span>
+      </button>
+    }
+
+    <!-- Historial (diferente comportamiento según rol) -->
     <button
       type="button"
-      (click)="irInicio()"
+      (click)="esFletero ? irHistorialFletero() : irInicio()"
       class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all group relative"
-      title="Historial de pedidos"
+      [title]="esFletero ? 'Historial de viajes' : 'Historial de pedidos'"
     >
       <svg
         class="w-6 h-6"
@@ -63,7 +95,7 @@
       <span
         class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
       >
-        Historial de pedidos
+        {{ esFletero ? "Historial de viajes" : "Historial de pedidos" }}
       </span>
     </button>
 
@@ -115,31 +147,60 @@
   <!-- Menú expandido -->
   <nav class="px-4 py-6">
     <ul class="space-y-3">
-      <li>
-        <a
-          routerLink="/cliente/nuevaSolicitud"
-          class="flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all"
-        >
-          <svg
-            class="w-6 h-6 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 24 24"
+      <!-- FLETERO: Vista Principal (Casita) -->
+      @if (esFletero) {
+        <li>
+          <button
+            type="button"
+            (click)="irPrincipalFletero()"
+            class="w-full flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all"
           >
-            <path
-              fill-rule="evenodd"
-              d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-              clip-rule="evenodd"
-            />
-            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-          </svg>
-          <span class="ml-3">Hacer un pedido</span>
-        </a>
-      </li>
+            <svg
+              class="w-6 h-6 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.689Z"
+              />
+              <path
+                d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"
+              />
+            </svg>
+            <span class="ml-3">Solicitudes disponibles</span>
+          </button>
+        </li>
+      }
 
+      <!-- CLIENTE: Hacer pedido -->
+      @if (esCliente) {
+        <li>
+          <a
+            routerLink="/cliente/nuevaSolicitud"
+            class="flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all"
+          >
+            <svg
+              class="w-6 h-6 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+                clip-rule="evenodd"
+              />
+              <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+            </svg>
+            <span class="ml-3">Hacer un pedido</span>
+          </a>
+        </li>
+      }
+
+      <!-- Historial (diferente según rol) -->
       <li>
         <button
           type="button"
-          (click)="irInicio()"
+          (click)="esFletero ? irHistorialFletero() : irInicio()"
           class="w-full flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-orange-100 hover:text-orange-600 transition-all"
         >
           <svg
@@ -155,7 +216,9 @@
               d="M12 8v4l3 3M3.22302 14C4.13247 18.008 7.71683 21 12 21c4.9706 0 9-4.0294 9-9 0-4.97056-4.0294-9-9-9-3.72916 0-6.92858 2.26806-8.29409 5.5M7 9H3V5"
             />
           </svg>
-          <span class="ml-3">Historial de pedidos</span>
+          <span class="ml-3">{{
+            esFletero ? "Historial de viajes" : "Historial de pedidos"
+          }}</span>
         </button>
       </li>
 

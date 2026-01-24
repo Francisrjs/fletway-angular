@@ -129,7 +129,8 @@
           [solicitud]="s"
           [modo]="'fletero'"
           [mostrarBotones]="true"
-          (verMapa)="openMap(s, true)"
+          (verMapa)="openMap(s)"
+          (realizarCotizacion)="realizarCotizacion(s)"
           (enviarMensaje)="enviarMensaje(s)"
           (verFoto)="abrirFotoModal(s)"
         ></app-solicitud-card>
@@ -179,7 +180,7 @@
           [solicitud]="s"
           [modo]="'fletero'"
           [mostrarBotones]="true"
-          (verMapa)="openMap(s, true)"
+          (verMapa)="openMap(s)"
           (realizarViaje)="realizarViaje(s)"
           (completarViaje)="viajeCompletado(s)"
           (enviarMensaje)="enviarMensaje(s)"
@@ -260,3 +261,22 @@
     </div>
   </div>
 }
+
+<!-- Popup del Mapa -->
+<app-popup
+  [(isOpen)]="popupMapaAbierto"
+  title="Mapa de Ruta"
+  size="xl"
+  [customComponent]="popupMapaComponente"
+  [componentInputs]="popupMapaInputs"
+  (close)="popupMapaAbierto = false"
+></app-popup>
+
+<!-- Sidebar (no se usa actualmente, redirige a detalles) -->
+<app-sidebar
+  [(isOpen)]="sidebarVisible"
+  [title]="sidebarTitle"
+  [customComponent]="componentToLoad"
+  [componentInputs]="sidebarInputs"
+  (componentOutputs)="handleSidebarOutputs($event)"
+></app-sidebar>

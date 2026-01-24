@@ -1,4 +1,10 @@
-import { Component, inject, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import {
+  Component,
+  inject,
+  ElementRef,
+  ViewChild,
+  OnDestroy,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth/data-access/auth-service';
@@ -12,15 +18,25 @@ import { AuthService } from '../../auth/data-access/auth-service';
 })
 export class NavbarComponent implements OnDestroy {
   @ViewChild('sidebar') sidebar!: ElementRef<HTMLElement>;
-  
+
   private _authService = inject(AuthService);
   private _router = inject(Router);
-  
+
   private sidebarTimeout?: number;
 
   // Leer el signal bajo demanda para evitar snapshots obsoletos
   get sesion() {
     return this._authService.userState();
+  }
+
+  // Getter para verificar si el usuario es fletero
+  get esFletero(): boolean {
+    return this.sesion?.isFletero === true;
+  }
+
+  // Getter para verificar si el usuario es cliente
+  get esCliente(): boolean {
+    return this.sesion?.isFletero === false;
   }
 
   async logOut() {
@@ -29,6 +45,22 @@ export class NavbarComponent implements OnDestroy {
     void this._authService.signOut();
     await this._router.navigateByUrl('/auth/login');
     console.log('estado actual:', this.sesion);
+  }
+
+  /**
+   * Navega a la vista principal del fletero (solicitudes disponibles)
+   */
+  async irPrincipalFletero(): Promise<void> {
+    console.log('🏠 Ir a vista principal de fletero');
+    await this._router.navigateByUrl('/fletero');
+  }
+
+  /**
+   * Navega al historial de viajes del fletero
+   */
+  async irHistorialFletero(): Promise<void> {
+    console.log('📋 Ir a historial de viajes del fletero');
+    await this._router.navigateByUrl('/fletero/historial');
   }
   async irInicio() {
     let state = this.sesion; // Cambiar const por let
@@ -93,7 +125,7 @@ export class NavbarComponent implements OnDestroy {
       clearTimeout(this.sidebarTimeout);
       this.sidebarTimeout = undefined;
     }
-    
+
     if (this.sidebar?.nativeElement) {
       this.sidebar.nativeElement.classList.remove('-translate-x-full');
       this.sidebar.nativeElement.classList.add('translate-x-0');

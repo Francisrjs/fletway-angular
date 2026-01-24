@@ -592,6 +592,92 @@ export class SolcitudService {
   }
 
   /**
+   * Obtiene el historial de viajes del fletero actual
+   * Filtra las solicitudes donde el transportista es el usuario logueado
+   * @returns Array de solicitudes del fletero
+   */
+  async getHistorialFletero(): Promise<Solicitud[] | null> {
+    try {
+      this._state.update((s) => ({ ...s, loading: true, error: false }));
+
+      const {
+        data: { session },
+      } = await this._authService.session();
+
+      if (!session?.user?.id) {
+        console.warn('Usuario no autenticado');
+        return null;
+      }
+
+      // Obtener el usuario_id del usuario logueado
+      const { data: userData, error: userError } = await this._supabaseClient
+        .from('usuario')
+        .select('usuario_id')
+        .eq('u_id', session.user.id)
+        .maybeSingle();
+
+      if (userError || !userData) {
+        console.error('Error al obtener usuario:', userError);
+        return null;
+      }
+
+      // Obtener el transportista_id del usuario
+      const { data: transportistaData, error: transportistaError } =
+        await this._supabaseClient
+          .from('transportista')
+          .select('transportista_id')
+          .eq('usuario_id', userData.usuario_id)
+          .maybeSingle();
+
+      if (transportistaError || !transportistaData) {
+        console.warn('Usuario no es transportista o no encontrado');
+        return [];
+      }
+
+      // Obtener solicitudes donde el presupuesto aceptado pertenece a este transportista
+      const { data, error } = await this._supabaseClient
+        .from('solicitud')
+        .select(
+          `
+          *,
+          cliente:cliente_id(u_id, email, nombre, apellido, telefono, usuario_id),
+          localidad_origen:localidad_origen_id(localidad_id, nombre, provincia, codigo_postal),
+          localidad_destino:localidad_destino_id(localidad_id, nombre, provincia, codigo_postal),
+          presupuesto:presupuesto_aceptado (
+            presupuesto_id,
+            transportista_id
+          )
+        `,
+        )
+        .not('presupuesto_aceptado', 'is', null)
+        .returns<Solicitud[]>();
+
+      if (error) {
+        console.error('Error obteniendo historial del fletero:', error);
+        return null;
+      }
+
+      // Filtrar las solicitudes donde el transportista del presupuesto aceptado es el actual
+      const solicitudesDelFletero = (data || []).filter(
+        (s: any) =>
+          s.presupuesto?.transportista_id ===
+          transportistaData.transportista_id,
+      );
+
+      console.log(
+        '📋 Historial de viajes filtrado:',
+        solicitudesDelFletero.length,
+      );
+      return solicitudesDelFletero;
+    } catch (err) {
+      console.error('getHistorialFletero catch:', err);
+      return null;
+    } finally {
+      this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
+
+  /**
    * Obtiene todas las fotos de una solicitud desde la tabla fotos
    * @param solicitudId ID de la solicitud
    * @returns Array de fotos ordenadas

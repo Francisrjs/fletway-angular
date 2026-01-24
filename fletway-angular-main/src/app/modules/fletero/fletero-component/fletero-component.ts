@@ -1,22 +1,32 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, Type } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { PopupModalService } from '../../../shared/modal/popup';
 import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 import { SolicitudCardComponent } from '../../../shared/features/solicitudes/solicitud-card/solicitud-card.component';
+import { SidebarComponent } from '../../../shared/features/sidebar';
+import { PopupComponent } from '../../../shared/features/popup/popup.component';
+import { MapComponent } from '../../../shared/features/map/map';
 
 @Component({
   selector: 'app-fletero',
   templateUrl: './fletero-component.html',
   styleUrls: ['./fletero-component.scss'],
-  imports: [CommonModule, SolicitudCardComponent],
+  imports: [
+    CommonModule,
+    SolicitudCardComponent,
+    SidebarComponent,
+    PopupComponent,
+  ],
 })
 export class FleteroComponent implements OnInit {
   private _solService = inject(SolcitudService);
   private popupModalService = inject(PopupModalService);
   private _solicitudFlaskService = inject(SolicitudFlaskService);
+  private _router = inject(Router);
 
   solicitudes: Solicitud[] = [];
   solicitudes_pendientes: Solicitud[] = [];
@@ -28,6 +38,17 @@ export class FleteroComponent implements OnInit {
   fotoModalAbierta = false;
   fotoModalUrl: string | null = null;
   fotoModalTitulo: string | null = null;
+
+  // Sidebar para cotización
+  sidebarVisible = false;
+  sidebarTitle = '';
+  componentToLoad: Type<any> | undefined;
+  sidebarInputs: any = {};
+
+  // Popup mapa
+  popupMapaAbierto = false;
+  popupMapaComponente: Type<any> | undefined;
+  popupMapaInputs: any = {};
 
   constructor() {
     // Efecto para escuchar cambios en solicitudes
@@ -77,16 +98,21 @@ export class FleteroComponent implements OnInit {
   }
 
   /**
-   * Abre Google Maps con la dirección de origen de la solicitud
+   * Abre el popup del mapa con la ruta de la solicitud
    */
-  openMap(s: Solicitud, useOrigen = true): void {
-    const direccion = useOrigen ? s.direccion_origen : s.direccion_destino;
-    const localidad = useOrigen
-      ? (s.localidad_origen?.nombre ?? '')
-      : (s.localidad_destino?.nombre ?? '');
-    const query = encodeURIComponent(`${direccion} ${localidad}`);
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    window.open(url, '_blank');
+  openMap(solicitud: Solicitud): void {
+    console.log('🗺️ Abriendo mapa en popup:', solicitud);
+
+    this.popupMapaComponente = MapComponent;
+    this.popupMapaInputs = {
+      direccionOrigen: solicitud.direccion_origen,
+      ciudadOrigen: solicitud.localidad_origen?.nombre || '',
+      localidadOrigen: solicitud.localidad_origen?.provincia || '',
+      direccionDestino: solicitud.direccion_destino,
+      ciudadDestino: solicitud.localidad_destino?.nombre || '',
+      localidadDestino: solicitud.localidad_destino?.provincia || '',
+    };
+    this.popupMapaAbierto = true;
   }
   /**
    * Inicia el viaje para una solicitud pendiente
@@ -170,5 +196,20 @@ export class FleteroComponent implements OnInit {
     this.fotoModalAbierta = false;
     this.fotoModalUrl = null;
     this.fotoModalTitulo = null;
+  }
+
+  /**
+   * Abre el sidebar para realizar cotización (redirige a detalles)
+   */
+  realizarCotizacion(solicitud: Solicitud): void {
+    console.log('💰 Redirigiendo a realizar cotización:', solicitud);
+    this._router.navigate(['/fletero/detalle', solicitud.solicitud_id]);
+  }
+
+  /**
+   * Handler para los outputs del sidebar
+   */
+  handleSidebarOutputs(evento: { event: string; data: any }): void {
+    console.log('📤 Evento del sidebar:', evento.event, 'Data:', evento.data);
   }
 }

@@ -1,104 +1,88 @@
-<div
-  class="flex flex-col flex-grow items-center justify-start w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden"
->
-  <!-- Top bar -->
-  <header
-    class="w-full bg-primary-orange p-4 flex items-center justify-between rounded-t-lg shadow-md"
-  >
-    <div class="flex items-center">
-      <button
-        id="backButton"
-        class="text-white text-2xl mr-4 focus:outline-none"
-      >
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <h1 class="text-white text-xl font-semibold">Realizar cotización</h1>
-    </div>
-    <button class="text-white text-2xl focus:outline-none">
-      <i class="fas fa-user-circle"></i>
-    </button>
-  </header>
-
-  <!-- Main content -->
-  <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
-    <h2 class="text-blue-gray-dark text-2xl font-bold mb-6 text-center">
-      Detalles del pedido
-    </h2>
-
-    <!-- Loading / Error -->
-    <div *ngIf="loading" class="text-center py-6">Cargando solicitud...</div>
-    <div *ngIf="error && !loading" class="text-center text-red-600 py-6">
-      No se pudo cargar la solicitud.
-    </div>
-
-    <ng-container *ngIf="pedido && !loading">
-      <!-- Request Details Section -->
-      <div
-        class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
-      >
-        <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
-          Información del pedido
-        </h3>
-        <p class="text-gray-700 mb-1">
-          <span class="font-medium">Titulo:</span>
-          {{ pedido.detalles_carga }}
-        </p>
-        <p class="text-gray-700 mb-1">
-          <span class="font-medium">Origen:</span>
-          {{ pedido.direccion_origen }}
-          <span *ngIf="pedido.localidad_origen"
-            >, {{ pedido.localidad_origen.nombre }}</span
+<!-- Container Principal -->
+<section class="bg-gray-50 min-h-screen py-8 md:py-12">
+  <div class="mx-auto max-w-7xl px-4 2xl:px-0">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <button
+            type="button"
+            (click)="cancelQuote()"
+            class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+            title="Volver"
           >
-        </p>
-        <p class="text-gray-700 mb-1">
-          <span class="font-medium">Destino:</span>
-          {{ pedido.direccion_destino }}, {{ pedido.localidad_destino?.nombre }}
-        </p>
-        <!-- Si tenés dimensiones/peso en 'detalles_carga' podés parsearlo; dejo placeholders cuando no existe -->
-        <p class="text-gray-700 mb-1">
-          <span class="font-medium">Dimensiones:</span>
-          {{ pedido.medidas ? (pedido.medidas | slice: 0 : 40) : "---" }}
-        </p>
-        <p class="text-gray-700 mb-1" *ngIf="pedido.peso">
-          <span class="font-medium">Peso:</span>
-          {{ pedido.peso ? "ver detalles" : "---" }}
-        </p>
-        <p class="text-gray-700 mb-1">
-          <span class="font-medium">Medidas:</span>
-          {{ pedido.medidas ? "ver detalles" : "---" }}
-        </p>
-        <p class="text-gray-700 mb-3">
-          <span class="font-medium">Fecha/Hora Recogida:</span>
-          {{ pedido.hora_recogida | date: "dd/MM/yyyy HH:mm" }}
-        </p>
-
-        <h4 class="text-blue-gray-dark text-lg font-semibold mb-2">
-          Fotos de la Carga:
-        </h4>
-
-        @if (tieneFoto(pedido)) {
-          <!-- Mostrar foto si existe -->
-          <div class="relative group">
-            <button
-              type="button"
-              [attr.aria-label]="'Ver foto de ' + pedido.detalles_carga"
-              (click)="abrirFotoModal(pedido)"
-              (keydown.enter)="abrirFotoModal(pedido)"
-              (keydown.space)="abrirFotoModal(pedido)"
-              class="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-lg"
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <img
-                [src]="obtenerUrlFoto(pedido)"
-                [alt]="'Foto de ' + pedido.detalles_carga"
-                class="h-64 w-full rounded-lg object-contain bg-gray-100 shadow-md cursor-pointer transition-transform hover:scale-105 border border-gray-200"
-                (error)="handleImageError($event)"
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
-            </button>
-            <div
-              class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+              Realizar Cotización
+            </h1>
+            <p class="text-gray-600 mt-1">
+              Revisa los detalles y envía tu presupuesto
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estados de carga y error -->
+    <div *ngIf="loading" class="flex items-center justify-center py-20">
+      <div class="text-center">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"
+        ></div>
+        <p class="text-gray-600">Cargando solicitud...</p>
+      </div>
+    </div>
+
+    <div
+      *ngIf="error && !loading"
+      class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
+    >
+      <div class="flex items-center gap-3">
+        <svg
+          class="w-6 h-6 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p class="text-red-800 font-medium">
+          No se pudo cargar la solicitud. Por favor, intenta nuevamente.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <ng-container *ngIf="pedido && !loading">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna Principal (2/3) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Información del Pedido -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2
+              class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"
             >
               <svg
-                class="w-5 h-5 text-gray-700"
+                class="w-6 h-6 text-orange-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -107,19 +91,105 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                 />
               </svg>
+              Información del Pedido
+            </h2>
+
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="text-sm font-medium text-gray-500 min-w-[120px]"
+                  >Descripción:</span
+                >
+                <span class="text-sm text-gray-900 font-medium">{{
+                  pedido.detalles_carga || "Sin descripción"
+                }}</span>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span class="text-sm font-medium text-gray-500 min-w-[120px]"
+                  >Origen:</span
+                >
+                <span class="text-sm text-gray-900">
+                  {{ pedido.direccion_origen }}
+                  <span *ngIf="pedido.localidad_origen"
+                    >, {{ pedido.localidad_origen.nombre }},
+                    {{ pedido.localidad_origen.provincia }}</span
+                  >
+                </span>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span class="text-sm font-medium text-gray-500 min-w-[120px]"
+                  >Destino:</span
+                >
+                <span class="text-sm text-gray-900">
+                  {{ pedido.direccion_destino }}
+                  <span *ngIf="pedido.localidad_destino"
+                    >, {{ pedido.localidad_destino.nombre }},
+                    {{ pedido.localidad_destino.provincia }}</span
+                  >
+                </span>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span class="text-sm font-medium text-gray-500 min-w-[120px]"
+                  >Fecha Recogida:</span
+                >
+                <span class="text-sm text-gray-900">
+                  {{
+                    pedido.hora_recogida
+                      ? (pedido.hora_recogida | date: "dd/MM/yyyy HH:mm")
+                      : "No especificada"
+                  }}
+                </span>
+              </div>
+
+              <div class="flex items-start gap-3" *ngIf="pedido.peso">
+                <span class="text-sm font-medium text-gray-500 min-w-[120px]"
+                  >Peso:</span
+                >
+                <span class="text-sm text-gray-900">{{ pedido.peso }} kg</span>
+              </div>
+
+              <div class="flex items-start gap-3" *ngIf="pedido.medidas">
+                <span class="text-sm font-medium text-gray-500 min-w-[120px]"
+                  >Medidas:</span
+                >
+                <span class="text-sm text-gray-900">{{ pedido.medidas }}</span>
+              </div>
             </div>
-          </div>
-        } @else {
-          <!-- Placeholder si no hay foto -->
-          <div
-            class="flex items-center justify-center h-64 w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50"
-          >
-            <div class="text-center">
+
+            <!-- Botón Ver Mapa -->
+            <button
+              type="button"
+              (click)="verMapa()"
+              class="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              aria-label="Ver Mapa"
+            >
               <svg
-                class="mx-auto h-12 w-12 text-gray-400"
+                class="w-5 h-5 text-orange-600"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957.996.996 0 0 1-.133.204l-.108.129c-.178.243-.37.477-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26l-.002-.002a18.146 18.146 0 0 1-.309-.38l-.133-.163a.999.999 0 0 1-.13-.202 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Ver Ruta en el Mapa
+            </button>
+          </div>
+
+          <!-- Galería de Fotos -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2
+              class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"
+            >
+              <svg
+                class="w-6 h-6 text-orange-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -131,190 +201,328 @@
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p class="mt-2 text-sm text-gray-500">Sin foto disponible</p>
+              Fotos de la Carga
+            </h2>
+
+            <div
+              *ngIf="cargandoFotos"
+              class="flex items-center justify-center h-48 bg-gray-100 rounded-lg"
+            >
+              <div
+                class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"
+              ></div>
+            </div>
+
+            <div *ngIf="!cargandoFotos && tieneFoto()" class="space-y-3">
+              <!-- Foto Principal -->
+              <button
+                type="button"
+                (click)="abrirPopupFoto(0)"
+                class="w-full rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 group relative"
+                [attr.aria-label]="'Ver foto principal'"
+                [attr.title]="'Ver foto principal'"
+              >
+                <img
+                  [src]="obtenerUrlFoto(fotoPrincipal)"
+                  [alt]="
+                    'Foto principal de ' + (pedido.detalles_carga || 'pedido')
+                  "
+                  [title]="'Ver foto en grande'"
+                  class="w-full h-64 object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                  (error)="handleImageError($event)"
+                />
+                <div
+                  *ngIf="fotos.length > 1"
+                  class="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1 rounded-lg text-sm font-medium"
+                >
+                  1/{{ fotos.length }}
+                </div>
+              </button>
+
+              <!-- Thumbnails -->
+              <div
+                *ngIf="fotosSecundarias.length > 0"
+                class="grid grid-cols-4 gap-3"
+              >
+                <button
+                  *ngFor="let foto of fotosSecundarias; let i = index"
+                  type="button"
+                  (click)="abrirPopupFoto(i + 1)"
+                  [attr.aria-label]="'Ver foto ' + (i + 2)"
+                  [attr.title]="'Ver foto ' + (i + 2)"
+                  class="relative rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 group"
+                >
+                  <img
+                    [src]="obtenerUrlFoto(foto)"
+                    [alt]="'Foto ' + (i + 2)"
+                    [title]="'Ver foto ' + (i + 2)"
+                    class="w-full h-20 object-cover bg-gray-100 transition-transform duration-200 group-hover:scale-110"
+                    loading="lazy"
+                    (error)="handleImageError($event)"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div
+              *ngIf="!cargandoFotos && !tieneFoto()"
+              class="flex items-center justify-center h-48 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+            >
+              <div class="text-center">
+                <svg
+                  class="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p class="mt-2 text-sm text-gray-500">Sin fotos disponibles</p>
+              </div>
             </div>
           </div>
-        }
-      </div>
-      <div
-        class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
-      >
-        <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">Mapa</h3>
-        @if (
-          pedido.direccion_origen &&
-          pedido.localidad_origen?.nombre &&
-          pedido.localidad_origen
-        ) {
-          <app-map
-            [direccionOrigen]="pedido.direccion_origen"
-            [ciudadOrigen]="pedido.localidad_origen.nombre ?? undefined"
-            [localidadOrigen]="pedido.localidad_origen.provincia ?? undefined"
-            [direccionDestino]="pedido.direccion_destino ?? undefined"
-            [ciudadDestino]="pedido.localidad_destino?.nombre ?? undefined"
-            [localidadDestino]="pedido.localidad_origen.provincia ?? undefined"
-          />
-        }
-      </div>
-      <div
-        class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
-      >
-        <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
-          Información del Cliente
-        </h3>
-        <div class="flex items-center">
-          <img
-            src="boy.png"
-            alt="Perfil Cliente"
-            class="w-16 h-16 rounded-full object-cover mr-4 border border-gray-300"
-          />
-          <div>
-            <p class="text-blue-gray-dark text-lg font-medium">
-              {{ pedido.cliente?.nombre || "Nombre del Cliente" }}
-              {{ pedido.cliente?.apellido || "" }}
-            </p>
-            <p class="text-gray-600 text-sm">{{ pedido.cliente?.email }}</p>
-            <p class="text-gray-600 text-sm">{{ pedido.cliente?.telefono }}</p>
+        </div>
+
+        <!-- Columna Lateral (1/3) -->
+        <div class="space-y-6">
+          <!-- Información del Cliente -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Cliente</h2>
+            <div class="flex items-center gap-4 mb-4">
+              <img
+                src="boy.png"
+                alt="Foto del Cliente"
+                title="Foto del Cliente"
+                class="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+              />
+              <div class="flex-1">
+                <p class="font-semibold text-gray-900">
+                  {{ pedido.cliente?.nombre || "Cliente" }}
+                  {{ pedido.cliente?.apellido || "" }}
+                </p>
+                <p class="text-sm text-gray-600" *ngIf="pedido.cliente?.email">
+                  {{ pedido.cliente?.email }}
+                </p>
+                <p
+                  class="text-sm text-gray-600"
+                  *ngIf="pedido.cliente?.telefono"
+                >
+                  📱 {{ pedido.cliente?.telefono }}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              (click)="abrirPopupMensaje()"
+              class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+              [attr.aria-label]="'Enviar mensaje al cliente'"
+              [attr.title]="'Enviar mensaje al cliente'"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                />
+              </svg>
+              Enviar Mensaje
+            </button>
+          </div>
+
+          <!-- Formulario de Cotización -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">
+              Realizar Cotización
+            </h2>
+            <form
+              [formGroup]="presupuestoForm"
+              (ngSubmit)="submitQuote()"
+              class="space-y-4"
+            >
+              <div>
+                <label
+                  for="precio"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Precio (ARS) *
+                </label>
+                <input
+                  type="number"
+                  id="precio"
+                  formControlName="precio"
+                  placeholder="Ej: 5000"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="comentario"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Comentario *
+                </label>
+                <textarea
+                  id="comentario"
+                  formControlName="comentario"
+                  rows="4"
+                  placeholder="Ej: El precio incluye peajes y carga/descarga"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
+                ></textarea>
+              </div>
+
+              <div class="space-y-3 pt-2">
+                <button
+                  type="submit"
+                  [disabled]="presupuestoForm.invalid || loading"
+                  class="w-full py-3 px-4 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  Enviar Cotización
+                </button>
+
+                <button
+                  type="button"
+                  (click)="cancelQuote()"
+                  class="w-full py-3 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-
-      <!-- Quote Form Section -->
-      <div
-        class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
-      >
-        <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
-          Realizar Cotización
-        </h3>
-        <form
-          [formGroup]="presupuestoForm"
-          (ngSubmit)="submitQuote()"
-          class="space-y-4"
-          novalidate
-        >
-          <div>
-            <label
-              for="price"
-              class="block text-blue-gray-dark text-sm font-medium mb-1"
-              >Precio de la Cotización (ARS)</label
-            >
-            <input
-              type="number"
-              id="price"
-              placeholder="Ej: 5000"
-              class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-              formControlName="precio"
-            />
-          </div>
-          <div>
-            <label
-              for="notes"
-              class="block text-blue-gray-dark text-sm font-medium mb-1"
-              >Notas breves (opcional)</label
-            >
-            <textarea
-              id="notes"
-              rows="3"
-              placeholder="Ej: El precio incluye peajes."
-              formControlName="comentario"
-              class="w-full p-3 border border-gray-300 rounded-lg focus-ring-primary-orange text-blue-gray-dark"
-            ></textarea>
-          </div>
-          <div class="flex justify-around mt-6 space-x-4">
-            <button
-              type="button"
-              (click)="cancelQuote()"
-              class="w-1/2 py-3 px-6 bg-white text-blue-gray-dark border border-blue-gray-dark rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-gray-dark focus:ring-opacity-75"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              [disabled]="presupuestoForm.invalid"
-              class="w-1/2 py-3 px-6 bg-orange-400 text-white rounded-xl shadow-md text-lg font-bold transform transition duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-75"
-            >
-              Enviar Cotización
-            </button>
-          </div>
-        </form>
-      </div>
     </ng-container>
-  </main>
+  </div>
+</section>
 
-  <!-- Footer -->
-  <footer
-    class="w-full bg-blue-gray-dark p-3 text-center text-white text-sm rounded-b-lg"
-  >
-    &copy; 2025 Fletway. Todos los derechos reservados.
-  </footer>
-</div>
-
-<!-- Modal de visualización de foto en pantalla completa -->
-@if (fotoModalAbierta && fotoModalUrl) {
+<!-- Popup de Visualización de Fotos -->
+<div
+  *ngIf="mostrarPopupFoto && fotoSeleccionadaIndex !== null"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+  (click)="cerrarPopupFoto()"
+>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
-    (click)="cerrarFotoModal()"
-    (keydown.escape)="cerrarFotoModal()"
-    role="dialog"
-    aria-modal="true"
-    [attr.aria-label]="'Modal de visualización: ' + fotoModalTitulo"
+    class="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl"
+    (click)="$event.stopPropagation()"
   >
-    <div
-      class="relative bg-white rounded-lg shadow-2xl max-w-4xl max-h-[90vh] flex flex-col"
-      role="presentation"
-      (click)="$event.stopPropagation()"
-    >
-      <!-- Header del modal -->
-      <div
-        class="flex items-center justify-between p-4 border-b border-gray-200"
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 bg-gray-50 border-b">
+      <h3 class="text-lg font-semibold text-gray-900">
+        Foto {{ fotoSeleccionadaIndex + 1 }} de {{ fotos.length }}
+      </h3>
+      <button
+        type="button"
+        (click)="cerrarPopupFoto()"
+        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        [attr.aria-label]="'Cerrar'"
+        [attr.title]="'Cerrar'"
       >
-        <h2 class="text-xl font-semibold text-gray-900">
-          {{ fotoModalTitulo }}
-        </h2>
-        <button
-          type="button"
-          (click)="cerrarFotoModal()"
-          (keydown.enter)="cerrarFotoModal()"
-          (keydown.space)="cerrarFotoModal()"
-          class="inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          [attr.aria-label]="'Cerrar modal'"
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            class="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
 
-      <!-- Contenedor de imagen -->
-      <div
-        class="flex items-center justify-center flex-1 overflow-auto p-4 bg-gray-50"
-      >
-        <img
-          [src]="fotoModalUrl"
-          [alt]="fotoModalTitulo"
-          class="max-w-full max-h-full object-contain rounded-lg"
-        />
-      </div>
+    <!-- Imagen -->
+    <div class="flex items-center justify-center bg-gray-100 p-6">
+      <img
+        [src]="obtenerUrlFoto(fotos[fotoSeleccionadaIndex])"
+        [alt]="'Foto ' + (fotoSeleccionadaIndex + 1)"
+        [title]="'Foto ' + (fotoSeleccionadaIndex + 1)"
+        class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+        loading="lazy"
+        (error)="handleImageError($event)"
+      />
+    </div>
 
-      <!-- Footer del modal -->
-      <div class="flex justify-end gap-2 p-4 border-t border-gray-200">
-        <button
-          type="button"
-          (click)="cerrarFotoModal()"
-          class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200"
-        >
-          Cerrar
-        </button>
+    <!-- Footer -->
+    <div class="p-4 bg-gray-50 border-t">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          <p class="font-medium">
+            {{ fotos[fotoSeleccionadaIndex]?.archivo_nombre || "Sin nombre" }}
+          </p>
+          <p class="text-xs text-gray-500">
+            {{
+              (fotos[fotoSeleccionadaIndex]?.["archivo_tamaño"] || 0) /
+                1024 /
+                1024 | number: "1.2-2"
+            }}
+            MB
+          </p>
+        </div>
       </div>
     </div>
   </div>
-}
+</div>
+
+<!-- Popup del Mapa -->
+<app-popup
+  [(isOpen)]="popupMapaAbierto"
+  title="Mapa de Ruta"
+  size="xl"
+  [customComponent]="popupMapaComponente"
+  [componentInputs]="popupMapaInputs"
+  (close)="popupMapaAbierto = false"
+></app-popup>
+
+<!-- Popup de Mensajes (placeholder para el usuario) -->
+<app-popup
+  [(isOpen)]="popupMensajeAbierto"
+  title="Enviar Mensaje al Cliente"
+  size="md"
+  (close)="popupMensajeAbierto = false"
+>
+  <div class="p-6 text-center">
+    <svg
+      class="mx-auto h-12 w-12 text-gray-400 mb-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+      />
+    </svg>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Componente de Chat</h3>
+    <p class="text-gray-600">
+      Este popup está listo para que agregues tu componente de mensajes.
+    </p>
+  </div>
+</app-popup>
+
+<!-- Sidebar (si se necesita en el futuro) -->
+<app-sidebar
+  [(isOpen)]="sidebarVisible"
+  [title]="sidebarTitle"
+  [customComponent]="componentToLoad"
+  [componentInputs]="sidebarInputs"
+  (componentOutputs)="handleSidebarOutputs($event)"
+></app-sidebar>

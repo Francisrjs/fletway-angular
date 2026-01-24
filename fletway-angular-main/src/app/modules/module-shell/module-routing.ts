@@ -16,6 +16,13 @@ export default [
       ).then((m) => m.DetallesSolicitudFleteroComponent),
   },
   {
+    path: 'fletero/historial',
+    loadComponent: () =>
+      import('../fletero/historial-fletero/historial-fletero').then(
+        (m) => m.HistorialFleteroComponent,
+      ),
+  },
+  {
     path: 'cliente',
     loadComponent: () =>
       import('../cliente/cliente-component/cliente-component').then(

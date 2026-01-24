@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Type } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -14,11 +14,19 @@ import { ToastService } from '../../../shared/modal/toast/toast.service';
 import { PresupuestoService } from '../../data-access/presupuesto-service';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
+import { SidebarComponent } from '../../../shared/features/sidebar';
+import { PopupComponent } from '../../../shared/features/popup/popup.component';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MapComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MapComponent,
+    SidebarComponent,
+    PopupComponent,
+  ],
   templateUrl: './detalles-solicitud-fletero.html',
 })
 export class DetallesSolicitudFleteroComponent implements OnInit {
@@ -28,10 +36,27 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   loading = false;
   error = false;
 
-  // Para el modal de fotos
-  fotoModalAbierta = false;
-  fotoModalUrl: string | null = null;
-  fotoModalTitulo: string | null = null;
+  // Fotos desde Supabase
+  fotos: any[] = [];
+  cargandoFotos = false;
+  fotoSeleccionadaIndex: number | null = null;
+  mostrarPopupFoto = false;
+
+  // Popup del mapa
+  popupMapaAbierto = false;
+  popupMapaComponente: Type<any> | undefined;
+  popupMapaInputs: any = {};
+
+  // Popup de mensajes (a implementar por el usuario)
+  popupMensajeAbierto = false;
+  popupMensajeComponente: Type<any> | undefined;
+  popupMensajeInputs: any = {};
+
+  // Sidebar
+  sidebarVisible = false;
+  sidebarTitle = '';
+  componentToLoad: Type<any> | undefined;
+  sidebarInputs: any = {};
 
   // modelo para el formulario de cotización
   quote = {
@@ -85,6 +110,8 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
         return;
       }
       this.pedido = p;
+      // Cargar fotos de la solicitud
+      await this.cargarFotos();
     } catch (err) {
       console.error('Error cargando pedido:', err);
       this.error = true;
@@ -93,8 +120,32 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
     }
   }
 
+  /**
+   * Carga las fotos de la solicitud desde la tabla fotos de Supabase
+   */
+  async cargarFotos(): Promise<void> {
+    if (!this.pedido?.solicitud_id) return;
+
+    this.cargandoFotos = true;
+    try {
+      this.fotos = await this.solicitudService.getFotosBySolicitudId(
+        this.pedido.solicitud_id,
+      );
+      console.log('📸 Fotos cargadas:', this.fotos);
+    } catch (error) {
+      console.error('Error cargando fotos:', error);
+      this.fotos = [];
+    } finally {
+      this.cargandoFotos = false;
+    }
+  }
+
+  /**
+   * Cancela la cotización y vuelve a la vista anterior
+   */
   cancelQuote() {
-    this.quote = { price: null, notes: '' };
+    this.presupuestoForm.reset();
+    this.router.navigate(['/fletero']);
   }
 
   async submitQuote() {
@@ -143,22 +194,36 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   }
 
   /**
-   * Obtiene la URL completa de la foto de una solicitud
+   * Verifica si hay fotos disponibles
    */
-  obtenerUrlFoto(solicitud: Solicitud): string | null {
-    if (!solicitud.foto) {
-      return null;
-    }
-    return this._solicitudFlaskService.obtenerUrlFoto(solicitud.foto);
+  tieneFoto(): boolean {
+    return this.fotos.length > 0;
   }
 
   /**
-   * Verifica si la solicitud tiene foto
+   * Obtiene la foto principal (primera foto)
    */
-  tieneFoto(solicitud: Solicitud): boolean {
-    return !!solicitud.foto && solicitud.foto.trim().length > 0;
+  get fotoPrincipal(): any | null {
+    return this.fotos.length > 0 ? this.fotos[0] : null;
   }
 
+  /**
+   * Obtiene las fotos secundarias (resto de fotos)
+   */
+  get fotosSecundarias(): any[] {
+    return this.fotos.slice(1);
+  }
+
+  /**
+   * Obtiene la URL de una foto (ya viene completa desde Supabase)
+   */
+  obtenerUrlFoto(foto: any): string {
+    return foto?.url || 'boxes.png';
+  }
+
+  /**
+   * Maneja el error de carga de imagen
+   */
   /**
    * Maneja el error de carga de imagen
    */
@@ -170,24 +235,55 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   }
 
   /**
-   * Abre el modal de visualización de foto
+   * Maneja los outputs del sidebar
    */
-  abrirFotoModal(solicitud: Solicitud): void {
-    const url = this.obtenerUrlFoto(solicitud);
-    if (url) {
-      this.fotoModalUrl = url;
-      this.fotoModalTitulo =
-        solicitud.detalles_carga || `Foto de pedido #${solicitud.solicitud_id}`;
-      this.fotoModalAbierta = true;
-    }
+  handleSidebarOutputs(evento: { event: string; data: any }): void {
+    console.log('📤 Evento del sidebar:', evento.event, 'Data:', evento.data);
+    // Manejar eventos del sidebar si es necesario
   }
 
   /**
-   * Cierra el modal de visualización de foto
+   * Abre el popup para ver una foto en grande
    */
-  cerrarFotoModal(): void {
-    this.fotoModalAbierta = false;
-    this.fotoModalUrl = null;
-    this.fotoModalTitulo = null;
+  abrirPopupFoto(index: number): void {
+    this.fotoSeleccionadaIndex = index;
+    this.mostrarPopupFoto = true;
+  }
+
+  /**
+   * Cierra el popup de foto
+   */
+  cerrarPopupFoto(): void {
+    this.mostrarPopupFoto = false;
+    this.fotoSeleccionadaIndex = null;
+  }
+
+  /**
+   * Abre el popup del mapa
+   */
+  verMapa(): void {
+    if (!this.pedido) return;
+
+    console.log('🗺️ Abriendo mapa en popup');
+
+    this.popupMapaComponente = MapComponent;
+    this.popupMapaInputs = {
+      direccionOrigen: this.pedido.direccion_origen,
+      ciudadOrigen: this.pedido.localidad_origen?.nombre || '',
+      localidadOrigen: this.pedido.localidad_origen?.provincia || '',
+      direccionDestino: this.pedido.direccion_destino,
+      ciudadDestino: this.pedido.localidad_destino?.nombre || '',
+      localidadDestino: this.pedido.localidad_destino?.provincia || '',
+    };
+    this.popupMapaAbierto = true;
+  }
+
+  /**
+   * Abre el popup de enviar mensaje (placeholder para el usuario)
+   */
+  abrirPopupMensaje(): void {
+    console.log('💬 Abriendo popup de mensajes (a implementar)');
+    // TODO: El usuario implementará este componente
+    this.popupMensajeAbierto = true;
   }
 }
