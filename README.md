@@ -3,7 +3,7 @@ Angular 18
 
 ## Tecnolgías implementadas 
 - Supabase (Auth)
-- Ionic (Web apps)
+- Flowbite (Web apps / Mobile)
 - Leaflet (servicio para mapas)
 
 ### Documentación de Uso 
