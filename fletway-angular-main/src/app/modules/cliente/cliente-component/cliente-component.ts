@@ -12,6 +12,7 @@ import { PopupComponent } from '../../../shared/features/popup/popup.component';
 import { ClientePresupuesto } from '../cliente-presupuesto/cliente-presupuesto';
 import { PopupModalService } from '../../../shared/modal/popup';
 import { MapComponent } from '../../../shared/features/map/map';
+import { SolicitudFormComponent } from '../detalles-solicitud-cliente/solicitud';
 
 @Component({
   selector: 'app-cliente',
@@ -22,6 +23,7 @@ import { MapComponent } from '../../../shared/features/map/map';
     SolicitudesListComponent,
     SidebarComponent,
     PopupComponent,
+    SolicitudFormComponent,
   ],
 })
 export class ClienteComponent implements OnInit {
@@ -115,10 +117,6 @@ export class ClienteComponent implements OnInit {
     this.fotoModalAbierta = false;
     this.fotoModalUrl = null;
     this.fotoModalTitulo = null;
-  }
-
-  onAgregarPedido(): void {
-    this._router.navigate(['/cliente/nuevaSolicitud']);
   }
 
   onVerMapa(solicitud: Solicitud) {
@@ -218,11 +216,36 @@ export class ClienteComponent implements OnInit {
         this.aceptarPresupuesto(evento.data);
         this.sidebarVisible = false;
         break;
+      case 'solicitudCreada':
+        this.onSolicitudCreada(evento.data);
+        break;
       default:
         console.log('Evento no manejado:', evento.event);
     }
   }
 
+  onAgregarPedido(): void {
+    this.sidebarTitle = 'Agregar pedido';
+    this.componentToLoad = SolicitudFormComponent;
+    this.sidebarInputs = {
+      newSolicitud: true,
+    };
+    this.sidebarVisible = true;
+  }
+
+  onSolicitudCreada(solicitud: any): void {
+    console.log('✅ Solicitud creada:', solicitud);
+    // Cerrar el sidebar
+    this.sidebarVisible = false;
+    // Recargar las solicitudes
+    this.ngOnInit();
+    // Mostrar mensaje de éxito
+    this.popupModalService.showSuccess(
+      'Solicitud creada',
+      'Tu solicitud ha sido creada exitosamente.',
+      () => {},
+    );
+  }
   verPresupuestos(solicitud: Solicitud): void {
     this.sidebarTitle = 'Presupuestos';
     this.componentToLoad = ClientePresupuesto;

@@ -1,0 +1,146 @@
+/*
+ * Fletway - Clases utilitarias personalizadas
+ * Mantener consistencia visual en toda la aplicación
+ */
+
+/* Botones principales */
+.btn-fletway-primary {
+  @apply bg-orange-500 text-white px-6 py-3 rounded-xl font-semibold
+         shadow-fletway transform transition duration-300
+         hover:scale-105 hover:bg-orange-600
+         focus:outline-none focus:ring-2 focus:ring-orange-500
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+}
+
+.btn-fletway-secondary {
+  @apply bg-white text-fletway-blue-gray border-2 border-fletway-blue-gray px-6 py-3 rounded-xl font-semibold
+         shadow-blue-gray transform transition duration-300
+         hover:scale-105 hover:bg-fletway-beige
+         focus:outline-none focus:ring-2 focus:ring-fletway-blue-gray
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+}
+
+/* Inputs y formularios */
+.input-fletway {
+  @apply w-full p-3 border rounded-lg
+         focus:ring-2 focus:border-fletway-orange text-fletway-blue-gray placeholder-gray-400
+         border-gray-300 focus:border-orange-500;
+}
+
+.input-fletway-error {
+  @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+}
+
+.input-fletway-success {
+  @apply border-green-500 focus:ring-green-500 focus:border-green-500;
+}
+
+.select-fletway {
+  @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+         focus:ring-fletway-orange focus:border-fletway-orange block w-full p-2.5;
+}
+
+.label-fletway {
+  @apply block text-fletway-blue-gray text-sm font-medium mb-1;
+}
+
+/* Tarjetas y contenedores */
+.card-fletway {
+  @apply bg-white rounded-xl shadow-fletway border border-gray-200;
+}
+
+.card-fletway-hover {
+  @apply bg-white rounded-xl shadow-fletway border border-gray-200
+         transform transition duration-300 hover:scale-102 hover:shadow-fletway-lg;
+}
+
+/* Headers y navegación */
+.header-fletway {
+  @apply w-full bg-fletway-orange p-4 flex items-center justify-between shadow-fletway;
+}
+
+.header-fletway-title {
+  @apply text-fletway-white text-xl font-semibold;
+}
+
+.header-fletway-button {
+  @apply text-fletway-white text-2xl focus:outline-none hover:opacity-80;
+}
+
+/* Estados y notificaciones */
+.alert-fletway-success {
+  @apply p-4 mb-4 rounded-lg text-sm font-medium bg-green-100 text-green-800;
+}
+
+.alert-fletway-error {
+  @apply p-4 mb-4 rounded-lg text-sm font-medium bg-red-100 text-red-800;
+}
+
+.alert-fletway-warning {
+  @apply p-4 mb-4 rounded-lg text-sm font-medium bg-yellow-100 text-yellow-800;
+}
+
+/* Textos */
+.text-fletway-primary {
+  @apply text-fletway-blue-gray;
+}
+
+.text-fletway-accent {
+  @apply text-fletway-orange;
+}
+
+/* Fondos */
+.bg-fletway-main {
+  @apply bg-fletway-beige min-h-screen;
+}
+
+.bg-fletway-card {
+  @apply bg-white;
+}
+
+/* Sombras */
+.shadow-fletway-sm {
+  box-shadow: 0 2px 8px rgba(255, 111, 0, 0.1);
+}
+
+.shadow-fletway {
+  box-shadow: 0 4px 14px rgba(255, 111, 0, 0.15);
+}
+
+.shadow-fletway-lg {
+  box-shadow: 0 10px 25px -5px rgba(255, 111, 0, 0.2);
+}
+
+/* Utilidades de espaciado consistentes */
+.section-fletway {
+  @apply p-6 space-y-6;
+}
+
+.form-section-fletway {
+  @apply space-y-4;
+}
+
+.button-group-fletway {
+  @apply flex justify-around mt-8 space-x-4;
+}
+
+/* Loading y estados */
+.loading-fletway {
+  @apply flex items-center gap-2 text-fletway-orange;
+}
+
+.skeleton-fletway {
+  @apply bg-gray-200 rounded animate-pulse;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .btn-fletway-primary,
+  .btn-fletway-secondary {
+    @apply w-full text-base py-2.5;
+  }
+
+  .button-group-fletway {
+    @apply flex-col space-x-0 space-y-3;
+  }
+}

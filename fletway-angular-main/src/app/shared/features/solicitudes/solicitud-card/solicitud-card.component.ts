@@ -1,22 +1,56 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Solicitud } from '../../../../core/layouts/solicitud';
+import { SolicitudFlaskService } from '../../../../modules/data-access/solicitud-flask.service';
+import { SolcitudService } from '../../../../modules/data-access/solicitud-service';
 
 @Component({
   selector: 'app-solicitud-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './solicitud-card.component.html',
 })
-export class SolicitudCardComponent {
+export class SolicitudCardComponent implements OnInit {
+  private _solicitudFlaskService = inject(SolicitudFlaskService);
+  private _solicitudService = inject(SolcitudService);
+
   @Input() solicitud!: Solicitud;
   @Input() mostrarBotones: boolean = true;
+  /**
+   * Modo de visualización del card:
+   * - 'cliente': Muestra información del transportista y botones para cliente
+   * - 'fletero': Muestra información del cliente y botones para fletero
+   */
+  @Input() modo: 'cliente' | 'fletero' = 'cliente';
 
+  // Fotos desde Supabase
+  fotos: any[] = [];
+  cargandoFotos = false;
+  fotoSeleccionadaIndex: number | null = null;
+  mostrarPopupFoto = false;
+
+  // Eventos para ambos modos
   @Output() verMapa = new EventEmitter<Solicitud>();
+  @Output() verFoto = new EventEmitter<Solicitud>();
+
+  // Eventos específicos para cliente
   @Output() verPresupuestos = new EventEmitter<Solicitud>();
   @Output() cancelarPedido = new EventEmitter<Solicitud>();
   @Output() calificar = new EventEmitter<Solicitud>();
-  @Output() verFoto = new EventEmitter<Solicitud>();
+
+  // Eventos específicos para fletero
+  @Output() realizarViaje = new EventEmitter<Solicitud>();
+  @Output() completarViaje = new EventEmitter<Solicitud>();
+  @Output() realizarCotizacion = new EventEmitter<Solicitud>();
+  @Output() enviarMensaje = new EventEmitter<Solicitud>();
 
   get badgeClass(): string {
     const estado = (this.solicitud.estado || '').toLowerCase();
@@ -35,8 +69,39 @@ export class SolicitudCardComponent {
     }
   }
 
+  async ngOnInit(): Promise<void> {
+    await this.cargarFotos();
+  }
+
+  /**
+   * Carga las fotos de la solicitud desde la tabla fotos de Supabase
+   */
+  async cargarFotos(): Promise<void> {
+    if (!this.solicitud?.solicitud_id) return;
+
+    this.cargandoFotos = true;
+    try {
+      this.fotos = await this._solicitudService.getFotosBySolicitudId(
+        this.solicitud.solicitud_id,
+      );
+    } catch (error) {
+      console.error('Error cargando fotos:', error);
+      this.fotos = [];
+    } finally {
+      this.cargandoFotos = false;
+    }
+  }
+
   tieneFoto(): boolean {
-    return !!this.solicitud.foto && this.solicitud.foto.trim().length > 0;
+    return this.fotos.length > 0;
+  }
+
+  get fotoPrincipal(): any | null {
+    return this.fotos.length > 0 ? this.fotos[0] : null;
+  }
+
+  get fotosSecundarias(): any[] {
+    return this.fotos.slice(1);
   }
 
   get estadoTransportista(): 'asignado' | 'buscando' {
@@ -84,5 +149,71 @@ export class SolicitudCardComponent {
 
   onVerFoto(): void {
     this.verFoto.emit(this.solicitud);
+  }
+
+  /**
+   * Eventos específicos para modo fletero
+   */
+  onRealizarViaje(): void {
+    this.realizarViaje.emit(this.solicitud);
+  }
+
+  onCompletarViaje(): void {
+    this.completarViaje.emit(this.solicitud);
+  }
+
+  onRealizarCotizacion(): void {
+    this.realizarCotizacion.emit(this.solicitud);
+  }
+
+  onEnviarMensaje(): void {
+    this.enviarMensaje.emit(this.solicitud);
+  }
+
+  /**
+   * Abre el popup para ver una foto en grande
+   */
+  abrirPopupFoto(index: number): void {
+    this.fotoSeleccionadaIndex = index;
+    this.mostrarPopupFoto = true;
+  }
+
+  /**
+   * Cierra el popup de foto
+   */
+  cerrarPopupFoto(): void {
+    this.mostrarPopupFoto = false;
+    this.fotoSeleccionadaIndex = null;
+  }
+
+  /**
+   * Obtiene la URL de una foto (ya viene completa desde Supabase)
+   */
+  obtenerUrlFoto(foto: any): string {
+    return foto?.url || 'boxes.png';
+  }
+
+  /**
+   * Maneja el error de carga de imagen
+   */
+  handleImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'boxes.png';
+    }
+  }
+
+  /**
+   * Indica si está en modo cliente
+   */
+  get esCliente(): boolean {
+    return this.modo === 'cliente';
+  }
+
+  /**
+   * Indica si está en modo fletero
+   */
+  get esFletero(): boolean {
+    return this.modo === 'fletero';
   }
 }

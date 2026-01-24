@@ -590,4 +590,29 @@ export class SolcitudService {
       return { data: null, error: err };
     }
   }
+
+  /**
+   * Obtiene todas las fotos de una solicitud desde la tabla fotos
+   * @param solicitudId ID de la solicitud
+   * @returns Array de fotos ordenadas
+   */
+  async getFotosBySolicitudId(solicitudId: number): Promise<any[]> {
+    try {
+      const { data, error } = await this._supabaseClient
+        .from('fotos')
+        .select('*')
+        .eq('solc_id', solicitudId)
+        .order('orden', { ascending: true });
+
+      if (error) {
+        console.error('Error obteniendo fotos:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Error en getFotosBySolicitudId:', err);
+      return [];
+    }
+  }
 }

@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -16,6 +24,7 @@ import {
   switchMap,
   takeUntil,
 } from 'rxjs';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { Localidad } from '../../../core/layouts/localidad';
 import { MapComponent } from '../../../shared/features/map/map';
@@ -23,6 +32,7 @@ import { SolcitudService } from '../../data-access/solicitud-service';
 import { MapService } from '../../../shared/features/map/map-service';
 import { ToastService } from '../../../shared/modal/toast/toast.service';
 import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service'; // Importar el nuevo servicio
+import { Solicitud } from '../../../core/layouts/solicitud';
 
 @Component({
   selector: 'app-solicitud-solicitudForm',
@@ -33,16 +43,26 @@ import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service
     ReactiveFormsModule,
     RouterModule,
     MapComponent,
+    FontAwesomeModule,
   ],
 })
 export class SolicitudFormComponent implements OnInit, OnDestroy {
+  @Input() newSolicitud?: boolean = false;
+  @Input() editMode?: boolean = false;
+  @Output() solicitudCreada = new EventEmitter<Solicitud>();
+
   solicitudForm: FormGroup;
   files: FileList | null = null;
 
-  // Variables para la foto
-  fotoSeleccionada: File | null = null;
-  previsualizacionFoto: string | null = null;
-  subiendoFoto = false;
+  // Variables para fotos múltiples
+  fotosSeleccionadas: File[] = [];
+  previsualizacionFotos: string[] = [];
+  subiendoFotos = false;
+  fotoSeleccionadaIndex: number | null = null;
+  mostrarPopupFoto = false;
+  readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  readonly ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
+  readonly MAX_FOTOS = 10;
 
   // Separar localidades: todas vs filtradas
   todasLasLocalidades: Localidad[] = [];
@@ -75,9 +95,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       localidad_destino_id: ['', Validators.required],
       fechaRecogida: [null],
       horaRecogida: [null],
+      horaRecogidaDesde: [null],
+      horaRecogidaHasta: [null],
       detalle_carga: ['', Validators.required],
       detalle: ['', [Validators.required]],
       peso: [null, Validators.required],
+      tolerancia_min: [null, Validators.required],
     });
   }
 
@@ -211,49 +234,172 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Maneja la selección de la foto
+   * Maneja la selección de múltiples fotos
    */
-  onFotoSeleccionada(event: Event): void {
+  onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
+    if (!input.files || input.files.length === 0) return;
 
-      // Validar con el servicio Flask
-      const validacion = this.solicitudFlaskService.validarArchivo(file);
-      if (!validacion.valido) {
-        this.toastService.showDanger(
-          'Archivo inválido',
-          validacion.mensaje,
-          3000,
-        );
-        input.value = ''; // Limpiar input
-        return;
+    const files = Array.from(input.files);
+    const fotosValidas: File[] = [];
+    const errores: string[] = [];
+
+    // Validar cada archivo
+    for (const file of files) {
+      // Verificar límite de cantidad
+      if (
+        this.fotosSeleccionadas.length + fotosValidas.length >=
+        this.MAX_FOTOS
+      ) {
+        errores.push(`Máximo ${this.MAX_FOTOS} fotos permitidas`);
+        break;
       }
 
-      this.fotoSeleccionada = file;
+      // Validar tipo de archivo
+      if (!this.ALLOWED_TYPES.includes(file.type)) {
+        errores.push(`${file.name}: Solo se permiten archivos PNG o JPG`);
+        continue;
+      }
+
+      // Validar tamaño
+      if (file.size > this.MAX_FILE_SIZE) {
+        errores.push(
+          `${file.name}: Tamaño máximo ${this.MAX_FILE_SIZE / (1024 * 1024)}MB`,
+        );
+        continue;
+      }
+
+      fotosValidas.push(file);
+    }
+
+    // Agregar fotos válidas
+    fotosValidas.forEach((file) => {
+      this.fotosSeleccionadas.push(file);
 
       // Crear previsualización
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.previsualizacionFoto = e.target?.result as string;
+        this.previsualizacionFotos.push(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    });
 
-      this.toastService.showSuccess('Foto seleccionada', file.name, 2000);
+    // Mostrar errores si hay
+    if (errores.length > 0) {
+      this.toastService.showWarning(
+        'Algunas fotos no se agregaron',
+        errores.join(', '),
+        4000,
+      );
+    } else if (fotosValidas.length > 0) {
+      this.toastService.showSuccess(
+        `${fotosValidas.length} foto${fotosValidas.length > 1 ? 's' : ''} agregada${fotosValidas.length > 1 ? 's' : ''}`,
+        '',
+        2000,
+      );
     }
+
+    // Limpiar input
+    input.value = '';
   }
 
   /**
-   * Elimina la previsualización de la foto
+   * Elimina una foto de la lista
    */
-  eliminarFoto(): void {
-    this.fotoSeleccionada = null;
-    this.previsualizacionFoto = null;
+  onRemoveFoto(index: number): void {
+    this.fotosSeleccionadas.splice(index, 1);
+    this.previsualizacionFotos.splice(index, 1);
+    this.toastService.showSuccess('Foto eliminada', '', 2000);
+  }
 
-    // Limpiar el input file
-    const input = document.getElementById('fotoSolicitud') as HTMLInputElement;
-    if (input) {
-      input.value = '';
+  /**
+   * Abre el popup para previsualizar una foto
+   */
+  abrirPopupFoto(index: number): void {
+    this.fotoSeleccionadaIndex = index;
+    this.mostrarPopupFoto = true;
+  }
+
+  /**
+   * Cierra el popup de previsualización
+   */
+  cerrarPopupFoto(): void {
+    this.mostrarPopupFoto = false;
+    this.fotoSeleccionadaIndex = null;
+  }
+
+  /**
+   * Sube múltiples fotos a Supabase Storage y las guarda en la tabla fotos
+   */
+  private async uploadFotos(solicitudId: number): Promise<void> {
+    if (this.fotosSeleccionadas.length === 0) return;
+
+    this.subiendoFotos = true;
+    const supabase = this.solicitudService['_supabaseClient'];
+
+    try {
+      for (let i = 0; i < this.fotosSeleccionadas.length; i++) {
+        const file = this.fotosSeleccionadas[i];
+        const fileName = `${solicitudId}/${Date.now()}-${i}-${file.name}`;
+
+        // 1. Subir archivo a Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('fotos_solicitud')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(`Error subiendo foto ${file.name}:`, uploadError);
+          this.toastService.showWarning(
+            `Error subiendo ${file.name}`,
+            uploadError.message,
+            3000,
+          );
+          continue;
+        }
+
+        // 2. Obtener URL pública
+        const { data: urlData } = supabase.storage
+          .from('fotos_solicitud')
+          .getPublicUrl(fileName);
+
+        // 3. Guardar en tabla fotos
+        const { error: dbError } = await supabase.from('fotos').insert({
+          solc_id: solicitudId,
+          url: urlData.publicUrl,
+          archivo_nombre: file.name,
+          archivo_tamaño: file.size,
+          mime_type: file.type,
+          orden: i,
+          descripcion: null,
+        });
+
+        if (dbError) {
+          console.error(`Error guardando foto ${file.name} en BD:`, dbError);
+          this.toastService.showWarning(
+            `Error guardando ${file.name}`,
+            dbError.message,
+            3000,
+          );
+        }
+      }
+
+      this.toastService.showSuccess(
+        `${this.fotosSeleccionadas.length} foto(s) subida(s) correctamente`,
+        '',
+        3000,
+      );
+    } catch (error) {
+      console.error('Error en uploadFotos:', error);
+      this.toastService.showWarning(
+        'Error subiendo fotos',
+        'Revisa la consola',
+        3000,
+      );
+    } finally {
+      this.subiendoFotos = false;
     }
   }
 
@@ -287,14 +433,14 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     const payload = {
       direccion_origen: v.origen,
       direccion_destino: v.destino,
+      localidad_origen_id: Number(v.localidad_origen_id),
+      localidad_destino_id: Number(v.localidad_destino_id),
       fecha_recogida: v.fechaRecogida || undefined,
-      localidad_origen_id: v.localidad_origen_id,
-      localidad_destino_id: v.localidad_destino_id,
       hora_recogida_time: v.horaRecogida || undefined,
-      detalles_carga: v.detalle_carga || null,
-      medidas: v.detalle || null,
+      detalles_carga: v.detalle_carga || undefined,
+      medidas: v.detalle || undefined,
       peso: v.peso !== null ? Number(v.peso) : null,
-    } as const;
+    };
 
     try {
       console.log('Creando solicitud...', this.solicitudForm.value);
@@ -315,27 +461,10 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
       console.log('Solicitud creada con ID:', data.solicitud_id);
 
-      // 2. Si hay foto seleccionada, subirla a Flask
-      if (this.fotoSeleccionada) {
-        this.subiendoFoto = true;
-        try {
-          console.log('Subiendo foto...');
-          const respuesta = await this.solicitudFlaskService
-            .subirFoto(data.solicitud_id, this.fotoSeleccionada)
-            .toPromise();
-
-          console.log('Foto subida exitosamente:', respuesta);
-          this.toastService.showSuccess('Foto subida correctamente', '', 2000);
-        } catch (fotoError: unknown) {
-          console.error('Error subiendo foto:', fotoError);
-          let errorMsg = 'Hubo un error al subir la foto.';
-          if (fotoError instanceof Error) {
-            errorMsg += ' ' + fotoError.message;
-          }
-          this.toastService.showWarning('Solicitud creada', errorMsg, 4000);
-        } finally {
-          this.subiendoFoto = false;
-        }
+      // 2. Si hay fotos seleccionadas, subirlas a Supabase Storage
+      if (this.fotosSeleccionadas.length > 0) {
+        console.log(`Subiendo ${this.fotosSeleccionadas.length} foto(s)...`);
+        await this.uploadFotos(data.solicitud_id);
       }
 
       this.message = {
@@ -344,9 +473,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       };
 
       // Navegar después de 1 segundo para que el usuario vea el mensaje
-      setTimeout(() => {
-        this.router.navigate(['/cliente']);
-      }, 1000);
+      this.solicitudCreada.emit(data);
     } catch (err: unknown) {
       console.error('Error en submit:', err);
       let errorMessage = 'Error inesperado.';

@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { initFlowbite } from 'flowbite';
 import { filter } from 'rxjs';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { NavbarComponent } from './core/navbar/navbar-component/navbar-component';
 import { PopupModalContainer } from './shared/modal/popup/popup-modal-container';
@@ -10,7 +11,13 @@ import { ToastContainer } from './shared/modal/toast/toast-container';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, ToastContainer, PopupModalContainer],
+  imports: [
+    RouterOutlet,
+    NavbarComponent,
+    ToastContainer,
+    PopupModalContainer,
+    FontAwesomeModule,
+  ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })

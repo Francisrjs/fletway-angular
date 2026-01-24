@@ -10,7 +10,7 @@ Fletway es una plataforma digital (Web y Móvil) diseñada para conectar usuario
 
 El sistema utiliza una arquitectura MVC y se basa en servicios gestionados para reducir la complejidad del backend.  
  Frontend Web: Angular 17+ con TailwindCSS (Diseño responsivo).  
- Frontend Móvil: Ionic 7+ (Base de código única para Android/iOS/Web).  
+ Frontend Móvil: Flowbite (Base de código única para Android/iOS/Web).  
  Backend (Lógica de Negocio): Python Flask y Flask (API RESTful ligera para cálculos y orquestación).  
  Base de Datos y Auth: Supabase (PostgreSQL gestionado + Supabase Auth para gestión de sesiones).  
  Mapas: OpenStreetMap (API para renderizado y cálculo de rutas).

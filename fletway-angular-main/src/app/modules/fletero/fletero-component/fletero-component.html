@@ -1,830 +1,190 @@
-<section class="bg-gray-50flex items-center mt-2"></section>
-<section class="bg-gray-50 py-8 antialiased primary-beige-900 md:py-12">
+<section class="bg-gray-50 py-8 md:py-12 min-h-screen">
   <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
-    <h3
-      class="text-blue-gray-dark text-3xl font-semibold mb-4 border-b-2 border-primary-orange pb-2"
-    >
-      Nuevas Solicitudes PENDIENTES
-    </h3>
-
-    <div class="space-y-6">
-      <div class="max-w-screen-xl px-4 mx-auto lg:px-12 w-full">
-        <!-- Start coding here -->
-        <div
-          class="relative bg-white shadow-md dark:bg-secondary-beige sm:rounded-lg"
-        >
-          <div
-            class="flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4"
-          >
-            <div class="w-full md:w-1/2">
-              <form class="flex items-center">
-                <label for="simple-search" class="sr-only"
-                  >Buscar Solicitudes</label
-                >
-                <div class="relative w-full">
-                  <div
-                    class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="w-5 h-5 text-dark-500 dark:text-dark-400"
-                      fill="currentColor"
-                      viewbox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    id="simple-search"
-                    class="block w-full p-2 pl-10 text-sm text-dark-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:border-orange-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder="Buscar pedidos"
-                    required=""
-                  />
-                </div>
-              </form>
-            </div>
-            <div
-              class="flex flex-col items-stretch justify-end flex-shrink-0 w-full space-y-2 md:w-auto md:flex-row md:space-y-0 md:items-center md:space-x-3"
-            >
-              <!-- <button
-            id="actionsDropdownButton"
-            data-dropdown-toggle="actionsDropdown"
-            class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-900 bg-white border border-gray-200 rounded-lg md:w-auto focus:outline-none hover:bg-orange-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 primary-beige-800 dark:text-dark-400 dark:border-orange-600 dark:hover:text-white dark:hover:bg-orange-700"
-            type="button"
-          >
-            <svg
-              class="w-6 h-6 text-green-800 dark:text-green"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 12h14m-7 7V5"
-              />
-            </svg>
-
-            Añadir Pedido
-          </button> -->
-              <div class="flex items-center w-full space-x-3 md:w-auto">
-                <!-- <button
-              id="actionsDropdownButton"
-              data-dropdown-toggle="actionsDropdown"
-              class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-900 bg-blue border border-gray-200 rounded-lg md:w-auto focus:outline-none hover:bg-orange-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 primary-beige-800 dark:text-dark-400 dark:border-orange-600 dark:hover:text-white dark:hover:bg-orange-700"
-              type="button"
-            >
-              <svg
-                class="-ml-1 mr-1.5 w-5 h-5"
-                fill="currentColor"
-                viewbox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  clip-rule="evenodd"
-                  fill-rule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                />
-              </svg>
-              Actions
-            </button> -->
-                <div
-                  id="actionsDropdown"
-                  class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-44 primary-beige-700 dark:divide-gray-600"
-                >
-                  <ul
-                    class="py-1 text-sm text-dark-700 dark:text-dark-200"
-                    aria-labelledby="actionsDropdownButton"
-                  >
-                    <li>
-                      <a
-                        href="#"
-                        class="block px-4 py-2 hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white"
-                        >Mass Edit</a
-                      >
-                    </li>
-                  </ul>
-                  <div class="py-1">
-                    <a
-                      href="#"
-                      class="block px-4 py-2 text-sm text-dark-700 hover:bg-orange-100 dark:hover:bg-orange-600 dark:text-dark-200 dark:hover:text-white"
-                      >Delete all</a
-                    >
-                  </div>
-                </div>
-                <button
-                  id="filterDropdownButton"
-                  data-dropdown-toggle="filterDropdown"
-                  class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-dark-900 bg-white border border-gray-200 rounded-lg md:w-auto focus:outline-none hover:bg-orange-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 primary-beige-800 dark:text-dark-400 dark:border-orange-600 dark:hover:text-white dark:hover:bg-orange-700"
-                  type="button"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    class="w-4 h-4 mr-2 text-dark-400"
-                    viewbox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  Filtros
-                  <svg
-                    class="-mr-1 ml-1.5 w-5 h-5"
-                    fill="currentColor"
-                    viewbox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      clip-rule="evenodd"
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    />
-                  </svg>
-                </button>
-                <!-- Dropdown menu -->
-                <div
-                  id="filterDropdown"
-                  class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow primary-beige-700"
-                >
-                  <h6 class="mb-3 text-sm font-medium text-dark-900">
-                    Category
-                  </h6>
-                  <ul
-                    class="space-y-2 text-sm"
-                    aria-labelledby="dropdownDefault"
-                  >
-                    <li class="flex items-center">
-                      <input
-                        id="apple"
-                        type="checkbox"
-                        value=""
-                        class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 primary-beige-600 dark:border-orange-500"
-                      />
-                      <label
-                        for="apple"
-                        class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-100"
-                      >
-                        Apple (56)
-                      </label>
-                    </li>
-                    <li class="flex items-center">
-                      <input
-                        id="fitbit"
-                        type="checkbox"
-                        value=""
-                        class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 primary-beige-600 dark:border-orange-500"
-                      />
-                      <label
-                        for="fitbit"
-                        class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-100"
-                      >
-                        Fitbit (56)
-                      </label>
-                    </li>
-                    <li class="flex items-center">
-                      <input
-                        id="dell"
-                        type="checkbox"
-                        value=""
-                        class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 primary-beige-600 dark:border-orange-500"
-                      />
-                      <label
-                        for="dell"
-                        class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-100"
-                      >
-                        Dell (56)
-                      </label>
-                    </li>
-                    <li class="flex items-center">
-                      <input
-                        id="asus"
-                        type="checkbox"
-                        value=""
-                        checked
-                        class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 primary-beige-600 dark:border-orange-500"
-                      />
-                      <label
-                        for="asus"
-                        class="ml-2 text-sm font-medium text-dark-900 dark:text-dark-100"
-                      >
-                        Asus (97)
-                      </label>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Panel de Fletero
+          </h1>
+          <p class="text-gray-600">Gestiona tus solicitudes y viajes activos</p>
+        </div>
+        <div class="hidden md:flex items-center gap-3">
+          <div class="text-right">
+            <p class="text-sm text-gray-500">Total de pedidos</p>
+            <p class="text-2xl font-bold text-orange-600">
+              {{
+                (solicitudes_disponibles?.length || 0) +
+                  (solicitudes_pendientes?.length || 0)
+              }}
+            </p>
           </div>
         </div>
       </div>
-      <div *ngIf="loading" class="text-center py-10 text-gray-500">
-        Cargando pedidos...
-      </div>
+    </div>
 
-      <div *ngIf="error" class="text-center py-10 text-red-600">
-        {{ error }}
+    <!-- Estados de carga y error -->
+    <div *ngIf="loading" class="flex items-center justify-center py-20">
+      <div class="text-center">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"
+        ></div>
+        <p class="text-gray-600">Cargando solicitudes...</p>
       </div>
+    </div>
 
+    <div
+      *ngIf="error"
+      class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
+    >
+      <div class="flex items-center gap-3">
+        <svg
+          class="w-6 h-6 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p class="text-red-800 font-medium">{{ error }}</p>
+      </div>
+    </div>
+
+    <div
+      *ngIf="!loading && solicitudes.length === 0"
+      class="text-center py-20 bg-white rounded-xl border border-gray-200"
+    >
       <div
-        *ngIf="!loading && solicitudes.length === 0"
-        class="text-center py-10 text-gray-500"
+        class="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4"
       >
-        No tienes pedidos para mostrar.
+        <svg
+          class="w-8 h-8 text-orange-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+          />
+        </svg>
       </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">
+        No hay solicitudes disponibles
+      </h3>
+      <p class="text-gray-500">Las nuevas solicitudes aparecerán aquí</p>
+    </div>
 
-      <div
-        *ngFor="let s of solicitudes_disponibles"
-        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
-      >
-        <div class="md:flex md:items-start md:gap-8">
-          <div class="flex-1">
-            <div class="mb-4 flex items-center justify-between">
-              <span [ngClass]="badgeClass(s.estado)">
-                {{ s.estado ?? "Sin estado" }}
-              </span>
-              <button
-                type="button"
-                class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <span class="sr-only">Ver Opciones</span>
-                <svg
-                  class="h-6 w-6"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 3a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 9a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm1.5 7.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div class="flex items-start gap-4">
-              <img class="h-10 w-10" src="boxes.png" alt="Ícono de pedido" />
-              <div>
-                <a
-                  href="#"
-                  class="text-lg font-semibold leading-tight text-gray-900 hover:underline"
-                >
-                  {{ s.detalles_carga || "Pedido #" + s.solicitud_id }}
-                </a>
-                <p class="mt-1 text-sm text-gray-500">
-                  Creado: {{ s.fecha_creacion | date: "medium" }}
-                </p>
-              </div>
-            </div>
-
-            <div class="mt-4 space-y-2 border-t border-gray-200 pt-4">
-              <div class="flex items-center gap-2">
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                  />
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17.8 13.938h-.011a7 7 0 1 0-11.464.144h-.016l.141.17c.1.128.2.252.3.372L12 21l5.13-6.248c.194-.236.38-.48.57-.714Z"
-                  />
-                </svg>
-                <p class="text-sm text-gray-700">
-                  <span class="font-medium text-gray-900">Origen:</span>
-                  {{ s.direccion_origen }}, {{ s.localidad_origen?.nombre }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 6.092v11.816M12 6.092a6.03 6.03 0 0 1 5.382 9.025M12 6.092a6.03 6.03 0 0 0-5.382 9.025M12 17.908a6.03 6.03 0 0 1-5.382-9.025M12 17.908a6.03 6.03 0 0 0 5.382-9.025"
-                  />
-                </svg>
-                <p class="text-sm text-gray-700">
-                  <span class="font-medium text-gray-900">Destino:</span>
-                  {{ s.direccion_destino }}, {{ s.localidad_destino?.nombre }}
-                </p>
-              </div>
-
-              <!-- SECCIÓN DE FOTO ACTUALIZADA -->
-              <div class="mt-4">
-                @if (tieneFoto(s)) {
-                  <!-- Mostrar foto si existe -->
-                  <div class="relative group">
-                    <button
-                      type="button"
-                      [attr.aria-label]="'Ver foto de ' + s.detalles_carga"
-                      (click)="abrirFotoModal(s)"
-                      (keydown.enter)="abrirFotoModal(s)"
-                      (keydown.space)="abrirFotoModal(s)"
-                      class="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-lg"
-                    >
-                      <img
-                        [src]="obtenerUrlFoto(s)"
-                        [alt]="'Foto de ' + s.detalles_carga"
-                        class="h-64 w-full rounded-lg object-contain bg-gray-100 shadow-md cursor-pointer transition-transform hover:scale-105 border border-gray-200"
-                        (error)="handleImageError($event)"
-                      />
-                    </button>
-                    <div
-                      class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <svg
-                        class="w-5 h-5 text-gray-700"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                } @else {
-                  <!-- Placeholder si no hay foto -->
-                  <div
-                    class="flex items-center justify-center h-64 w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50"
-                  >
-                    <div class="text-center">
-                      <svg
-                        class="mx-auto h-12 w-12 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <p class="mt-2 text-sm text-gray-500">
-                        Sin foto disponible
-                      </p>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="mt-6 shrink-0 md:mt-0 md:border-s md:border-gray-200 md:ps-8"
-          ></div>
-
-          <div class="mt-6 w-full md:mt-0 md:max-w-xs">
-            <div
-              class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center"
-            >
-              <h3 class="mb-3 text-base font-semibold text-gray-900">
-                Información del Cliente
-              </h3>
-              <img
-                class="mx-auto mb-3 h-24 w-24 rounded-full shadow-md"
-                src="boy.png"
-                alt="Foto del cliente"
-              />
-              <div *ngIf="s.cliente as c">
-                <h5 class="mb-1 text-lg font-medium text-gray-900">
-                  {{ c.nombre }} {{ c.apellido }}
-                </h5>
-                <span class="text-sm text-gray-500">
-                  Teléfono: {{ c.telefono ?? "Sin teléfono" }}
-                </span>
-              </div>
-
-              <div class="mt-4">
-                <a
-                  href="#"
-                  class="inline-flex w-full justify-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300"
-                >
-                  <svg
-                    class="-ms-2 me-2 h-5 w-5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 17h6l3 3v-3h2V9h-2M4 4h11v8H9l-3 3v-3H4V4Z"
-                    />
-                  </svg>
-                  Enviar Mensaje
-                </a>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              (click)="openMap(s, true)"
-              class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-100"
+    <!-- Solicitudes Disponibles -->
+    <div *ngIf="!loading && solicitudes_disponibles.length > 0" class="mb-12">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg"
             >
               <svg
-                class="w-6 h-6 text-orange-300 dark:text-orange"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957.996.996 0 0 1-.133.204l-.108.129c-.178.243-.37.477-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26l-.002-.002a18.146 18.146 0 0 1-.309-.38l-.133-.163a.999.999 0 0 1-.13-.202 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-
-              Ver en el Mapa
-            </button>
-            <button
-              type="button"
-              [routerLink]="['/fletero/detalle', s.solicitud_id]"
-              class="mt-4 inline-flex w-full text-sucess items-center justify-center rounded-lg border border-gray-300 bg-primary-gray px-5 py-2.5 text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-4 focus:ring-gray-100"
-            >
-              <svg
-                class="w-6 h-6 text-gray-800 dark:text-sucess"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                class="w-6 h-6 text-blue-600"
                 fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path
-                  stroke="currentColor"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M8 17.345a4.76 4.76 0 0 0 2.558 1.618c2.274.589 4.512-.446 4.999-2.31.487-1.866-1.273-3.9-3.546-4.49-2.273-.59-4.034-2.623-3.547-4.488.486-1.865 2.724-2.899 4.998-2.31.982.236 1.87.793 2.538 1.592m-3.879 12.171V21m0-18v2.2"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                 />
               </svg>
-
-              <br />
-              Realizar Cotización
-            </button>
-          </div>
-        </div>
-      </div>
-      <h3
-        class="text-blue-gray-dark text-3xl font-semibold mb-4 border-b-2 border-primary-orange pb-2"
-      >
-        Pedidos en viaje / pendientes
-      </h3>
-      <div
-        *ngFor="let s of solicitudes_pendientes"
-        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
-      >
-        <div class="md:flex md:items-start md:gap-8">
-          <div class="flex-1">
-            <div class="mb-4 flex items-center justify-between">
-              <span [ngClass]="badgeClass(s.estado)">
-                {{ s.estado ?? "Sin estado" }}
-              </span>
-              <button
-                type="button"
-                class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <span class="sr-only">Ver Opciones</span>
-                <svg
-                  class="h-6 w-6"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 3a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 9a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm1.5 7.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div class="flex items-start gap-4">
-              <img class="h-10 w-10" src="boxes.png" alt="Ícono de pedido" />
-              <div>
-                <a
-                  href="#"
-                  class="text-lg font-semibold leading-tight text-gray-900 hover:underline"
-                >
-                  {{ s.detalles_carga || "Pedido #" + s.solicitud_id }}
-                </a>
-                <p class="mt-1 text-sm text-gray-500">
-                  Creado: {{ s.fecha_creacion | date: "medium" }}
-                </p>
-              </div>
-            </div>
-
-            <div class="mt-4 space-y-2 border-t border-gray-200 pt-4">
-              <div class="flex items-center gap-2">
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                  />
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17.8 13.938h-.011a7 7 0 1 0-11.464.144h-.016l.141.17c.1.128.2.252.3.372L12 21l5.13-6.248c.194-.236.38-.48.57-.714Z"
-                  />
-                </svg>
-                <p class="text-sm text-gray-700">
-                  <span class="font-medium text-gray-900">Origen:</span>
-                  {{ s.direccion_origen }}, {{ s.localidad_origen?.nombre }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 6.092v11.816M12 6.092a6.03 6.03 0 0 1 5.382 9.025M12 6.092a6.03 6.03 0 0 0-5.382 9.025M12 17.908a6.03 6.03 0 0 1-5.382-9.025M12 17.908a6.03 6.03 0 0 0 5.382-9.025"
-                  />
-                </svg>
-                <p class="text-sm text-gray-700">
-                  <span class="font-medium text-gray-900">Destino:</span>
-                  {{ s.direccion_destino }}, {{ s.localidad_destino?.nombre }}
-                </p>
-              </div>
-
-              <!-- SECCIÓN DE FOTO ACTUALIZADA -->
-              <div class="mt-4">
-                @if (tieneFoto(s)) {
-                  <!-- Mostrar foto si existe -->
-                  <div class="relative group">
-                    <button
-                      type="button"
-                      [attr.aria-label]="'Ver foto de ' + s.detalles_carga"
-                      (click)="abrirFotoModal(s)"
-                      (keydown.enter)="abrirFotoModal(s)"
-                      (keydown.space)="abrirFotoModal(s)"
-                      class="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-lg"
-                    >
-                      <img
-                        [src]="obtenerUrlFoto(s)"
-                        [alt]="'Foto de ' + s.detalles_carga"
-                        class="w-full h-64 object-contain bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow"
-                        (error)="handleImageError($event)"
-                      />
-                    </button>
-                    <div
-                      class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <svg
-                        class="h-5 w-5 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                } @else {
-                  <!-- Placeholder si no hay foto -->
-                  <div
-                    class="flex items-center justify-center h-64 w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50"
-                  >
-                    <div class="text-center">
-                      <svg
-                        class="mx-auto h-12 w-12 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <p class="mt-2 text-sm text-gray-500">
-                        Sin foto disponible
-                      </p>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="mt-6 shrink-0 md:mt-0 md:border-s md:border-gray-200 md:ps-8"
-          ></div>
-
-          <div class="mt-6 w-full md:mt-0 md:max-w-xs">
-            <div
-              class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center"
+            </span>
+            Nuevas Solicitudes
+          </h2>
+          <p class="text-gray-600 mt-1">
+            {{ solicitudes_disponibles.length }} solicitud<span
+              *ngIf="solicitudes_disponibles.length !== 1"
+              >es</span
             >
-              <h3 class="mb-3 text-base font-semibold text-gray-900">
-                Información del Cliente
-              </h3>
-              <img
-                class="mx-auto mb-3 h-24 w-24 rounded-full shadow-md"
-                src="boy.png"
-                alt="Foto del cliente"
-              />
-              <div *ngIf="s.cliente as c">
-                <h5 class="mb-1 text-lg font-medium text-gray-900">
-                  {{ c.nombre }} {{ c.apellido }}
-                </h5>
-                <span class="text-sm text-gray-500">
-                  Teléfono: {{ c.telefono ?? "Sin teléfono" }}
-                </span>
-              </div>
+            disponible<span *ngIf="solicitudes_disponibles.length !== 1"
+              >s</span
+            >
+          </p>
+        </div>
+        <span
+          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+        >
+          {{ solicitudes_disponibles.length }}
+        </span>
+      </div>
 
-              <div class="mt-4">
-                <a
-                  href="#"
-                  class="inline-flex w-full justify-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300"
-                >
-                  <svg
-                    class="-ms-2 me-2 h-5 w-5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 17h6l3 3v-3h2V9h-2M4 4h11v8H9l-3 3v-3H4V4Z"
-                    />
-                  </svg>
-                  Enviar Mensaje
-                </a>
-              </div>
-            </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <app-solicitud-card
+          *ngFor="let s of solicitudes_disponibles || []"
+          [solicitud]="s"
+          [modo]="'fletero'"
+          [mostrarBotones]="true"
+          (verMapa)="openMap(s, true)"
+          (enviarMensaje)="enviarMensaje(s)"
+          (verFoto)="abrirFotoModal(s)"
+        ></app-solicitud-card>
+      </div>
+    </div>
 
-            <button
-              type="button"
-              (click)="openMap(s, true)"
-              class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-100"
+    <!-- Solicitudes Pendientes / En Viaje -->
+    <div *ngIf="!loading && solicitudes_pendientes.length > 0">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg"
             >
               <svg
-                class="w-6 h-6 text-orange-300 dark:text-orange"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                class="w-6 h-6 text-green-600"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path
                   fill-rule="evenodd"
-                  d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957.996.996 0 0 1-.133.204l-.108.129c-.178.243-.37.477-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26l-.002-.002a18.146 18.146 0 0 1-.309-.38l-.133-.163a.999.999 0 0 1-.13-.202 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z"
+                  d="M4 4a2 2 0 0 0-2 2v9a1 1 0 0 0 1 1h.535a3.5 3.5 0 1 0 6.93 0h3.07a3.5 3.5 0 1 0 6.93 0H21a1 1 0 0 0 1-1v-4a.999.999 0 0 0-.106-.447l-2-4A1 1 0 0 0 19 6h-5a2 2 0 0 0-2-2H4Zm14.192 11.59.016.02a1.5 1.5 0 1 1-.016-.021Zm-10 0 .016.02a1.5 1.5 0 1 1-.016-.021Zm5.806-5.572v-2.02h4.396l1 2.02h-5.396Z"
                   clip-rule="evenodd"
                 />
               </svg>
-
-              Ver en el Mapa
-            </button>
-            <!-- Viaje botones -->
-            @if (s.estado === "pendiente") {
-              <button
-                type="button"
-                (click)="realizarViaje(s)"
-                class="mt-4 inline-flex w-full text-white items-center justify-center rounded-lg border border-gray-300 bg-blue-900 px-5 py-2.5 text-sm font-medium hover:bg-blue-900 focus:outline-none focus:ring-4 focus:ring-gray-100"
-              >
-                <svg
-                  class="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M4 4a2 2 0 0 0-2 2v9a1 1 0 0 0 1 1h.535a3.5 3.5 0 1 0 6.93 0h3.07a3.5 3.5 0 1 0 6.93 0H21a1 1 0 0 0 1-1v-4a.999.999 0 0 0-.106-.447l-2-4A1 1 0 0 0 19 6h-5a2 2 0 0 0-2-2H4Zm14.192 11.59.016.02a1.5 1.5 0 1 1-.016-.021Zm-10 0 .016.02a1.5 1.5 0 1 1-.016-.021Zm5.806-5.572v-2.02h4.396l1 2.02h-5.396Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-
-                <br />
-                Realizar viaje
-              </button>
-            } @else {
-              <button
-                type="button"
-                (click)="viajeCompletado(s)"
-                class="mt-4 inline-flex w-full text-white items-center justify-center rounded-lg border border-gray-300 bg-green-700 px-5 py-2.5 text-sm font-medium hover:bg-blue-900 focus:outline-none focus:ring-4 focus:ring-gray-100"
-              >
-                <span class="inline-flex items-center gap-2">
-                  <svg
-                    class="w-6 h-6 text-white-600"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span class="font-semibold text-white-700"
-                    >Viaje Completado</span
-                  >
-                </span>
-              </button>
-            }
-          </div>
+            </span>
+            Viajes Activos
+          </h2>
+          <p class="text-gray-600 mt-1">
+            {{ solicitudes_pendientes.length }} viaje<span
+              *ngIf="solicitudes_pendientes.length !== 1"
+              >s</span
+            >
+            en progreso
+          </p>
         </div>
+        <span
+          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+        >
+          {{ solicitudes_pendientes.length }}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <app-solicitud-card
+          *ngFor="let s of solicitudes_pendientes || []"
+          [solicitud]="s"
+          [modo]="'fletero'"
+          [mostrarBotones]="true"
+          (verMapa)="openMap(s, true)"
+          (realizarViaje)="realizarViaje(s)"
+          (completarViaje)="viajeCompletado(s)"
+          (enviarMensaje)="enviarMensaje(s)"
+          (verFoto)="abrirFotoModal(s)"
+        ></app-solicitud-card>
       </div>
     </div>
   </div>
