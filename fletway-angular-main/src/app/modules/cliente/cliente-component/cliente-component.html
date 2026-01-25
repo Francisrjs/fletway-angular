@@ -5,10 +5,12 @@
       [loading]="loading"
       titulo="Historial de pedidos"
       [mostrarBotonAgregar]="true"
+      modo="cliente"
       (agregarPedido)="onAgregarPedido()"
       (verMapa)="onVerMapa($event)"
       (verPresupuestos)="onVerPresupuestos($event)"
       (cancelarPedido)="onCancelarPedido($event)"
+      (enviarMensaje)="enviarMensaje($event)"
       (calificar)="onCalificar($event)"
       (verFoto)="abrirFotoModal($event)"
     ></app-solicitudes-list>

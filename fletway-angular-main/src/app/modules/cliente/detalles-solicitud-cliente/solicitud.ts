@@ -50,7 +50,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   @Input() newSolicitud?: boolean = false;
   @Input() editMode?: boolean = false;
   @Output() solicitudCreada = new EventEmitter<Solicitud>();
-
+  @Output() onCancel = new EventEmitter<void>();
+  @Output() solicitudEditada = new EventEmitter<Solicitud>();
   solicitudForm: FormGroup;
   files: FileList | null = null;
 
@@ -78,6 +79,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
   originTyped = false;
   destinoTyped = false;
+
+  // Validación de direcciones
+  direccionOrigenValida = false;
+  direccionDestinoValida = false;
+  validandoDireccionOrigen = false;
+  validandoDireccionDestino = false;
 
   private destroy$ = new Subject<void>();
   private fb = inject(FormBuilder);
@@ -131,6 +138,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((value) => {
         this.originSearch$.next(value || '');
+        // Invalidar validación cuando cambia la dirección
+        this.direccionOrigenValida = false;
+        // Revalidar dirección automáticamente
+        if (value && value.trim().length > 5) {
+          this.validarDireccionOrigen(value);
+        }
       });
 
     this.originSearch$
@@ -183,6 +196,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((value) => {
         this.destinoSearch$.next(value || '');
+        // Invalidar validación cuando cambia la dirección
+        this.direccionDestinoValida = false;
+        // Revalidar dirección automáticamente
+        if (value && value.trim().length > 5) {
+          this.validarDireccionDestino(value);
+        }
       });
 
     this.destinoSearch$
@@ -424,6 +443,53 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       this.message = { type: 'error', text: 'Revisá los campos obligatorios.' };
       return;
     }
+    this.toastService.showWarning('Guardando solicitud...');
+
+    // Validar fecha de recogida no sea anterior a hoy
+    const fechaRecogida = this.solicitudForm.value.fechaRecogida;
+    if (fechaRecogida) {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const fechaSeleccionada = new Date(fechaRecogida);
+      fechaSeleccionada.setHours(0, 0, 0, 0);
+
+      if (fechaSeleccionada < hoy) {
+        this.toastService.showWarning(
+          'Fecha inválida',
+          'La fecha de recogida no puede ser anterior a hoy',
+          4000,
+        );
+        return;
+      }
+    }
+
+    // Validar direcciones
+    const origenValido = await this.validarDireccion(
+      this.solicitudForm.value.origen,
+      'origen',
+    );
+    const destinoValido = await this.validarDireccion(
+      this.solicitudForm.value.destino,
+      'destino',
+    );
+
+    if (!origenValido) {
+      this.toastService.showWarning(
+        'Dirección de origen inválida',
+        'No se encontraron coordenadas para la dirección de origen. Verifique la dirección.',
+        4000,
+      );
+      return;
+    }
+
+    if (!destinoValido) {
+      this.toastService.showWarning(
+        'Dirección de destino inválida',
+        'No se encontraron coordenadas para la dirección de destino. Verifique la dirección.',
+        4000,
+      );
+      return;
+    }
 
     this.submitting = true;
     this.message = { type: null };
@@ -467,6 +533,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         await this.uploadFotos(data.solicitud_id);
       }
 
+      this.toastService.showSuccess(
+        'Pedido creado correctamente',
+        'Tu solicitud ha sido creada exitosamente',
+        3000,
+      );
+
       this.message = {
         type: 'success',
         text: 'Pedido creado correctamente.',
@@ -480,6 +552,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
+      this.toastService.showDanger('Error al crear pedido', errorMessage, 4000);
       this.message = {
         type: 'error',
         text: errorMessage,
@@ -525,6 +598,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         { origen: nuevaDireccion },
         { emitEvent: false },
       );
+      // Validar la nueva dirección
+      this.validarDireccionOrigen(nuevaDireccion);
     }
   }
 
@@ -534,10 +609,108 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         { destino: nuevaDireccion },
         { emitEvent: false },
       );
+      // Validar la nueva dirección
+      this.validarDireccionDestino(nuevaDireccion);
     }
   }
 
+  /**
+   * Valida dirección de origen (método público para uso reactivo)
+   */
+  validarDireccionOrigen(direccion: string): void {
+    this.validarDireccion(direccion, 'origen');
+  }
+
+  /**
+   * Valida dirección de destino (método público para uso reactivo)
+   */
+  validarDireccionDestino(direccion: string): void {
+    this.validarDireccion(direccion, 'destino');
+  }
+
+  /**
+   * Valida que una dirección tenga coordenadas válidas
+   * Se ejecuta cada vez que cambia la dirección
+   */
+  private async validarDireccion(
+    direccion: string,
+    tipo: 'origen' | 'destino',
+  ): Promise<boolean> {
+    if (!direccion || direccion.trim().length === 0) {
+      if (tipo === 'origen') {
+        this.direccionOrigenValida = false;
+      } else {
+        this.direccionDestinoValida = false;
+      }
+      return false;
+    }
+
+    // Marcar que estamos validando
+    if (tipo === 'origen') {
+      this.validandoDireccionOrigen = true;
+    } else {
+      this.validandoDireccionDestino = true;
+    }
+
+    try {
+      const coordenadas = await new Promise<[number, number] | null>(
+        (resolve) => {
+          this.mapService.getCoordinates(direccion).subscribe({
+            next: (coords) => resolve(coords),
+            error: () => resolve(null),
+          });
+        },
+      );
+
+      const esValida =
+        coordenadas !== null &&
+        !isNaN(coordenadas[0]) &&
+        !isNaN(coordenadas[1]);
+
+      if (tipo === 'origen') {
+        this.direccionOrigenValida = esValida;
+      } else {
+        this.direccionDestinoValida = esValida;
+      }
+
+      console.log(
+        `📍 Validación ${tipo}:`,
+        direccion,
+        '→',
+        esValida ? '✓' : '✗',
+        coordenadas,
+      );
+      return esValida;
+    } catch (error) {
+      console.error(`Error validando dirección ${tipo}:`, error);
+      if (tipo === 'origen') {
+        this.direccionOrigenValida = false;
+      } else {
+        this.direccionDestinoValida = false;
+      }
+      return false;
+    } finally {
+      if (tipo === 'origen') {
+        this.validandoDireccionOrigen = false;
+      } else {
+        this.validandoDireccionDestino = false;
+      }
+    }
+  }
+
+  /**
+   * Obtiene la fecha mínima permitida (hoy)
+   */
+  get fechaMinima(): string {
+    const hoy = new Date();
+    return hoy.toISOString().split('T')[0];
+  }
+
   cancel() {
-    history.back();
+    if (this.newSolicitud) {
+      this.onCancel.emit();
+    } else {
+      history.back();
+    }
   }
 }

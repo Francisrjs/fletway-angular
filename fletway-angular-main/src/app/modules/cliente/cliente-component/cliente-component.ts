@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, Type } from '@angular/core';
+import { Component, effect, inject, OnInit, Type } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/data-access/auth-service';
 import { Solicitud } from '../../../core/layouts/solicitud';
@@ -13,6 +13,7 @@ import { ClientePresupuesto } from '../cliente-presupuesto/cliente-presupuesto';
 import { PopupModalService } from '../../../shared/modal/popup';
 import { MapComponent } from '../../../shared/features/map/map';
 import { SolicitudFormComponent } from '../detalles-solicitud-cliente/solicitud';
+import { ToastService } from '../../../shared/modal/toast';
 
 @Component({
   selector: 'app-cliente',
@@ -32,6 +33,7 @@ export class ClienteComponent implements OnInit {
   private _authService = inject(AuthService);
   private _presupuestoService = inject(PresupuestoService);
   private popupModalService = inject(PopupModalService);
+  private toastService = inject(ToastService);
   private _router = inject(Router);
 
   //sidebar parametros
@@ -59,6 +61,14 @@ export class ClienteComponent implements OnInit {
   calificacionSeleccionada: number | null = null;
   solicitudSeleccionada: any = null;
   numerosCalificacion = Array.from({ length: 11 }, (_, i) => i);
+
+  constructor() {
+    // Effect para escuchar cambios en la señal de solicitudes
+    effect(() => {
+      this.solicitudes = this._solService.solicitudes();
+      console.log('📋 Solicitudes actualizadas:', this.solicitudes);
+    });
+  }
 
   async ngOnInit(): Promise<void> {
     await this.cargarSolicitudes();
@@ -133,6 +143,32 @@ export class ClienteComponent implements OnInit {
 
   onCancelarPedido(solicitud: Solicitud): void {
     console.log('🗑️ Cancelar pedido:', solicitud.solicitud_id);
+    this.popupModalService.showDanger(
+      '¿Desea Cancelar  el pedido?',
+      'Una vez cancelado, el pedido no podrá ser aceptado ni rechazado y se eliminará de su lista',
+      async () => {
+        try {
+          await this._solService.eliminarSolicitud(solicitud.solicitud_id);
+          this.toastService.showSuccess(
+            'Pedido cancelado',
+            'El pedido ha sido cancelado correctamente',
+          );
+        } catch (error) {
+          this.toastService.showDanger(
+            'Error al cancelar el pedido',
+            'No se pudo cancelar el pedido  ' + error,
+          );
+        }
+      },
+      () => {
+        // OnCancel - Usuario canceló
+        console.log('Viaje cancelado');
+      },
+    );
+  }
+
+  enviarMensaje(solicitud: Solicitud): void {
+    console.log('Enviar mensaje:', solicitud.solicitud_id);
   }
 
   onCalificar(solicitud: Solicitud): void {
@@ -219,9 +255,16 @@ export class ClienteComponent implements OnInit {
       case 'solicitudCreada':
         this.onSolicitudCreada(evento.data);
         break;
+      case 'onCancel':
+        this.closeSidebar();
+        break;
       default:
         console.log('Evento no manejado:', evento.event);
     }
+  }
+
+  closeSidebar(): void {
+    this.sidebarVisible = false;
   }
 
   onAgregarPedido(): void {

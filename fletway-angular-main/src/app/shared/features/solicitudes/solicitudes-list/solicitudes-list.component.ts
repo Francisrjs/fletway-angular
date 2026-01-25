@@ -28,14 +28,15 @@ export class SolicitudesListComponent {
   @Input() loading: boolean = false;
   @Input() titulo: string = 'Solicitudes';
   @Input() mostrarBotonAgregar: boolean = true;
-
+  @Input() modo: 'cliente' | 'fletero' = 'cliente';
+  @Input() mostrarBotones: boolean = true;
   @Output() agregarPedido = new EventEmitter<void>();
   @Output() verMapa = new EventEmitter<Solicitud>();
   @Output() verPresupuestos = new EventEmitter<Solicitud>();
   @Output() cancelarPedido = new EventEmitter<Solicitud>();
   @Output() calificar = new EventEmitter<Solicitud>();
   @Output() verFoto = new EventEmitter<Solicitud>();
-
+  @Output() enviarMensaje = new EventEmitter<Solicitud>();
   searchTerm: string = '';
   filtroEstado: FiltroEstado = 'todos';
   mostrarFiltros: boolean = false;
@@ -146,5 +147,8 @@ export class SolicitudesListComponent {
 
   get hayFiltrosActivos(): boolean {
     return this.filtroEstado !== 'todos' || this.searchTerm.trim().length > 0;
+  }
+  onEnviarMensaje(solicitud: Solicitud): void {
+    this.enviarMensaje.emit(solicitud);
   }
 }

@@ -178,7 +178,10 @@
     <app-solicitud-card
       *ngFor="let solicitud of solicitudesFiltradas"
       [solicitud]="solicitud"
+      [modo]="modo"
+      [mostrarBotones]="mostrarBotones"
       (verMapa)="onVerMapa($event)"
+      (verFoto)="onVerFoto($event)"
       (verPresupuestos)="onVerPresupuestos($event)"
       (cancelarPedido)="onCancelarPedido($event)"
       (calificar)="onCalificar($event)"

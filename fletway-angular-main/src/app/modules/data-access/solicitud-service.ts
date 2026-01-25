@@ -557,6 +557,30 @@ export class SolcitudService {
   obtenerUrlFoto(nombreFoto: string): string {
     return `${this.apiUrl}/uploads/${nombreFoto}`;
   }
+  async eliminarSolicitud(solicitud_id: number): Promise<void> {
+    try {
+      const { error } = await this._supabaseClient
+        .from('solicitud')
+        .delete()
+        .eq('solicitud_id', solicitud_id);
+      if (error) throw new Error('Error al eliminar solicitud');
+      this._state.update((s) => ({
+        ...s,
+        solicitudes: s.solicitudes.filter(
+          (solicitud) => solicitud.solicitud_id !== solicitud_id,
+        ),
+        loading: false,
+        error: false,
+      }));
+    } catch (error) {
+      console.error('Error al eliminar solicitud:', error);
+      this._state.update((s) => ({
+        ...s,
+        loading: false,
+        error: true,
+      }));
+    }
+  }
   async updateSolicitud(
     solicitudId: number,
     datos: Partial<{
@@ -609,47 +633,30 @@ export class SolcitudService {
         return null;
       }
 
-      // Obtener el usuario_id del usuario logueado
-      const { data: userData, error: userError } = await this._supabaseClient
-        .from('usuario')
-        .select('usuario_id')
-        .eq('u_id', session.user.id)
-        .maybeSingle();
-
-      if (userError || !userData) {
-        console.error('Error al obtener usuario:', userError);
-        return null;
-      }
-
-      // Obtener el transportista_id del usuario
-      const { data: transportistaData, error: transportistaError } =
-        await this._supabaseClient
-          .from('transportista')
-          .select('transportista_id')
-          .eq('usuario_id', userData.usuario_id)
-          .maybeSingle();
-
-      if (transportistaError || !transportistaData) {
-        console.warn('Usuario no es transportista o no encontrado');
-        return [];
-      }
-
-      // Obtener solicitudes donde el presupuesto aceptado pertenece a este transportista
+      // Obtener solicitudes del transportista usando la vista
       const { data, error } = await this._supabaseClient
-        .from('solicitud')
+        .from('v_solicitudes_transportista')
         .select(
           `
-          *,
-          cliente:cliente_id(u_id, email, nombre, apellido, telefono, usuario_id),
-          localidad_origen:localidad_origen_id(localidad_id, nombre, provincia, codigo_postal),
-          localidad_destino:localidad_destino_id(localidad_id, nombre, provincia, codigo_postal),
-          presupuesto:presupuesto_aceptado (
-            presupuesto_id,
-            transportista_id
-          )
-        `,
+    *,
+    localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+    localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal),
+    presupuesto:presupuesto_aceptado (
+      presupuesto_id,
+      transportista:transportista_id (
+        transportista_id,
+        total_calificaciones,
+        cantidad_calificaciones,
+        usuario:usuario_id (
+          usuario_id,
+          nombre,
+          apellido
         )
-        .not('presupuesto_aceptado', 'is', null)
+      )
+    )
+  `,
+        )
+        .eq('transportista_uuid', session.user.id)
         .returns<Solicitud[]>();
 
       if (error) {
@@ -657,18 +664,12 @@ export class SolcitudService {
         return null;
       }
 
-      // Filtrar las solicitudes donde el transportista del presupuesto aceptado es el actual
-      const solicitudesDelFletero = (data || []).filter(
-        (s: any) =>
-          s.presupuesto?.transportista_id ===
-          transportistaData.transportista_id,
-      );
-
       console.log(
-        '📋 Historial de viajes filtrado:',
-        solicitudesDelFletero.length,
+        ' Historial de viajes del transportista:',
+        data?.length || 0,
+        'solicitudes encontradas',
       );
-      return solicitudesDelFletero;
+      return data || [];
     } catch (err) {
       console.error('getHistorialFletero catch:', err);
       return null;

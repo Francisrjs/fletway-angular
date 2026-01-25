@@ -358,7 +358,27 @@
           >Ver presupuestos ({{ totalPresupuestos }})</span
         >
       </button>
-
+      <button
+        type="button"
+        (click)="onEnviarMensaje()"
+        *ngIf="solicitud.estado === 'pendiente'"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 border border-orange-600 rounded-lg text-sm font-medium text-white hover:bg-orange-600 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 17h6l3 3v-3h2V9h-2M4 4h11v8H9l-3 3v-3H4V4Z"
+          />
+        </svg>
+        Enviar Mensaje
+      </button>
       <button
         *ngIf="puedeCalificar"
         type="button"
@@ -377,6 +397,7 @@
         type="button"
         (click)="onCancelar()"
         class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 hover:border-red-300 transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        *ngIf="solicitud.estado === 'sin transportista'"
       >
         <svg
           class="w-5 h-5"
@@ -399,23 +420,24 @@
     <div *ngIf="mostrarBotones && esFletero" class="flex flex-col gap-2">
       <button
         type="button"
-        (click)="onVerMapa()"
-        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-orange-300 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        (click)="onEnviarMensaje()"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 border border-orange-600 rounded-lg text-sm font-medium text-white hover:bg-orange-600 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
       >
         <svg
-          class="w-5 h-5 text-orange-500"
-          fill="currentColor"
-          viewBox="0 0 20 20"
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
           <path
-            fill-rule="evenodd"
-            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-            clip-rule="evenodd"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 17h6l3 3v-3h2V9h-2M4 4h11v8H9l-3 3v-3H4V4Z"
           />
         </svg>
-        Ver en el mapa
+        Enviar Mensaje
       </button>
-
       <button
         type="button"
         [routerLink]="['/fletero/detalle', solicitud.solicitud_id]"
@@ -435,27 +457,6 @@
           />
         </svg>
         Realizar Cotización
-      </button>
-
-      <button
-        type="button"
-        (click)="onEnviarMensaje()"
-        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 border border-orange-600 rounded-lg text-sm font-medium text-white hover:bg-orange-600 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-      >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 17h6l3 3v-3h2V9h-2M4 4h11v8H9l-3 3v-3H4V4Z"
-          />
-        </svg>
-        Enviar Mensaje
       </button>
 
       <!-- Botón Realizar viaje (solo si estado es 'pendiente') -->
