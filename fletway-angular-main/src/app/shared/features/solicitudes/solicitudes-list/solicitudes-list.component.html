@@ -179,6 +179,7 @@
       *ngFor="let solicitud of solicitudesFiltradas"
       [solicitud]="solicitud"
       [modo]="modo"
+      (editarSolicitud)="onEditarSolicitud($event)"
       [mostrarBotones]="mostrarBotones"
       (verMapa)="onVerMapa($event)"
       (verFoto)="onVerFoto($event)"

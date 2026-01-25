@@ -37,6 +37,7 @@ export class SolicitudesListComponent {
   @Output() calificar = new EventEmitter<Solicitud>();
   @Output() verFoto = new EventEmitter<Solicitud>();
   @Output() enviarMensaje = new EventEmitter<Solicitud>();
+  @Output() editarSolicitud = new EventEmitter<Solicitud>();
   searchTerm: string = '';
   filtroEstado: FiltroEstado = 'todos';
   mostrarFiltros: boolean = false;
@@ -154,5 +155,9 @@ export class SolicitudesListComponent {
       solicitud.solicitud_id,
     );
     this.enviarMensaje.emit(solicitud);
+  }
+
+  onEditarSolicitud(solicitud: Solicitud): void {
+    this.editarSolicitud.emit(solicitud);
   }
 }

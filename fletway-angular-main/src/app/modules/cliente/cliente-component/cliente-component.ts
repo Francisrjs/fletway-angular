@@ -271,6 +271,12 @@ export class ClienteComponent implements OnInit {
       case 'onChatear':
         this.abrirChatDesdePresupuesto(evento.data);
         break;
+      case 'solicitudCreada':
+        this.onSolicitudCreada(evento.data);
+        break;
+      case 'solicitudEditada':
+        this.onSolicitudEditada(evento.data);
+        break;
       default:
         break;
     }
@@ -302,6 +308,32 @@ export class ClienteComponent implements OnInit {
       () => {},
     );
   }
+
+  onEditarSolicitud(solicitud: Solicitud): void {
+    console.log('✏️ Editando solicitud:', solicitud);
+    this.sidebarTitle = 'Editar pedido';
+    this.componentToLoad = SolicitudFormComponent;
+    this.sidebarInputs = {
+      editMode: true,
+      solicitud: solicitud,
+    };
+    this.sidebarVisible = true;
+  }
+
+  onSolicitudEditada(solicitud: Solicitud): void {
+    console.log('✅ Solicitud editada:', solicitud);
+    // Cerrar el sidebar
+    this.sidebarVisible = false;
+    // Recargar las solicitudes
+    this.ngOnInit();
+    // Mostrar mensaje de éxito
+    this.toastService.showSuccess(
+      'Solicitud actualizada',
+      'Tu solicitud ha sido actualizada exitosamente',
+      3000,
+    );
+  }
+
   verPresupuestos(solicitud: Solicitud): void {
     this.sidebarTitle = 'Presupuestos';
     this.componentToLoad = ClientePresupuesto;

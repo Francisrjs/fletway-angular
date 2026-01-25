@@ -49,6 +49,7 @@ import { Solicitud } from '../../../core/layouts/solicitud';
 export class SolicitudFormComponent implements OnInit, OnDestroy {
   @Input() newSolicitud?: boolean = false;
   @Input() editMode?: boolean = false;
+  @Input() solicitud?: Solicitud;
   @Output() solicitudCreada = new EventEmitter<Solicitud>();
   @Output() onCancel = new EventEmitter<void>();
   @Output() solicitudEditada = new EventEmitter<Solicitud>();
@@ -125,7 +126,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       this.todasLasLocalidades = res ?? [];
       this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
       this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
-      console.log('Localidades cargadas:', res);
+      console.log('📍 Localidades cargadas:', res);
+
+      // Si estamos en modo edición, cargar los datos de la solicitud
+      if (this.editMode && this.solicitud) {
+        this.cargarDatosSolicitud();
+      }
     });
 
     // === BÚSQUEDA DE ORIGEN ===
@@ -162,21 +168,19 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: Localidad[]) => {
           this.localidadesOrigenFiltradas = res ?? [];
+          // Siempre incluir la localidad seleccionada en los resultados filtrados
           const origenId = this.solicitudForm.get('localidad_origen_id')?.value;
           if (origenId) {
             const localidadSeleccionada = this.todasLasLocalidades.find(
               (l) => l.localidad_id === Number(origenId),
             );
-            if (
-              localidadSeleccionada &&
-              !this.localidadesOrigenFiltradas.find(
-                (l) => l.localidad_id === localidadSeleccionada.localidad_id,
-              )
-            ) {
-              this.localidadesOrigenFiltradas = [
-                localidadSeleccionada,
-                ...this.localidadesOrigenFiltradas,
-              ];
+            if (localidadSeleccionada) {
+              // Remover duplicados y agregar al inicio
+              this.localidadesOrigenFiltradas =
+                this.localidadesOrigenFiltradas.filter(
+                  (l) => l.localidad_id !== localidadSeleccionada.localidad_id,
+                );
+              this.localidadesOrigenFiltradas.unshift(localidadSeleccionada);
             }
           }
         },
@@ -220,6 +224,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: Localidad[]) => {
           this.localidadesDestinoFiltradas = res ?? [];
+          // Siempre incluir la localidad seleccionada en los resultados filtrados
           const destinoId = this.solicitudForm.get(
             'localidad_destino_id',
           )?.value;
@@ -227,16 +232,13 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
             const localidadSeleccionada = this.todasLasLocalidades.find(
               (l) => l.localidad_id === Number(destinoId),
             );
-            if (
-              localidadSeleccionada &&
-              !this.localidadesDestinoFiltradas.find(
-                (l) => l.localidad_id === localidadSeleccionada.localidad_id,
-              )
-            ) {
-              this.localidadesDestinoFiltradas = [
-                localidadSeleccionada,
-                ...this.localidadesDestinoFiltradas,
-              ];
+            if (localidadSeleccionada) {
+              // Remover duplicados y agregar al inicio
+              this.localidadesDestinoFiltradas =
+                this.localidadesDestinoFiltradas.filter(
+                  (l) => l.localidad_id !== localidadSeleccionada.localidad_id,
+                );
+              this.localidadesDestinoFiltradas.unshift(localidadSeleccionada);
             }
           }
         },
@@ -250,6 +252,36 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Carga los datos de la solicitud en el formulario para edición
+   */
+  private cargarDatosSolicitud(): void {
+    if (!this.solicitud) return;
+
+    console.log('📝 Cargando datos de solicitud para edición:', this.solicitud);
+
+    this.solicitudForm.patchValue({
+      origen: this.solicitud.direccion_origen,
+      localidad_origen_id: this.solicitud.localidad_origen_id,
+      destino: this.solicitud.direccion_destino,
+      localidad_destino_id: this.solicitud.localidad_destino_id,
+      fechaRecogida: null,
+      horaRecogida: this.solicitud.hora_recogida || null,
+      detalle_carga: this.solicitud.detalles_carga || '',
+      detalle: this.solicitud.medidas || '',
+      peso: this.solicitud.peso || null,
+      tolerancia_min: 0,
+    });
+
+    // Marcar direcciones como válidas si ya existen
+    if (this.solicitud.direccion_origen) {
+      this.direccionOrigenValida = true;
+    }
+    if (this.solicitud.direccion_destino) {
+      this.direccionDestinoValida = true;
+    }
   }
 
   /**
@@ -501,51 +533,84 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       direccion_destino: v.destino,
       localidad_origen_id: Number(v.localidad_origen_id),
       localidad_destino_id: Number(v.localidad_destino_id),
-      fecha_recogida: v.fechaRecogida || undefined,
-      hora_recogida_time: v.horaRecogida || undefined,
+      hora_recogida: v.horaRecogida || undefined,
       detalles_carga: v.detalle_carga || undefined,
       medidas: v.detalle || undefined,
-      peso: v.peso !== null ? Number(v.peso) : null,
+      peso: v.peso !== null ? Number(v.peso) : undefined,
+      tolerancia_min:
+        v.tolerancia_min !== null ? Number(v.tolerancia_min) : undefined,
     };
 
     try {
-      console.log('Creando solicitud...', this.solicitudForm.value);
+      if (this.editMode && this.solicitud) {
+        // Modo edición
+        console.log('✏️ Editando solicitud...', this.solicitudForm.value);
 
-      // 1. Crear la solicitud en Supabase primero
-      const { data, error } =
-        await this.solicitudService.createSolicitud(payload);
+        const { data, error } = await this.solicitudService.updateSolicitud(
+          this.solicitud.solicitud_id,
+          payload,
+        );
 
-      if (error || !data?.solicitud_id) {
-        console.error('Error creando solicitud:', error);
+        if (error) {
+          console.error('Error editando solicitud:', error);
+          this.message = {
+            type: 'error',
+            text: 'Error editando la solicitud. Revisá la consola.',
+          };
+          this.submitting = false;
+          return;
+        }
+
+        this.toastService.showSuccess(
+          'Pedido actualizado correctamente',
+          'Tu solicitud ha sido actualizada exitosamente',
+          3000,
+        );
+
         this.message = {
-          type: 'error',
-          text: 'Error creando la solicitud. Revisá la consola.',
+          type: 'success',
+          text: 'Pedido actualizado correctamente.',
         };
-        this.submitting = false;
-        return;
+
+        this.solicitudEditada.emit(data as Solicitud);
+      } else {
+        // Modo creación
+        console.log('Creando solicitud...', this.solicitudForm.value);
+
+        const { data, error } =
+          await this.solicitudService.createSolicitud(payload);
+
+        if (error || !data?.solicitud_id) {
+          console.error('Error creando solicitud:', error);
+          this.message = {
+            type: 'error',
+            text: 'Error creando la solicitud. Revisá la consola.',
+          };
+          this.submitting = false;
+          return;
+        }
+
+        console.log('Solicitud creada con ID:', data.solicitud_id);
+
+        // Si hay fotos seleccionadas, subirlas a Supabase Storage
+        if (this.fotosSeleccionadas.length > 0) {
+          console.log(`Subiendo ${this.fotosSeleccionadas.length} foto(s)...`);
+          await this.uploadFotos(data.solicitud_id);
+        }
+
+        this.toastService.showSuccess(
+          'Pedido creado correctamente',
+          'Tu solicitud ha sido creada exitosamente',
+          3000,
+        );
+
+        this.message = {
+          type: 'success',
+          text: 'Pedido creado correctamente.',
+        };
+
+        this.solicitudCreada.emit(data);
       }
-
-      console.log('Solicitud creada con ID:', data.solicitud_id);
-
-      // 2. Si hay fotos seleccionadas, subirlas a Supabase Storage
-      if (this.fotosSeleccionadas.length > 0) {
-        console.log(`Subiendo ${this.fotosSeleccionadas.length} foto(s)...`);
-        await this.uploadFotos(data.solicitud_id);
-      }
-
-      this.toastService.showSuccess(
-        'Pedido creado correctamente',
-        'Tu solicitud ha sido creada exitosamente',
-        3000,
-      );
-
-      this.message = {
-        type: 'success',
-        text: 'Pedido creado correctamente.',
-      };
-
-      // Navegar después de 1 segundo para que el usuario vea el mensaje
-      this.solicitudCreada.emit(data);
     } catch (err: unknown) {
       console.error('Error en submit:', err);
       let errorMessage = 'Error inesperado.';

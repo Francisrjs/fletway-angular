@@ -45,7 +45,7 @@ export class SolicitudCardComponent implements OnInit {
   @Output() verPresupuestos = new EventEmitter<Solicitud>();
   @Output() cancelarPedido = new EventEmitter<Solicitud>();
   @Output() calificar = new EventEmitter<Solicitud>();
-
+  @Output() editarSolicitud = new EventEmitter<Solicitud>();
   // Eventos específicos para fletero
   @Output() realizarViaje = new EventEmitter<Solicitud>();
   @Output() completarViaje = new EventEmitter<Solicitud>();
@@ -172,6 +172,9 @@ export class SolicitudCardComponent implements OnInit {
 
   onEnviarMensaje(): void {
     this.enviarMensaje.emit(this.solicitud);
+  }
+  onEditarSolicitud(): void {
+    this.editarSolicitud.emit(this.solicitud);
   }
 
   /**

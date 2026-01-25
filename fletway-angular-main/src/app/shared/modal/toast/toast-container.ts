@@ -10,7 +10,10 @@ import { ToastMessage, ToastService } from './toast.service';
   standalone: true,
   imports: [CommonModule, Toast],
   template: `
-    <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-4">
+    <div
+      class="fixed top-4 left-1/2 transform -translate-x-1/2 space-y-4"
+      style="z-index: 9999"
+    >
       <app-toast
         *ngFor="let toast of toasts$ | async"
         [titleMessage]="toast.title"
