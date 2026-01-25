@@ -320,7 +320,10 @@ export class ClienteComponent implements OnInit {
 
     // Abrir popup de chat
     this.popupChatComponente = ChatComponent;
-    this.popupChatInputs = { solicitudId: data.solicitudId };
+    this.popupChatInputs = {
+      solicitudId: data.solicitudId,
+      transportistaId: data.transportistaId,
+    };
     this.popupChatAbierto = true;
   }
   verMapa(solicitud: Solicitud): void {
