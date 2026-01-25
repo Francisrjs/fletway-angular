@@ -149,6 +149,10 @@ export class SolicitudesListComponent {
     return this.filtroEstado !== 'todos' || this.searchTerm.trim().length > 0;
   }
   onEnviarMensaje(solicitud: Solicitud): void {
+    console.log(
+      '📤 Lista recibió evento enviarMensaje, propagando a padre:',
+      solicitud.solicitud_id,
+    );
     this.enviarMensaje.emit(solicitud);
   }
 }

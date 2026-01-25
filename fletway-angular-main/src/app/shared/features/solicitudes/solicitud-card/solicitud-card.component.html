@@ -358,10 +358,10 @@
           >Ver presupuestos ({{ totalPresupuestos }})</span
         >
       </button>
+      <!-- DEBUG: Botón siempre visible temporalmente -->
       <button
         type="button"
         (click)="onEnviarMensaje()"
-        *ngIf="solicitud.estado === 'pendiente'"
         class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 border border-orange-600 rounded-lg text-sm font-medium text-white hover:bg-orange-600 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
       >
         <svg

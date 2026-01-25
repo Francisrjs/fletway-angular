@@ -14,6 +14,7 @@ import { PopupModalService } from '../../../shared/modal/popup';
 import { MapComponent } from '../../../shared/features/map/map';
 import { SolicitudFormComponent } from '../detalles-solicitud-cliente/solicitud';
 import { ToastService } from '../../../shared/modal/toast';
+import { ChatComponent } from '../../../shared/features/chat/chat/chat';
 
 @Component({
   selector: 'app-cliente',
@@ -46,6 +47,11 @@ export class ClienteComponent implements OnInit {
   popupMapaAbierto = false;
   popupMapaComponente: Type<any> | undefined;
   popupMapaInputs: any = {};
+
+  // popup chat parametros
+  popupChatAbierto = false;
+  popupChatComponente: Type<any> | undefined;
+  popupChatInputs: any = {};
 
   solicitudes: Solicitud[] = this._solService.solicitudes();
 
@@ -168,7 +174,18 @@ export class ClienteComponent implements OnInit {
   }
 
   enviarMensaje(solicitud: Solicitud): void {
-    console.log('Enviar mensaje:', solicitud.solicitud_id);
+    console.log('💬 Abriendo chat para solicitud:', solicitud.solicitud_id);
+
+    // Usar popup para mejor reactividad
+    this.popupChatComponente = ChatComponent;
+    this.popupChatInputs = { solicitudId: solicitud.solicitud_id };
+    this.popupChatAbierto = true;
+  }
+
+  cerrarPopupChat(): void {
+    this.popupChatAbierto = false;
+    this.popupChatComponente = undefined;
+    this.popupChatInputs = {};
   }
 
   onCalificar(solicitud: Solicitud): void {
@@ -244,22 +261,18 @@ export class ClienteComponent implements OnInit {
 
   //sidebars callouts
   // Capturar TODOS los outputs
-  handleSidebarOutputs(evento: { event: string; data: any }): void {
-    console.log('📤 Evento del sidebar:', evento.event, 'Data:', evento.data);
-
+  handleSidebarOutputs(evento: any): void {
+    console.log('Evento del sidebar:', evento);
+    // El sidebar emite con propiedad 'event', no 'eventName'
     switch (evento.event) {
       case 'onAceptar':
         this.aceptarPresupuesto(evento.data);
-        this.sidebarVisible = false;
         break;
-      case 'solicitudCreada':
-        this.onSolicitudCreada(evento.data);
-        break;
-      case 'onCancel':
-        this.closeSidebar();
+      case 'onChatear':
+        this.abrirChatDesdePresupuesto(evento.data);
         break;
       default:
-        console.log('Evento no manejado:', evento.event);
+        break;
     }
   }
 
@@ -294,6 +307,21 @@ export class ClienteComponent implements OnInit {
     this.componentToLoad = ClientePresupuesto;
     this.sidebarInputs = { solicitudId: solicitud.solicitud_id };
     this.sidebarVisible = true;
+  }
+
+  abrirChatDesdePresupuesto(data: {
+    solicitudId: number;
+    transportistaId: number;
+  }): void {
+    console.log('💬 Abriendo chat desde presupuestos:', data);
+
+    // Cerrar sidebar de presupuestos
+    this.sidebarVisible = false;
+
+    // Abrir popup de chat
+    this.popupChatComponente = ChatComponent;
+    this.popupChatInputs = { solicitudId: data.solicitudId };
+    this.popupChatAbierto = true;
   }
   verMapa(solicitud: Solicitud): void {
     console.log('🗺️ Abriendo mapa en popup:', solicitud);

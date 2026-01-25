@@ -159,6 +159,10 @@ export class SolicitudCardComponent implements OnInit {
   }
 
   onCompletarViaje(): void {
+    console.log(
+      '🔔 Evento completarViaje disparado desde solicitud-card:',
+      this.solicitud.solicitud_id,
+    );
     this.completarViaje.emit(this.solicitud);
   }
 

@@ -320,7 +320,7 @@
 
             <button
               type="button"
-              (click)="abrirPopupMensaje()"
+              (click)="enviarMensaje(pedido)"
               class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
               [attr.aria-label]="'Enviar mensaje al cliente'"
               [attr.title]="'Enviar mensaje al cliente'"
@@ -492,31 +492,13 @@
 
 <!-- Popup de Mensajes (placeholder para el usuario) -->
 <app-popup
-  [(isOpen)]="popupMensajeAbierto"
-  title="Enviar Mensaje al Cliente"
-  size="md"
-  (close)="popupMensajeAbierto = false"
->
-  <div class="p-6 text-center">
-    <svg
-      class="mx-auto h-12 w-12 text-gray-400 mb-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-      />
-    </svg>
-    <h3 class="text-lg font-semibold text-gray-900 mb-2">Componente de Chat</h3>
-    <p class="text-gray-600">
-      Este popup está listo para que agregues tu componente de mensajes.
-    </p>
-  </div>
-</app-popup>
+  [(isOpen)]="popupChatAbierto"
+  title="Chat de Negociación"
+  size="lg"
+  [customComponent]="popupChatComponente"
+  [componentInputs]="popupChatInputs"
+  (close)="cerrarPopupChat()"
+></app-popup>
 
 <!-- Sidebar (si se necesita en el futuro) -->
 <app-sidebar

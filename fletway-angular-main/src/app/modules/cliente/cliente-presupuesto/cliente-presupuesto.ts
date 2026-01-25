@@ -24,6 +24,10 @@ import { Solicitud } from '../../../core/layouts/solicitud';
 export class ClientePresupuesto implements OnInit {
   @Input() solicitudId!: number; // Input desde el sidebar
   @Output() onAceptar = new EventEmitter<Presupuesto>();
+  @Output() onChatear = new EventEmitter<{
+    solicitudId: number;
+    transportistaId: number;
+  }>();
   presupuestos: Presupuesto[] = [];
   cargando = false;
   error = '';
@@ -146,5 +150,18 @@ export class ClientePresupuesto implements OnInit {
         console.log('Usuario canceló el rechazo');
       },
     );
+  }
+
+  onChatearClick(presupuesto: Presupuesto): void {
+    console.log(
+      '💬 Iniciando chat con transportista:',
+      presupuesto.transportista_id,
+    );
+    if (presupuesto.transportista_id) {
+      this.onChatear.emit({
+        solicitudId: this.solicitudId,
+        transportistaId: presupuesto.transportista_id,
+      });
+    }
   }
 }

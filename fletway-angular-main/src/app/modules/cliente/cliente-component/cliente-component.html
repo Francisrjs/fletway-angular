@@ -159,3 +159,13 @@
   [componentInputs]="popupMapaInputs"
   (close)="popupMapaAbierto = false"
 ></app-popup>
+
+<!-- Popup del Chat -->
+<app-popup
+  [(isOpen)]="popupChatAbierto"
+  title="Chat de Negociación"
+  size="lg"
+  [customComponent]="popupChatComponente"
+  [componentInputs]="popupChatInputs"
+  (close)="cerrarPopupChat()"
+></app-popup>

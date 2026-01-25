@@ -10,6 +10,7 @@ import { SolicitudCardComponent } from '../../../shared/features/solicitudes/sol
 import { SidebarComponent } from '../../../shared/features/sidebar';
 import { PopupComponent } from '../../../shared/features/popup/popup.component';
 import { MapComponent } from '../../../shared/features/map/map';
+import { ChatComponent } from '../../../shared/features/chat/chat/chat';
 
 @Component({
   selector: 'app-fletero',
@@ -39,6 +40,10 @@ export class FleteroComponent implements OnInit {
   fotoModalUrl: string | null = null;
   fotoModalTitulo: string | null = null;
 
+  // popup chat parametros
+  popupChatAbierto = false;
+  popupChatComponente: Type<any> | undefined;
+  popupChatInputs: any = {};
   // Sidebar para cotización
   sidebarVisible = false;
   sidebarTitle = '';
@@ -79,21 +84,6 @@ export class FleteroComponent implements OnInit {
       this.error = 'Error cargando solicitudes';
     } finally {
       this.loading = false;
-    }
-  }
-
-  /**
-   * Envía un mensaje al cliente (puede abrir WhatsApp o chat interno)
-   */
-  enviarMensaje(s: Solicitud): void {
-    if (s.cliente && s.cliente.telefono) {
-      const mensaje = encodeURIComponent(
-        `Hola, soy tu fletero para el pedido #${s.solicitud_id}`,
-      );
-      const url = `https://wa.me/${s.cliente.telefono}?text=${mensaje}`;
-      window.open(url, '_blank');
-    } else {
-      console.warn('El cliente no tiene teléfono registrado');
     }
   }
 
@@ -188,7 +178,20 @@ export class FleteroComponent implements OnInit {
       this.fotoModalAbierta = true;
     }
   }
+  enviarMensaje(solicitud: Solicitud): void {
+    console.log('💬 Abriendo chat para solicitud:', solicitud.solicitud_id);
 
+    // Usar popup para mejor reactividad
+    this.popupChatComponente = ChatComponent;
+    this.popupChatInputs = { solicitudId: solicitud.solicitud_id };
+    this.popupChatAbierto = true;
+  }
+
+  cerrarPopupChat(): void {
+    this.popupChatAbierto = false;
+    this.popupChatComponente = undefined;
+    this.popupChatInputs = {};
+  }
   /**
    * Cierra el modal de visualización de foto
    */

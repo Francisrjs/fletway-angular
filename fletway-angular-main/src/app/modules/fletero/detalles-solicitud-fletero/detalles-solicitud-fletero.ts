@@ -16,6 +16,7 @@ import { SolcitudService } from '../../data-access/solicitud-service';
 import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 import { SidebarComponent } from '../../../shared/features/sidebar';
 import { PopupComponent } from '../../../shared/features/popup/popup.component';
+import { ChatComponent } from '../../../shared/features/chat/chat/chat';
 
 @Component({
   selector: 'app-detalles-solicitud-fletero',
@@ -26,6 +27,7 @@ import { PopupComponent } from '../../../shared/features/popup/popup.component';
     MapComponent,
     SidebarComponent,
     PopupComponent,
+    ChatComponent,
   ],
   templateUrl: './detalles-solicitud-fletero.html',
 })
@@ -47,10 +49,10 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   popupMapaComponente: Type<any> | undefined;
   popupMapaInputs: any = {};
 
-  // Popup de mensajes (a implementar por el usuario)
-  popupMensajeAbierto = false;
-  popupMensajeComponente: Type<any> | undefined;
-  popupMensajeInputs: any = {};
+  // popup chat parametros
+  popupChatAbierto = false;
+  popupChatComponente: Type<any> | undefined;
+  popupChatInputs: any = {};
 
   // Sidebar
   sidebarVisible = false;
@@ -278,12 +280,18 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
     this.popupMapaAbierto = true;
   }
 
-  /**
-   * Abre el popup de enviar mensaje (placeholder para el usuario)
-   */
-  abrirPopupMensaje(): void {
-    console.log('💬 Abriendo popup de mensajes (a implementar)');
-    // TODO: El usuario implementará este componente
-    this.popupMensajeAbierto = true;
+  enviarMensaje(solicitud: Solicitud): void {
+    console.log('💬 Abriendo chat para solicitud:', solicitud.solicitud_id);
+
+    // Usar popup para mejor reactividad
+    this.popupChatComponente = ChatComponent;
+    this.popupChatInputs = { solicitudId: solicitud.solicitud_id };
+    this.popupChatAbierto = true;
+  }
+
+  cerrarPopupChat(): void {
+    this.popupChatAbierto = false;
+    this.popupChatComponente = undefined;
+    this.popupChatInputs = {};
   }
 }
