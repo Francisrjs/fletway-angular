@@ -1,5 +1,5 @@
 export interface Cliente {
-  u_id?: number | null;
+  u_id?: string | null;
   email?: string | null;
   nombre?: string | null;
   apellido?: string | null;
@@ -11,5 +11,5 @@ export interface Cliente {
   fecha_registro?: string | null;
   contrasena_hash?: string | null;
   fecha_nacimiento?: string | null;
-  foto?:string | null;
+  foto?: string | null;
 }

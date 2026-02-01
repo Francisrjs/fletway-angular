@@ -32,14 +32,9 @@ export class SolcitudService {
   solicitudes = computed(() => this._state().solicitudes);
   loading = computed(() => this._state().loading);
   error = computed(() => this._state().error);
-
+  //Solicitudes pendiente en viaje
+  solicitudes_pendientes = signal<Solicitud[]>([]);
   // Computed para solicitudes pendientes y en viaje
-  solicitudes_pendientes = computed(() =>
-    this._state().solicitudes.filter(
-      (s) => s.estado === 'pendiente' || s.estado === 'en viaje',
-    ),
-  );
-
   solicitudes_disponibles = computed(() =>
     this._state().solicitudes.filter((s) => s.estado === 'sin transportista'),
   );
@@ -614,7 +609,68 @@ export class SolcitudService {
       return { data: null, error: err };
     }
   }
+  async getSolicitudesDisponibles(): Promise<Solicitud[] | null> {
+    try {
+      this._state.update((s) => ({ ...s, loading: true, error: false }));
 
+      const {
+        data: { session },
+      } = await this._authService.session();
+
+      if (!session?.user?.id) {
+        console.warn('Usuario no autenticado');
+        return null;
+      }
+
+      // Obtener solicitudes del transportista usando la vista
+      const { data, error } = await this._supabaseClient
+        .from('v_solicitudes_transportista')
+        .select(
+          `
+    *,
+    localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+    localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal),
+    presupuesto:presupuesto_aceptado (
+      presupuesto_id,
+      transportista:transportista_id (
+        transportista_id,
+        total_calificaciones,
+        cantidad_calificaciones,
+        usuario:usuario_id (
+          usuario_id,
+          nombre,
+          apellido
+        )
+      )
+    )
+  `,
+        )
+        .eq('transportista_uuid', session.user.id)
+        .eq('estado', 'pendiente')
+        .returns<Solicitud[]>();
+
+      if (error) {
+        console.error('Error obteniendo historial del fletero:', error);
+        return null;
+      }
+
+      console.log(
+        ' Historial de viajes del transportista:',
+        data?.length || 0,
+        'solicitudes encontradas',
+      );
+      this.solicitudes_pendientes.update((s) => ({
+        ...s,
+        solicitudes_disponibles: data || [],
+      }));
+      return data || [];
+    } catch (err) {
+      console.error('getHistorialFletero catch:', err);
+      return null;
+    } finally {
+      this._state.update((s) => ({ ...s, loading: false }));
+    }
+  }
   /**
    * Obtiene el historial de viajes del fletero actual
    * Filtra las solicitudes donde el transportista es el usuario logueado

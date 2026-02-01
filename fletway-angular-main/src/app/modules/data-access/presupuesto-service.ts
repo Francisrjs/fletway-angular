@@ -33,26 +33,70 @@ export class PresupuestoService {
         error: sessionError,
       } = await this._supabaseClient.auth.getSession();
 
-      if (sessionError) return null;
-      if (!session?.user?.id) return null;
+      if (sessionError) {
+        console.error('❌ Error obteniendo sesión:', sessionError);
+        return null;
+      }
+      if (!session?.user?.id) {
+        console.error('❌ No hay usuario autenticado');
+        return null;
+      }
 
+      // 1️⃣ Obtener usuario_id desde tabla usuario usando u_id de Auth
       const { data: userData, error: userError } = await this._supabaseClient
         .from('usuario')
         .select('usuario_id')
         .eq('u_id', session.user.id)
         .maybeSingle();
 
-      if (userError) return null;
-      if (!userData) return null;
+      if (userError) {
+        console.error('❌ Error obteniendo usuario_id:', userError);
+        return null;
+      }
+      if (!userData) {
+        console.error('❌ No se encontró usuario para u_id:', session.user.id);
+        return null;
+      }
 
-      const transportista_id = userData.usuario_id;
+      const usuario_id = userData.usuario_id;
+      console.log('📝 Usuario ID encontrado:', usuario_id);
 
+      // 2️⃣ Obtener transportista_id desde tabla transportista usando usuario_id
+      const { data: transportistaData, error: transportistaError } =
+        await this._supabaseClient
+          .from('transportista')
+          .select('transportista_id')
+          .eq('usuario_id', usuario_id)
+          .maybeSingle();
+
+      if (transportistaError) {
+        console.error(
+          '❌ Error obteniendo transportista_id:',
+          transportistaError,
+        );
+        return null;
+      }
+      if (!transportistaData) {
+        console.error(
+          '❌ No se encontró transportista para usuario_id:',
+          usuario_id,
+        );
+        return null;
+      }
+
+      const transportista_id = transportistaData.transportista_id;
+      console.log('🚗 Transportista ID encontrado:', transportista_id);
+
+      // 3️⃣ Insertar presupuesto con transportista_id correcto
       const row: Partial<Presupuesto> = {
         transportista_id,
         solicitud_id: payload.solicitud,
         precio_estimado: payload.precio,
         comentario: payload.comentario,
       };
+
+      console.log('📤 Insertando presupuesto:', row);
+
       const { data: insertData, error: insertError } =
         await this._supabaseClient
           .from('presupuesto')
@@ -60,11 +104,15 @@ export class PresupuestoService {
           .select()
           .maybeSingle();
 
-      if (insertError) return null;
+      if (insertError) {
+        console.error('❌ Error insertando presupuesto:', insertError);
+        return null;
+      }
 
+      console.log('✅ Presupuesto creado exitosamente:', insertData);
       return insertData as Presupuesto;
     } catch (err) {
-      console.error('addPresupuesto catch:', err);
+      console.error('❌ addPresupuesto catch:', err);
       return null;
     }
   }
@@ -78,12 +126,10 @@ export class PresupuestoService {
 
     if (error) throw error;
 
-    const estados = (data ?? []).map(d => d.estado);
+    const estados = (data ?? []).map((d) => d.estado);
     const hayAceptado = estados.includes('aceptado');
 
-    const mostrables = estados.filter(
-      e => e === 'pendiente'
-    ).length;
+    const mostrables = estados.filter((e) => e === 'pendiente').length;
 
     return { mostrables, hayAceptado };
   }
@@ -100,7 +146,7 @@ export class PresupuestoService {
         .select('*')
         .eq('solicitud_id', solicitudId)
         //.eq('estado', 'pendiente') // 👈 filtro -----> Comenté esta linea para que cuando se abran los presupuestos de una solicitud, se vea el presupuesto aceptado.
-        .returns<Presupuesto[]>();  //                   Siempre y cuando haya un presupuesto aceptado. Sino se mostraran todos los pendientes.
+        .returns<Presupuesto[]>(); //                   Siempre y cuando haya un presupuesto aceptado. Sino se mostraran todos los pendientes.
 
       if (error) {
         console.error('Supabase error:', error);

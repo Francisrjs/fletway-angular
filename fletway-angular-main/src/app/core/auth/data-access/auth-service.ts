@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { Session, SignInWithPasswordCredentials } from '@supabase/supabase-js';
 
 import { Supabase } from '../../../shared/data-access/supabase';
+import { Cliente } from '../../layouts/cliente';
+import { Fletero } from '../../layouts/fletero';
 
 export interface userState {
   userId: string | null;
@@ -251,5 +253,112 @@ export class AuthService {
     this.saveIsFleteroToStorage(userId, result);
 
     return result;
+  }
+  /**
+   * Crear cuenta usuario en tabla 'usuario'
+   * Requiere: nombre, apellido, email, telefono, fecha_nacimiento, u_id (UUID de Supabase Auth), contrasena_hash
+   * Nota: usuario_id es auto-incrementado por la BD, no se envía desde el cliente
+   */
+  async crearUsuario(
+    nombre: string,
+    apellido: string,
+    email: string,
+    telefono: string,
+    fecha_nacimiento: string,
+    u_id: string,
+    contrasena_hash: string,
+  ): Promise<Cliente> {
+    try {
+      console.log('📝 Creando usuario en BD:', {
+        nombre,
+        apellido,
+        email,
+        u_id,
+      });
+
+      // No incluir usuario_id porque es auto-incrementado por la BD
+      const clienteData = {
+        nombre,
+        apellido,
+        email,
+        telefono,
+        fecha_nacimiento,
+        u_id,
+        contrasena_hash,
+      };
+
+      const { data, error } = await this._supabaseClient
+        .from('usuario')
+        .insert(clienteData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Error al crear usuario:', error);
+        throw error;
+      }
+
+      console.log('✅ Usuario creado en BD:', data);
+      return data as Cliente;
+    } catch (err) {
+      console.error('❌ Error en crearUsuario:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Crear perfil de fletero en tabla 'transportista'
+   * Requiere: usuario_id (integer de tabla usuario), tipo_vehiculo, capacidad_kg, patente_vehiculo, modelo_vehiculo
+   * Nota: transportista_id es auto-incrementado por la BD, no se envía desde el cliente
+   */
+  async crearFletero(
+    usuario_id: number,
+    tipo_vehiculo: string,
+    capacidad_kg: number,
+    patente_vehiculo: string,
+    modelo_vehiculo: string,
+  ): Promise<Fletero> {
+    try {
+      if (!usuario_id) {
+        throw new Error('usuario_id es requerido para crear fletero');
+      }
+
+      console.log('🚗 Creando perfil de fletero:', {
+        usuario_id,
+        tipo_vehiculo,
+        capacidad_kg,
+        patente_vehiculo,
+      });
+
+      // No incluir transportista_id porque es auto-incrementado por la BD
+      const fleteroData = {
+        usuario_id,
+        tipo_vehiculo,
+        capacidad_kg,
+        patente_vehiculo,
+        modelo_vehiculo,
+      };
+
+      const { data, error } = await this._supabaseClient
+        .from('transportista')
+        .insert(fleteroData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Error al crear fletero:', error);
+        throw error;
+      }
+
+      console.log('✅ Perfil de fletero creado:', data);
+
+      // Guardar en cache que es fletero
+      this.saveIsFleteroToStorage(usuario_id.toString(), true);
+
+      return data as Fletero;
+    } catch (err) {
+      console.error('❌ Error en crearFletero:', err);
+      throw err;
+    }
   }
 }

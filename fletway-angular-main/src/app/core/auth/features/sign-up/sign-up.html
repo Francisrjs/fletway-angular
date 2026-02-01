@@ -1,4 +1,4 @@
-<section class="bg-gray-50 dark:bg-primary-beige"> 
+<section class="bg-gray-50 dark:bg-primary-beige">
   <div
     class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0 mr-50"
   >
@@ -15,7 +15,7 @@
         <h1
           class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white"
         >
-          Crear email
+          Crear Cuenta
         </h1>
         <form
           class="space-y-4 md:space-y-6"
@@ -24,9 +24,111 @@
         >
           <div>
             <label
+              for="nombre"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Nombre</label
+            >
+            <input
+              type="text"
+              name="nombre"
+              id="nombre"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Francis"
+              formControlName="nombre"
+            />
+            @if (form.get("nombre")?.invalid && form.get("nombre")?.touched) {
+              <p class="mt-1 text-sm text-red-600">El nombre es requerido</p>
+            }
+          </div>
+
+          <div>
+            <label
+              for="apellido"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Apellido</label
+            >
+            <input
+              type="text"
+              name="apellido"
+              id="apellido"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Rodríguez"
+              formControlName="apellido"
+            />
+            @if (
+              form.get("apellido")?.invalid && form.get("apellido")?.touched
+            ) {
+              <p class="mt-1 text-sm text-red-600">El apellido es requerido</p>
+            }
+          </div>
+
+          <div>
+            <label
+              for="telefono"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Teléfono</label
+            >
+            <input
+              type="tel"
+              name="telefono"
+              id="telefono"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="+54 9 11 1234-5678"
+              formControlName="telefono"
+            />
+            @if (
+              form.get("telefono")?.invalid && form.get("telefono")?.touched
+            ) {
+              <p class="mt-1 text-sm text-red-600">El teléfono es requerido</p>
+            }
+          </div>
+          <div>
+            <label
+              for="fecha_nacimiento"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Fecha de Nacimiento</label
+            >
+            <div
+              class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
+            >
+              <svg
+                class="w-4 h-4 text-body"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z"
+                />
+              </svg>
+            </div>
+            <input
+              type="date"
+              id="fecha_nacimiento"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              formControlName="fecha_nacimiento"
+            />
+            @if (
+              form.get("fecha_nacimiento")?.invalid &&
+              form.get("fecha_nacimiento")?.touched
+            ) {
+              <p class="mt-1 text-sm text-red-600">
+                La fecha de nacimiento es requerida
+              </p>
+            }
+          </div>
+          <div>
+            <label
               for="email"
               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >Tu Email</label
+              >Email</label
             >
             <input
               type="email"
@@ -34,9 +136,16 @@
               id="email"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="name@company.com"
-              required=""
               formControlName="email"
             />
+            @if (form.get("email")?.invalid && form.get("email")?.touched) {
+              @if (form.get("email")?.errors?.["required"]) {
+                <p class="mt-1 text-sm text-red-600">El email es requerido</p>
+              }
+              @if (form.get("email")?.errors?.["email"]) {
+                <p class="mt-1 text-sm text-red-600">El email no es válido</p>
+              }
+            }
           </div>
           <div>
             <label
@@ -50,15 +159,28 @@
               id="password"
               placeholder="••••••••"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              required=""
               formControlName="password"
             />
+            @if (
+              form.get("password")?.invalid && form.get("password")?.touched
+            ) {
+              @if (form.get("password")?.errors?.["required"]) {
+                <p class="mt-1 text-sm text-red-600">
+                  La contraseña es requerida
+                </p>
+              }
+              @if (form.get("password")?.errors?.["minlength"]) {
+                <p class="mt-1 text-sm text-red-600">
+                  La contraseña debe tener al menos 6 caracteres
+                </p>
+              }
+            }
           </div>
           <div>
             <label
               for="confirm-password"
               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >Contraseña</label
+              >Confirmar Contraseña</label
             >
             <input
               type="password"
@@ -66,79 +188,124 @@
               id="confirm-password"
               placeholder="••••••••"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              required=""
               formControlName="confirmPassword"
             />
+            @if (
+              form.get("confirmPassword")?.invalid &&
+              form.get("confirmPassword")?.touched
+            ) {
+              <p class="mt-1 text-sm text-red-600">
+                Debe confirmar la contraseña
+              </p>
+            }
+            @if (
+              form.errors?.["passwordMismatch"] &&
+              form.get("confirmPassword")?.touched
+            ) {
+              <p class="mt-1 text-sm text-red-600">
+                Las contraseñas no coinciden
+              </p>
+            }
           </div>
 
           <!-- Campo extra para Cliente o Fletero -->
           <!-- Campo tipo de usuario -->
-  <div>
-    <label
-      for="tipo-usuario"
-      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-      >Tipo de usuario</label
-    >
-    <select
-      id="tipo-usuario"
-      formControlName="tipoUsuario"
-     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-      required
-    >
-      <option value="">Seleccione...</option>
-      <option value="cliente">Cliente</option>
-     <option value="fletero">Fletero</option>
-    </select>
-  </div>
+          <div>
+            <label
+              for="tipo-usuario"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Tipo de usuario</label
+            >
+            <select
+              id="tipo-usuario"
+              formControlName="tipoUsuario"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              required
+            >
+              <option value="">Seleccione...</option>
+              <option value="cliente">Cliente</option>
+              <option value="fletero">Fletero</option>
+            </select>
+          </div>
 
-<!-- Campos adicionales para Fletero -->
-  <div *ngIf="form.get('tipoUsuario')?.value === 'fletero'">
-    <div>
-      <label
-        for="descripcion"
-        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-        >Descripción</label
-     >
-      <input
-        type="text"
-        id="descripcion"
-        formControlName="descripcion"
-        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        placeholder="Descripción del servicio"
-      />
-  </div>
+          <!-- Campos adicionales para Fletero -->
+          @if (form.get("tipoUsuario")?.value === "fletero") {
+            <div class="border-t pt-4 mt-4">
+              <h3
+                class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+              >
+                Información del Vehículo
+              </h3>
 
-  <div>
-    <label
-      for="vehiculo"
-      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-      >Vehículo</label
-    >
-    <input
-      type="text"
-      id="vehiculo"
-      formControlName="vehiculo"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-      placeholder="Tipo de vehículo"
-    />
-  </div>
+              <div>
+                <label
+                  for="vehiculo"
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >Tipo de Vehículo</label
+                >
+                <input
+                  type="text"
+                  id="vehiculo"
+                  formControlName="vehiculo"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="Ej: Camioneta, Furgón"
+                />
+                @if (
+                  form.get("vehiculo")?.invalid && form.get("vehiculo")?.touched
+                ) {
+                  <p class="mt-1 text-sm text-red-600">
+                    El tipo de vehículo es requerido
+                  </p>
+                }
+              </div>
 
-  <div>
-    <label
-      for="patente"
-      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-      >Patente</label
-    >
-    <input
-      type="text"
-      id="patente"
-      formControlName="patente"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-      placeholder="Número de patente"
-    />
-  </div>
-</div>
+              <div>
+                <label
+                  for="patente"
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >Patente del Vehículo</label
+                >
+                <input
+                  type="text"
+                  id="patente"
+                  formControlName="patente"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="ABC-123"
+                />
+                @if (
+                  form.get("patente")?.invalid && form.get("patente")?.touched
+                ) {
+                  <p class="mt-1 text-sm text-red-600">
+                    La patente es requerida
+                  </p>
+                }
+              </div>
 
+              <div>
+                <label
+                  for="capacidad_kg"
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >Capacidad en KG</label
+                >
+                <input
+                  type="number"
+                  id="capacidad_kg"
+                  formControlName="capacidad_kg"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="500"
+                  min="0"
+                />
+                @if (
+                  form.get("capacidad_kg")?.invalid &&
+                  form.get("capacidad_kg")?.touched
+                ) {
+                  <p class="mt-1 text-sm text-red-600">
+                    La capacidad en KG es requerida
+                  </p>
+                }
+              </div>
+            </div>
+          }
 
           <div class="flex items-start">
             <div class="flex items-center h-5">
@@ -165,9 +332,10 @@
           </div>
           <button
             type="submit"
-            class="w-full text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800"
+            [disabled]="form.invalid"
+            class="w-full text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create an account
+            Crear Cuenta
           </button>
           <p class="text-sm font-light text-gray-500 dark:text-gray-400">
             Ya tienes una cuenta?
