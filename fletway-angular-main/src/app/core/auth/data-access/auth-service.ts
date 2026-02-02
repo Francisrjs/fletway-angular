@@ -6,6 +6,7 @@ import { Supabase } from '../../../shared/data-access/supabase';
 import { Cliente } from '../../layouts/cliente';
 import { Fletero } from '../../layouts/fletero';
 
+
 export interface userState {
   userId: string | null;
   email?: string | null;
@@ -342,7 +343,7 @@ export class AuthService {
       const { data, error } = await this._supabaseClient
         .from('transportista')
         .insert(fleteroData)
-        .select()
+        .select('transportista_id') // seleccionar solo el ID creado
         .single();
 
       if (error) {
@@ -361,4 +362,16 @@ export class AuthService {
       throw err;
     }
   }
+
+  // En auth-service.ts
+
+  async cambiarContrasena(nuevaContrasena: string) {
+    const { data, error } = await this._supabaseClient.auth.updateUser({
+    password: nuevaContrasena
+   });
+
+  if (error) throw error;
+  return data;
+  }
+
 }

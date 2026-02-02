@@ -163,4 +163,16 @@ export class NavbarComponent implements OnDestroy {
       clearTimeout(this.sidebarTimeout);
     }
   }
+
+  async irConfiguracion(): Promise<void> {
+    console.log('⚙️ Ir a configuración de perfil');
+
+    // Si es fletero va a una ruta, si es cliente a otra
+    // Asumiremos las rutas '/fletero/perfil' y '/cliente/perfil' por ahora
+    const ruta = this.esFletero
+      ? '/fletero/configuracion'
+      : '/cliente/configuracion';
+
+    await this._router.navigateByUrl(ruta);
+  }
 }

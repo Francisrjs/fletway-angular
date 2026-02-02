@@ -1,6 +1,6 @@
 <section class="bg-gray-50 dark:bg-primary-beige">
   <div
-    class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0 mr-50"
+    class="flex flex-col items-center justify-center px-6 py-8 mx-auto min-h-screen mr-50"
   >
     <a
       routerLink="/"
@@ -303,6 +303,90 @@
                     La capacidad en KG es requerida
                   </p>
                 }
+              </div>
+
+              <!-- Campo de búsqueda de localidades -->
+              <div class="mt-4">
+                <label
+                  for="buscarLocalidad"
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >Localidades donde trabajas</label
+                >
+
+                <!-- Etiquetas de localidades seleccionadas -->
+                @if (localidadesSeleccionadas.length > 0) {
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    @for (localidad of localidadesSeleccionadas; track localidad.localidad_id) {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 rounded-full text-sm font-medium">
+                        {{ localidad.nombre }}
+                        <button
+                          type="button"
+                          (click)="quitarLocalidad(localidad)"
+                          class="hover:bg-orange-200 dark:hover:bg-orange-800 rounded-full p-0.5 transition-colors"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                          </svg>
+                        </button>
+                      </span>
+                    }
+                  </div>
+                }
+
+                <!-- Campo de búsqueda con dropdown -->
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="buscarLocalidad"
+                    formControlName="buscarLocalidad"
+                    placeholder="Buscar localidad..."
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-600 focus:border-orange-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    (focus)="mostrarResultados = localidadesBuscadas.length > 0"
+                  />
+
+                  <!-- Indicador de carga -->
+                  @if (buscandoLocalidades) {
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <svg class="animate-spin h-4 w-4 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  }
+
+                  <!-- Dropdown de resultados -->
+                  @if (mostrarResultados && localidadesBuscadas.length > 0) {
+                    <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      @for (localidad of localidadesBuscadas; track localidad.localidad_id) {
+                        <button
+                          type="button"
+                          (click)="agregarLocalidad(localidad)"
+                          class="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white transition-colors"
+                        >
+                          {{ localidad.nombre }}
+                        </button>
+                      }
+                    </div>
+                  }
+
+                  <!-- Mensaje cuando no hay resultados -->
+                  @if (mostrarResultados && localidadesBuscadas.length === 0 && !buscandoLocalidades && form.get("buscarLocalidad")?.value && form.get("buscarLocalidad")?.value!.length >= 2) {
+                    <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4">
+                      <p class="text-sm text-gray-500 dark:text-gray-400">No se encontraron localidades</p>
+                    </div>
+                  }
+                </div>
+
+                <!-- Mensaje de error si no hay localidades seleccionadas -->
+                @if (form.errors?.["localidadesRequeridas"] && form.get("tipoUsuario")?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    Debe seleccionar al menos una localidad
+                  </p>
+                }
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Escribe al menos 2 caracteres para buscar. Puedes seleccionar múltiples localidades.
+                </p>
               </div>
             </div>
           }

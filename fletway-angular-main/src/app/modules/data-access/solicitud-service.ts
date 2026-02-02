@@ -43,41 +43,95 @@ export class SolcitudService {
     this._state().solicitudes.filter((s) => s.estado === 'completado'),
   );
   // ahora devuelve la data y maneja errores
+// ... imports existentes
+
+  // Agrega este método a tu clase SolcitudService
   async getAllPedidos(): Promise<Solicitud[] | null> {
     try {
       this._state.update((s) => ({ ...s, loading: true, error: false }));
 
+      // 1. Obtener sesión
+      const { data: { session } } = await this._authService.session();
+      if (!session?.user?.id) {
+        console.warn('Usuario no autenticado');
+        return null;
+      }
+
+      // 2. Obtener el transportista_id vinculado al usuario logueado
+      // Primero buscamos el usuario por su UUID
+      const { data: usuarioData, error: userError } = await this._supabaseClient
+        .from('usuario')
+        .select('usuario_id')
+        .eq('u_id', session.user.id)
+        .maybeSingle();
+
+      if (userError || !usuarioData) {
+        console.error('Error obteniendo usuario:', userError);
+        return null;
+      }
+
+      // Luego buscamos el transportista usando el usuario_id
+      const { data: transportistaData, error: transError } = await this._supabaseClient
+        .from('transportista')
+        .select('transportista_id')
+        .eq('usuario_id', usuarioData.usuario_id)
+        .maybeSingle();
+
+      if (transError || !transportistaData) {
+        console.error('El usuario actual no es un transportista o error:', transError);
+        return null;
+      }
+
+      const transportistaId = transportistaData.transportista_id;
+
+      // 3. Obtener las localidades de la vista vw_transportista_localidades
+      const { data: localidadesData, error: viewError } = await this._supabaseClient
+        .from('vw_transportista_localidades')
+        .select('localidad_id')
+        .eq('transportista_id', transportistaId);
+
+      if (viewError) {
+        console.error('Error consultando vista de localidades:', viewError);
+        return null;
+      }
+
+      // Extraemos los IDs en un array simple: [1, 5, 20, ...]
+      const idsLocalidades = localidadesData.map((l: any) => l.localidad_id);
+
+      if (idsLocalidades.length === 0) {
+        console.warn('El fletero no tiene localidades asignadas.');
+        this._state.update((s) => ({ ...s, solicitudes: [] }));
+        return [];
+      }
+
+      // Formateamos el array para usarlo en el filtro de Supabase: (1,5,20)
+      const idsString = `(${idsLocalidades.join(',')})`;
+
+      // 4. Buscar solicitudes 'sin transportista' que coincidan con esas zonas
+      // LÓGICA: Origen IN (mis_zonas) OR Destino IN (mis_zonas)
       const { data, error } = await this._supabaseClient
         .from('solicitud')
-        .select(
-          `
-         *,
+        .select(`
+          *,
           cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
           localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
           localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-        `,
-        )
+        `)
+        .eq('estado', 'sin transportista')
+        .or(`localidad_origen_id.in.${idsString},localidad_destino_id.in.${idsString}`)
         .returns<Solicitud[]>();
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Supabase error al filtrar solicitudes:', error);
         this._state.update((s) => ({ ...s, error: true }));
         return null;
       }
 
-      if (data) {
-        // actualizo la propiedad correcta
-        this._state.update((s) => ({ ...s, solicitudes: data }));
-      }
+      console.log(`Solicitudes encontradas en zona (${idsLocalidades.length} locs):`, data?.length);
 
-      if (
-        data &&
-        !Array.isArray(data) &&
-        !(typeof (data as { Error?: unknown }).Error !== 'undefined')
-      ) {
-        return data;
-      }
-      return null;
+      this._state.update((s) => ({ ...s, solicitudes: data || [] }));
+      return data || [];
+
     } catch (err) {
       console.error('getAllPedidos catch:', err);
       this._state.update((s) => ({ ...s, error: true }));
@@ -86,6 +140,7 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: false }));
     }
   }
+
   async getSolicitudByid(id: number): Promise<Solicitud | null> {
     try {
       this._state.update((s) => ({ ...s, loading: true, error: false }));
@@ -264,6 +319,9 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: false }));
     }
   }
+
+
+  //
   async getAllLocalidades(): Promise<Localidad[] | null> {
     try {
       this._state.update((s) => ({ ...s, loading: true, error: false }));

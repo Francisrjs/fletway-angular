@@ -31,6 +31,15 @@ export default [
         (m) => m.HistorialFleteroComponent,
       ),
   },
+{
+    path: 'fletero/configuracion',
+    canActivate: [privateGuard, fleteroGuard],
+    loadComponent: () =>
+      import('../fletero/config-fletero/config-fletero').then(
+        (m) => m.ConfigFleteroComponent, // Asegúrate de que este sea el nombre de la clase en tu .ts
+      ),
+  },
+
   {
     path: 'cliente',
     canActivate: [privateGuard, clienteGuard],
@@ -53,6 +62,14 @@ export default [
     loadComponent: () =>
       import('../cliente/cliente-presupuesto/cliente-presupuesto').then(
         (m) => m.ClientePresupuesto,
+      ),
+  },
+  {
+    path: 'cliente/configuracion',
+    canActivate: [privateGuard, clienteGuard],
+    loadComponent: () =>
+      import('../cliente/config-cliente/config-cliente').then(
+        (m) => m.ConfigClienteComponent, // Asegúrate de que este sea el nombre de la clase en tu .ts
       ),
   },
   {

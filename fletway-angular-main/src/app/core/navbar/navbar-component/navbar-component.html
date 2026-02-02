@@ -1,16 +1,12 @@
-<!-- Sidebar compacto (solo iconos) - SIEMPRE VISIBLE -->
 <aside
-  class="fixed top-0 left-0 z-40 w-20 h-screen bg-[#f9f5f0] border-r border-gray-200 shadow-sm transition-all duration-300"
+  class="fixed top-0 left-0 z-40 w-20 h-screen bg-[#f9f5f0] border-r border-gray-200 shadow-sm transition-all duration-300 flex flex-col"
   (mouseenter)="mostrarSidebar()"
 >
-  <div class="flex flex-col items-center py-6">
-    <!-- Logo pequeño -->
+  <div class="flex flex-col items-center py-6 flex-shrink-0">
     <img src="fletway-icon.png" alt="Fletway" class="w-15 h-15 mb-6" />
   </div>
 
-  <!-- Menú de iconos -->
-  <nav class="flex flex-col items-center space-y-4 px-3">
-    <!-- FLETERO: Icono Casita - Vista Principal -->
+  <nav class="flex flex-col items-center space-y-4 px-3 flex-grow w-full pb-6">
     @if (esFletero) {
       <button
         type="button"
@@ -31,7 +27,6 @@
             d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"
           />
         </svg>
-        <!-- Tooltip -->
         <span
           class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
         >
@@ -40,7 +35,6 @@
       </button>
     }
 
-    <!-- CLIENTE: Hacer pedido (solo para clientes) -->
     @if (esCliente) {
       <button
         type="button"
@@ -61,7 +55,6 @@
           />
           <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
         </svg>
-        <!-- Tooltip -->
         <span
           class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
         >
@@ -70,7 +63,6 @@
       </button>
     }
 
-    <!-- Historial (diferente comportamiento según rol) -->
     <button
       type="button"
       (click)="esFletero ? irHistorialFletero() : irInicio()"
@@ -91,7 +83,6 @@
           d="M12 8v4l3 3M3.22302 14C4.13247 18.008 7.71683 21 12 21c4.9706 0 9-4.0294 9-9 0-4.97056-4.0294-9-9-9-3.72916 0-6.92858 2.26806-8.29409 5.5M7 9H3V5"
         />
       </svg>
-      <!-- Tooltip -->
       <span
         class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
       >
@@ -99,7 +90,41 @@
       </span>
     </button>
 
-    <!-- Cerrar sesión -->
+    <div class="flex-grow"></div>
+
+    <button
+      type="button"
+      (click)="irConfiguracion()"
+      class="w-10 h-10 flex items-center justify-center text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all group relative"
+      title="Configuración"
+    >
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+        />
+      </svg>
+      <span
+        class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+      >
+        Configuración
+      </span>
+    </button>
+
     <button
       type="button"
       (click)="logOut()"
@@ -120,7 +145,6 @@
           d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"
         />
       </svg>
-      <!-- Tooltip -->
       <span
         class="absolute left-16 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
       >
@@ -130,24 +154,20 @@
   </nav>
 </aside>
 
-<!-- Sidebar expandido (con texto) - SE MUESTRA AL HOVER -->
 <aside
   #sidebar
   id="sidebar-expandido"
-  class="fixed top-0 left-16 z-50 w-56 h-screen bg-[#f9f5f0] border-r border-gray-200 shadow-xl transition-all duration-300 ease-out transform -translate-x-full opacity-0"
+  class="fixed top-0 left-16 z-50 w-56 h-screen bg-[#f9f5f0] border-r border-gray-200 shadow-xl transition-all duration-300 ease-out transform -translate-x-full opacity-0 flex flex-col"
   (mouseenter)="mantenerSidebar()"
   (mouseleave)="ocultarSidebar()"
 >
-  <div class="flex flex-col items-center py-6 border-b border-gray-200">
-    <!-- Logo grande -->
+  <div class="flex flex-col items-center py-6 border-b border-gray-200 flex-shrink-0">
     <img src="fletway-icon.png" alt="Fletway Logo" class="w-20 h-20 mb-2" />
     <h2 class="text-lg font-bold text-gray-800">Fletway</h2>
   </div>
 
-  <!-- Menú expandido -->
-  <nav class="px-4 py-6">
-    <ul class="space-y-3">
-      <!-- FLETERO: Vista Principal (Casita) -->
+  <nav class="px-4 py-6 flex flex-col flex-grow">
+    <ul class="space-y-3 flex-grow">
       @if (esFletero) {
         <li>
           <button
@@ -172,7 +192,6 @@
         </li>
       }
 
-      <!-- CLIENTE: Hacer pedido -->
       @if (esCliente) {
         <li>
           <a
@@ -196,7 +215,6 @@
         </li>
       }
 
-      <!-- Historial (diferente según rol) -->
       <li>
         <button
           type="button"
@@ -221,8 +239,40 @@
           }}</span>
         </button>
       </li>
+    </ul>
 
-      <li class="pt-4 mt-4 border-t border-gray-200">
+    <ul class="space-y-3 pt-4 border-t border-gray-200 mt-auto">
+      <li>
+        <button
+          type="button"
+          (click)="irConfiguracion()"
+          class="w-full flex items-center p-3 text-base font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all"
+        >
+          <svg
+            class="w-6 h-6 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+            />
+          </svg>
+          <span class="ml-3">Configuración</span>
+        </button>
+      </li>
+
+      <li>
         <button
           type="button"
           (click)="logOut()"

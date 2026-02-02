@@ -55,6 +55,10 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   @Output() solicitudEditada = new EventEmitter<Solicitud>();
   solicitudForm: FormGroup;
   files: FileList | null = null;
+  mostrarDropdownOrigen = false;
+  mostrarDropdownDestino = false;
+  textoLocalidadOrigen = ''; // Lo que se muestra en el input
+  textoLocalidadDestino = ''; // Lo que se muestra en el input
 
   // Variables para fotos múltiples
   fotosSeleccionadas: File[] = [];
@@ -261,6 +265,11 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     if (!this.solicitud) return;
 
     console.log('📝 Cargando datos de solicitud para edición:', this.solicitud);
+    const locOrigen = this.todasLasLocalidades.find(l => l.localidad_id === this.solicitud?.localidad_origen_id);
+    const locDestino = this.todasLasLocalidades.find(l => l.localidad_id === this.solicitud?.localidad_destino_id);
+
+    if (locOrigen) this.textoLocalidadOrigen = `${locOrigen.nombre}, ${locOrigen.provincia}`;
+    if (locDestino) this.textoLocalidadDestino = `${locDestino.nombre}, ${locDestino.provincia}`;
 
     this.solicitudForm.patchValue({
       origen: this.solicitud.direccion_origen,
@@ -778,4 +787,61 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       history.back();
     }
   }
+
+
+  filtrarLocalidadesOrigen(event: Event): void {
+  const termino = (event.target as HTMLInputElement).value.toLowerCase();
+  this.textoLocalidadOrigen = (event.target as HTMLInputElement).value;
+  this.mostrarDropdownOrigen = true;
+
+  if (!termino) {
+    this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
+  } else {
+    this.localidadesOrigenFiltradas = this.todasLasLocalidades.filter(loc =>
+      (loc.nombre || '').toLowerCase().includes(termino) ||
+      (loc.provincia || '').toLowerCase().includes(termino)
+    );
+  }
+
+  // Si el usuario escribe, reseteamos el ID hasta que seleccione una
+  this.solicitudForm.get('localidad_origen_id')?.setValue(null);
+}
+
+seleccionarLocalidadOrigen(localidad: Localidad): void {
+  this.textoLocalidadOrigen = `${localidad.nombre}, ${localidad.provincia}`;
+  this.solicitudForm.get('localidad_origen_id')?.setValue(localidad.localidad_id);
+  this.mostrarDropdownOrigen = false;
+}
+
+// --- Lógica Destino ---
+filtrarLocalidadesDestino(event: Event): void {
+  const termino = (event.target as HTMLInputElement).value.toLowerCase();
+  this.textoLocalidadDestino = (event.target as HTMLInputElement).value;
+  this.mostrarDropdownDestino = true;
+
+  if (!termino) {
+    this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
+  } else {
+    this.localidadesDestinoFiltradas = this.todasLasLocalidades.filter(loc =>
+     (loc.nombre || '').toLowerCase().includes(termino) ||
+     (loc.provincia || '').toLowerCase().includes(termino)
+    );
+  }
+
+  this.solicitudForm.get('localidad_destino_id')?.setValue(null);
+}
+
+seleccionarLocalidadDestino(localidad: Localidad): void {
+  this.textoLocalidadDestino = `${localidad.nombre}, ${localidad.provincia}`;
+  this.solicitudForm.get('localidad_destino_id')?.setValue(localidad.localidad_id);
+  this.mostrarDropdownDestino = false;
+}
+
+// Método auxiliar para cerrar dropdowns con delay (para permitir el click)
+onBlurOrigen() {
+  setTimeout(() => this.mostrarDropdownOrigen = false, 200);
+}
+onBlurDestino() {
+  setTimeout(() => this.mostrarDropdownDestino = false, 200);
+}
 }

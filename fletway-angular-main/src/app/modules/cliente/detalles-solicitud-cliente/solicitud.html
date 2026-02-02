@@ -2,52 +2,49 @@
   <div
     class="flex flex-col w-full h-full bg-white shadow-lg rounded-none overflow-hidden"
   >
-    <!-- Top bar -->
     @if (!newSolicitud) {
-      <header
-        class="w-full bg-fletway-orange p-4 flex items-center justify-between shadow-fletway"
-      >
-        <div class="flex items-center">
-          <button
-            (click)="cancel()"
-            class="text-fletway-white text-2xl mr-4 focus:outline-none hover:opacity-80"
-            title="Volver atrás"
-          >
-            <i class="fas fa-arrow-left"></i>
-          </button>
-          <h1 class="text-fletway-white text-xl font-semibold">
-            Solicitar Flete
-          </h1>
-        </div>
+    <header
+      class="w-full bg-fletway-orange p-4 flex items-center justify-between shadow-fletway"
+    >
+      <div class="flex items-center">
         <button
-          class="text-fletway-white text-2xl focus:outline-none hover:opacity-80"
-          title="Perfil de usuario"
+          (click)="cancel()"
+          class="text-fletway-white text-2xl mr-4 focus:outline-none hover:opacity-80"
+          title="Volver atrás"
         >
-          <i class="fas fa-user-circle"></i>
+          <i class="fas fa-arrow-left"></i>
         </button>
-      </header>
+        <h1 class="text-fletway-white text-xl font-semibold">
+          Solicitar Flete
+        </h1>
+      </div>
+      <button
+        class="text-fletway-white text-2xl focus:outline-none hover:opacity-80"
+        title="Perfil de usuario"
+      >
+        <i class="fas fa-user-circle"></i>
+      </button>
+    </header>
     }
-    <!-- Main content: Request form -->
     <main class="flex-grow flex flex-col p-6 w-full overflow-y-auto">
       @if (!newSolicitud) {
-        <h2 class="text-fletway-blue-gray text-2xl font-bold mb-6 text-center">
-          Detalles del pedido
-        </h2>
+      <h2 class="text-fletway-blue-gray text-2xl font-bold mb-6 text-center">
+        Detalles del pedido
+      </h2>
       }
 
-      <!-- Message notification -->
       @if (message.type) {
-        <div
-          [class]="
+      <div
+        [class]="
             'p-4 mb-4 rounded-lg text-sm font-medium ' +
             (message.type === 'success'
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800')
           "
-          role="alert"
-        >
-          {{ message.text }}
-        </div>
+        role="alert"
+      >
+        {{ message.text }}
+      </div>
       }
 
       <form
@@ -55,49 +52,67 @@
         (ngSubmit)="onSubmit()"
         class="space-y-6"
       >
-        <div>
+        <div class="relative">
           <label
-            for="localidadOrigen"
             class="block mb-2 text-sm font-medium text-gray-dark"
           >
             Localidad origen *
           </label>
-          <select
-            id="localidadOrigen"
-            formControlName="localidad_origen_id"
+
+          <input
+            type="text"
+            [value]="textoLocalidadOrigen"
+            (input)="filtrarLocalidadesOrigen($event)"
+            (focus)="mostrarDropdownOrigen = true"
+            (blur)="onBlurOrigen()"
+            placeholder="Escriba para buscar localidad..."
+            autocomplete="off"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          >
-            <option value="">Selecciona una localidad</option>
-            @for (loc of localidadesOrigenFiltradas; track loc.localidad_id) {
-              <option [value]="loc.localidad_id">
-                {{ loc.nombre }}, {{ loc.provincia }}
-              </option>
-            }
-          </select>
+          />
+
+          @if (mostrarDropdownOrigen && localidadesOrigenFiltradas.length > 0) {
+            <ul class="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto mt-1">
+              @for (loc of localidadesOrigenFiltradas; track loc.localidad_id) {
+                <li
+                  (click)="seleccionarLocalidadOrigen(loc)"
+                  class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700 border-b last:border-0 flex justify-between items-center"
+                >
+                  <span><span class="font-semibold">{{ loc.nombre }}</span>, {{ loc.provincia }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (mostrarDropdownOrigen && localidadesOrigenFiltradas.length === 0 && textoLocalidadOrigen.length > 0) {
+            <div class="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-3 mt-1 text-sm text-gray-500">
+              No se encontraron localidades.
+            </div>
+          }
+
           @if (
-            solicitudForm.get("localidad_origen_id")?.errors &&
+            solicitudForm.get("localidad_origen_id")?.invalid &&
             solicitudForm.get("localidad_origen_id")?.touched
           ) {
             <p class="text-red-600 text-sm mt-1">
               <i class="fas fa-exclamation-circle mr-1"></i>
-              Seleccione una localidad de origen
+              Debe seleccionar una localidad de la lista
             </p>
           }
         </div>
-        <!-- Origen -->
+
         <div>
           <label
             for="origin"
             class="block text-fletway-blue-gray text-sm font-medium mb-1"
           >
-            Origen (Dirección o Mapa)
+            Origen (Dirección exacta o Mapa)
           </label>
           <input
             type="text"
             id="origin"
             name="origin"
             formControlName="origen"
-            placeholder="Ej: Calle Falsa 123, CABA"
+            placeholder="Ej: Calle Falsa 123"
             class="w-full p-3 border rounded-lg focus:ring-2 focus:border-fletway-orange text-fletway-blue-gray placeholder-gray-400"
             [class.border-red-500]="origen?.invalid && origen?.touched"
             [class.border-green-500]="
@@ -108,77 +123,91 @@
             [class.focus:ring-green-500]="origen?.valid && origen?.touched"
           />
           @if (origen?.errors && origen?.touched) {
-            <p class="text-red-600 text-sm mt-1">
-              <i class="fas fa-exclamation-circle mr-1"></i>
-              Por favor ingrese una dirección de origen válida
-            </p>
+          <p class="text-red-600 text-sm mt-1">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            Por favor ingrese una dirección de origen válida
+          </p>
           }
-          <!-- Indicador de validación de coordenadas -->
           @if (validandoDireccionOrigen) {
-            <p class="text-blue-500 text-xs mt-1">
-              <i class="fas fa-spinner fa-spin mr-1"></i>
-              Validando dirección...
-            </p>
-          } @else if (origen?.value && origen?.value.length > 5) {
-            @if (direccionOrigenValida) {
-              <p class="text-green-600 text-xs mt-1">
-                <i class="fas fa-check-circle mr-1"></i>
-                Dirección válida - coordenadas encontradas
-              </p>
-            } @else {
-              <p class="text-amber-600 text-xs mt-1">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                No se encontraron coordenadas para esta dirección
-              </p>
-            }
-          }
+          <p class="text-blue-500 text-xs mt-1">
+            <i class="fas fa-spinner fa-spin mr-1"></i>
+            Validando dirección...
+          </p>
+          } @else if (origen?.value && origen?.value.length > 5) { @if
+          (direccionOrigenValida) {
+          <p class="text-green-600 text-xs mt-1">
+            <i class="fas fa-check-circle mr-1"></i>
+            Dirección válida - coordenadas encontradas
+          </p>
+          } @else {
+          <p class="text-amber-600 text-xs mt-1">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            No se encontraron coordenadas para esta dirección
+          </p>
+          } }
         </div>
 
-        <!-- Localidad origen -->
-
-        <!-- Destino -->
-        <div>
+        <div class="relative">
           <label
-            for="localidadDestino"
             class="block mb-2 text-sm font-medium text-gray-dark"
           >
             Localidad del Destino *
           </label>
-          <select
-            id="localidadDestino"
-            formControlName="localidad_destino_id"
+
+          <input
+            type="text"
+            [value]="textoLocalidadDestino"
+            (input)="filtrarLocalidadesDestino($event)"
+            (focus)="mostrarDropdownDestino = true"
+            (blur)="onBlurDestino()"
+            placeholder="Escriba para buscar localidad..."
+            autocomplete="off"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          >
-            <option value="">Selecciona una localidad</option>
-            @for (loc of localidadesDestinoFiltradas; track loc.localidad_id) {
-              <option [value]="loc.localidad_id">
-                {{ loc.nombre }}, {{ loc.provincia }}
-              </option>
-            }
-          </select>
+          />
+
+          @if (mostrarDropdownDestino && localidadesDestinoFiltradas.length > 0) {
+            <ul class="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto mt-1">
+              @for (loc of localidadesDestinoFiltradas; track loc.localidad_id) {
+                <li
+                  (click)="seleccionarLocalidadDestino(loc)"
+                  class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700 border-b last:border-0"
+                >
+                  <span class="font-semibold">{{ loc.nombre }}</span>, {{ loc.provincia }}
+                </li>
+              }
+            </ul>
+          }
+
+          @if (mostrarDropdownDestino && localidadesDestinoFiltradas.length === 0 && textoLocalidadDestino.length > 0) {
+            <div class="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-3 mt-1 text-sm text-gray-500">
+              No se encontraron localidades.
+            </div>
+          }
+
           @if (
-            solicitudForm.get("localidad_destino_id")?.errors &&
+            solicitudForm.get("localidad_destino_id")?.invalid &&
             solicitudForm.get("localidad_destino_id")?.touched
           ) {
             <p class="text-red-600 text-sm mt-1">
               <i class="fas fa-exclamation-circle mr-1"></i>
-              Seleccione una localidad de destino
+              Debe seleccionar una localidad de destino
             </p>
           }
         </div>
+
         <div>
           <label
             for="destination"
             class="block text-blue-gray-dark text-sm font-medium mb-1"
           >
-            Destino (Dirección o Mapa)
+            Destino (Dirección exacta o Mapa)
           </label>
           <input
             type="text"
             id="destination"
             name="destination"
             formControlName="destino"
-            placeholder="Ej: Av. Siempre Viva 742, GBA"
+            placeholder="Ej: Av. Siempre Viva 742"
             class="w-full p-3 border rounded-lg focus:ring-2 focus:border-secondary-orange text-blue-gray-dark placeholder-gray-400 dark:placeholder-gray-400"
             [class.border-red-500]="destino?.invalid && destino?.touched"
             [class.border-green-500]="
@@ -189,35 +218,30 @@
             [class.focus:ring-green-500]="destino?.valid && destino?.touched"
           />
           @if (destino?.errors && destino?.touched) {
-            <p class="text-red-600 text-sm mt-1">
-              <i class="fas fa-exclamation-circle mr-1"></i>
-              Por favor ingrese una dirección de destino válida
-            </p>
+          <p class="text-red-600 text-sm mt-1">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            Por favor ingrese una dirección de destino válida
+          </p>
           }
-          <!-- Indicador de validación de coordenadas -->
           @if (validandoDireccionDestino) {
-            <p class="text-blue-500 text-xs mt-1">
-              <i class="fas fa-spinner fa-spin mr-1"></i>
-              Validando dirección...
-            </p>
-          } @else if (destino?.value && destino?.value.length > 5) {
-            @if (direccionDestinoValida) {
-              <p class="text-green-600 text-xs mt-1">
-                <i class="fas fa-check-circle mr-1"></i>
-                Dirección válida - coordenadas encontradas
-              </p>
-            } @else {
-              <p class="text-amber-600 text-xs mt-1">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                No se encontraron coordenadas para esta dirección
-              </p>
-            }
-          }
+          <p class="text-blue-500 text-xs mt-1">
+            <i class="fas fa-spinner fa-spin mr-1"></i>
+            Validando dirección...
+          </p>
+          } @else if (destino?.value && destino?.value.length > 5) { @if
+          (direccionDestinoValida) {
+          <p class="text-green-600 text-xs mt-1">
+            <i class="fas fa-check-circle mr-1"></i>
+            Dirección válida - coordenadas encontradas
+          </p>
+          } @else {
+          <p class="text-amber-600 text-xs mt-1">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            No se encontraron coordenadas para esta dirección
+          </p>
+          } }
         </div>
 
-        <!-- Localidad destino -->
-
-        <!-- Fecha y hora de recogida -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label
@@ -284,40 +308,38 @@
           </div>
         </div>
 
-        <!-- Mapa -->
         <div
           class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-6"
         >
           @if (puedeMostrarMapa) {
-            <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
-              Mapa de la ruta
-            </h3>
-            <app-map
-              [direccionOrigen]="solicitudForm.value.origen"
-              [ciudadOrigen]="
+          <h3 class="text-blue-gray-dark text-xl font-semibold mb-3">
+            Mapa de la ruta
+          </h3>
+          <app-map
+            [direccionOrigen]="solicitudForm.value.origen"
+            [ciudadOrigen]="
                 getLocalidadNombre(solicitudForm.value.localidad_origen_id)
               "
-              [localidadOrigen]="
+            [localidadOrigen]="
                 getLocalidadProvincia(solicitudForm.value.localidad_origen_id)
               "
-              [direccionDestino]="solicitudForm.value.destino"
-              [ciudadDestino]="
+            [direccionDestino]="solicitudForm.value.destino"
+            [ciudadDestino]="
                 getLocalidadNombre(solicitudForm.value.localidad_destino_id)
               "
-              [localidadDestino]="
+            [localidadDestino]="
                 getLocalidadProvincia(solicitudForm.value.localidad_destino_id)
               "
-              (direccionOrigenChange)="onMapOrigenChange($event)"
-              (direccionDestinoChange)="onMapDestinoChange($event)"
-            />
+            (direccionOrigenChange)="onMapOrigenChange($event)"
+            (direccionDestinoChange)="onMapDestinoChange($event)"
+          />
           } @else {
-            <p class="text-gray-500 text-sm">
-              Completa los campos de origen y destino para ver el mapa.
-            </p>
+          <p class="text-gray-500 text-sm">
+            Completa los campos de origen y destino para ver el mapa.
+          </p>
           }
         </div>
 
-        <!-- Características de la carga -->
         <div>
           <label
             for="detalle_carga"
@@ -342,7 +364,6 @@
             />
           </div>
 
-          <!-- Sección de Fotos Múltiples de la Carga -->
           <div class="mb-4">
             <label
               for="fotosSolicitud"
@@ -352,7 +373,6 @@
             </label>
 
             <div class="flex flex-col gap-3">
-              <!-- Input de archivos múltiples -->
               <div class="relative">
                 <input
                   type="file"
@@ -367,7 +387,6 @@
                 />
               </div>
 
-              <!-- Información sobre los archivos -->
               <div class="flex items-start gap-2">
                 <i class="fas fa-info-circle text-blue-500 text-sm mt-0.5"></i>
                 <p class="text-xs text-gray-600">
@@ -377,74 +396,66 @@
                 </p>
               </div>
 
-              <!-- Galería de Fotos -->
               @if (previsualizacionFotos.length > 0) {
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <div class="flex flex-col gap-3">
-                    <!-- Foto Principal -->
-                    <div
-                      class="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden"
+              <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div class="flex flex-col gap-3">
+                  <div
+                    class="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <img
+                      [src]="previsualizacionFotos[0]"
+                      alt="Foto principal de la carga"
+                      class="w-full h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                      (click)="abrirPopupFoto(0)"
+                    />
+                    <button
+                      type="button"
+                      (click)="onRemoveFoto(0)"
+                      class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors"
+                      title="Eliminar foto"
                     >
+                      <i class="fas fa-times"></i>
+                    </button>
+                    <div
+                      class="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs"
+                    >
+                      1/{{ previsualizacionFotos.length }}
+                    </div>
+                  </div>
+
+                  @if (previsualizacionFotos.length > 1) {
+                  <div class="grid grid-cols-4 gap-2">
+                    @for ( foto of previsualizacionFotos.slice(1); track foto;
+                    let i = $index ) {
+                    <div class="relative group">
                       <img
-                        [src]="previsualizacionFotos[0]"
-                        alt="Foto principal de la carga"
-                        class="w-full h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                        (click)="abrirPopupFoto(0)"
+                        [src]="foto"
+                        [alt]="'Foto ' + (i + 2)"
+                        [title]="'Ver foto ' + (i + 2)"
+                        class="w-full h-20 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-fletway-orange transition-all"
+                        (click)="abrirPopupFoto(i + 1)"
                       />
                       <button
                         type="button"
-                        (click)="onRemoveFoto(0)"
-                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors"
-                        title="Eliminar foto"
+                        (click)="onRemoveFoto(i + 1)"
+                        class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Eliminar"
                       >
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-times text-xs"></i>
                       </button>
-                      <div
-                        class="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs"
-                      >
-                        1/{{ previsualizacionFotos.length }}
-                      </div>
                     </div>
-
-                    <!-- Thumbnails de fotos adicionales -->
-                    @if (previsualizacionFotos.length > 1) {
-                      <div class="grid grid-cols-4 gap-2">
-                        @for (
-                          foto of previsualizacionFotos.slice(1);
-                          track foto;
-                          let i = $index
-                        ) {
-                          <div class="relative group">
-                            <img
-                              [src]="foto"
-                              [alt]="'Foto ' + (i + 2)"
-                              [title]="'Ver foto ' + (i + 2)"
-                              class="w-full h-20 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-fletway-orange transition-all"
-                              (click)="abrirPopupFoto(i + 1)"
-                            />
-                            <button
-                              type="button"
-                              (click)="onRemoveFoto(i + 1)"
-                              class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Eliminar"
-                            >
-                              <i class="fas fa-times text-xs"></i>
-                            </button>
-                          </div>
-                        }
-                      </div>
                     }
                   </div>
-
-                  @if (subiendoFotos) {
-                    <div
-                      class="mt-3 flex items-center gap-2 text-sm text-blue-600"
-                    >
-                      <i class="fas fa-cloud-upload-alt"></i>
-                      <span>Subiendo foto...</span>
-                    </div>
                   }
                 </div>
+
+                @if (subiendoFotos) {
+                <div class="mt-3 flex items-center gap-2 text-sm text-blue-600">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <span>Subiendo foto...</span>
+                </div>
+                }
+              </div>
               }
             </div>
           </div>
@@ -483,7 +494,6 @@
           </div>
         </div>
 
-        <!-- Action buttons -->
         <div class="flex justify-around mt-8 space-x-4">
           <button
             type="button"
@@ -509,87 +519,76 @@
   </div>
 </div>
 
-<!-- Popup de Previsualización de Foto -->
 @if (mostrarPopupFoto && fotoSeleccionadaIndex !== null) {
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+  (click)="cerrarPopupFoto()"
+>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
-    (click)="cerrarPopupFoto()"
+    class="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl"
+    (click)="$event.stopPropagation()"
   >
-    <div
-      class="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl"
-      (click)="$event.stopPropagation()"
-    >
-      <!-- Header -->
-      <div
-        class="flex items-center justify-between p-4 bg-fletway-beige border-b"
+    <div class="flex items-center justify-between p-4 bg-fletway-beige border-b">
+      <h3 class="text-lg font-semibold text-fletway-blue-gray">
+        Foto {{ fotoSeleccionadaIndex + 1 }} de {{ previsualizacionFotos.length }}
+      </h3>
+      <button
+        type="button"
+        (click)="cerrarPopupFoto()"
+        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        title="Cerrar"
       >
-        <h3 class="text-lg font-semibold text-fletway-blue-gray">
-          Foto {{ fotoSeleccionadaIndex + 1 }} de
-          {{ previsualizacionFotos.length }}
-        </h3>
-        <button
-          type="button"
-          (click)="cerrarPopupFoto()"
-          class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          title="Cerrar"
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
 
-      <!-- Imagen -->
-      <div class="flex items-center justify-center bg-gray-100 p-6">
-        <img
-          [src]="previsualizacionFotos[fotoSeleccionadaIndex]"
-          [alt]="'Foto ' + (fotoSeleccionadaIndex + 1)"
-          [title]="
+    <div class="flex items-center justify-center bg-gray-100 p-6">
+      <img
+        [src]="previsualizacionFotos[fotoSeleccionadaIndex]"
+        [alt]="'Foto ' + (fotoSeleccionadaIndex + 1)"
+        [title]="
             'Foto ' +
             (fotoSeleccionadaIndex + 1) +
             ' de ' +
             previsualizacionFotos.length
           "
-          class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
-        />
-      </div>
+        class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+      />
+    </div>
 
-      <!-- Footer con información -->
-      <div class="p-4 bg-gray-50 border-t">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-600">
-            <p class="font-medium">
-              {{ fotosSeleccionadas[fotoSeleccionadaIndex]?.name }}
-            </p>
-            <p class="text-xs text-gray-500">
-              {{
-                (fotosSeleccionadas[fotoSeleccionadaIndex]?.size || 0) /
-                  1024 /
-                  1024 | number: "1.2-2"
-              }}
-              MB
-            </p>
-          </div>
-          <button
-            type="button"
-            (click)="onRemoveFoto(fotoSeleccionadaIndex); cerrarPopupFoto()"
-            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium"
-          >
-            <i class="fas fa-trash mr-2"></i>
-            Eliminar
-          </button>
+    <div class="p-4 bg-gray-50 border-t">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          <p class="font-medium">
+            {{ fotosSeleccionadas[fotoSeleccionadaIndex]?.name }}
+          </p>
+          <p class="text-xs text-gray-500">
+            {{ (fotosSeleccionadas[fotoSeleccionadaIndex]?.size || 0) / 1024 /
+            1024 | number: "1.2-2" }} MB
+          </p>
         </div>
+        <button
+          type="button"
+          (click)="onRemoveFoto(fotoSeleccionadaIndex); cerrarPopupFoto()"
+          class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <i class="fas fa-trash mr-2"></i>
+          Eliminar
+        </button>
       </div>
     </div>
   </div>
+</div>
 }
