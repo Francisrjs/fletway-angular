@@ -111,9 +111,9 @@ export class ConfigFleteroComponent implements OnInit {
       if (datos.transportista) {
         this.form.patchValue({
           descripcion: datos.transportista.descripcion,
-          vehiculo: datos.transportista.vehiculo,
+          vehiculo: datos.transportista.tipo_vehiculo,
           modelo_vehiculo: datos.transportista.modelo_vehiculo,
-          patente: datos.transportista.patente,
+          patente: datos.transportista.patente_vehiculo,
           capacidad_kg: datos.transportista.capacidad_kg,
         });
 
