@@ -78,4 +78,12 @@ export default [
     loadComponent: () =>
       import('../../shared/features/map/map').then((m) => m.MapComponent),
   },
+  {
+    path: 'reportes',
+    canActivate: [privateGuard], // Accesible para todos los logueados
+    loadComponent: () =>
+      import('../../shared/reporte/reporte-component').then(
+        (m) => m.ReporteComponent
+      ),
+  },
 ] as Routes;

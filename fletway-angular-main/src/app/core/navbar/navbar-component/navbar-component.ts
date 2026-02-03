@@ -175,4 +175,12 @@ export class NavbarComponent implements OnDestroy {
 
     await this._router.navigateByUrl(ruta);
   }
+
+  async irReportes(): Promise<void> {
+    console.log('⚠ Ir a reportes');
+    await this._router.navigateByUrl('/reportes');
+  }
+
 }
+
+
