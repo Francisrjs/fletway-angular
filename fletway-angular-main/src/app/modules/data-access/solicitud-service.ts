@@ -32,18 +32,15 @@ export class SolcitudService {
   solicitudes = computed(() => this._state().solicitudes);
   loading = computed(() => this._state().loading);
   error = computed(() => this._state().error);
-  //Solicitudes pendiente en viaje
+  // Signals writable para solicitudes pendientes y disponibles
   solicitudes_pendientes = signal<Solicitud[]>([]);
-  // Computed para solicitudes pendientes y en viaje
-  solicitudes_disponibles = computed(() =>
-    this._state().solicitudes.filter((s) => s.estado === 'sin transportista'),
-  );
+  solicitudes_disponibles = signal<Solicitud[]>([]);
 
   solicitudes_completadas = computed(() =>
     this._state().solicitudes.filter((s) => s.estado === 'completado'),
   );
   // ahora devuelve la data y maneja errores
-// ... imports existentes
+  // ... imports existentes
 
   // Agrega este método a tu clase SolcitudService
   async getAllPedidos(): Promise<Solicitud[] | null> {
@@ -51,7 +48,9 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: true, error: false }));
 
       // 1. Obtener sesión
-      const { data: { session } } = await this._authService.session();
+      const {
+        data: { session },
+      } = await this._authService.session();
       if (!session?.user?.id) {
         console.warn('Usuario no autenticado');
         return null;
@@ -71,24 +70,29 @@ export class SolcitudService {
       }
 
       // Luego buscamos el transportista usando el usuario_id
-      const { data: transportistaData, error: transError } = await this._supabaseClient
-        .from('transportista')
-        .select('transportista_id')
-        .eq('usuario_id', usuarioData.usuario_id)
-        .maybeSingle();
-
+      const { data: transportistaData, error: transError } =
+        await this._supabaseClient
+          .from('transportista')
+          .select('transportista_id')
+          .eq('usuario_id', usuarioData.usuario_id)
+          .maybeSingle();
+      console.log('Transportista encontrado:', session.user.id);
       if (transError || !transportistaData) {
-        console.error('El usuario actual no es un transportista o error:', transError);
+        console.error(
+          'El usuario actual no es un transportista o error:',
+          transError,
+        );
         return null;
       }
 
       const transportistaId = transportistaData.transportista_id;
 
       // 3. Obtener las localidades de la vista vw_transportista_localidades
-      const { data: localidadesData, error: viewError } = await this._supabaseClient
-        .from('vw_transportista_localidades')
-        .select('localidad_id')
-        .eq('transportista_id', transportistaId);
+      const { data: localidadesData, error: viewError } =
+        await this._supabaseClient
+          .from('vw_transportista_localidades')
+          .select('localidad_id')
+          .eq('transportista_id', transportistaId);
 
       if (viewError) {
         console.error('Error consultando vista de localidades:', viewError);
@@ -109,29 +113,82 @@ export class SolcitudService {
 
       // 4. Buscar solicitudes 'sin transportista' que coincidan con esas zonas
       // LÓGICA: Origen IN (mis_zonas) OR Destino IN (mis_zonas)
-      const { data, error } = await this._supabaseClient
-        .from('solicitud')
-        .select(`
+
+      const { data: solicitudSinTransportista, error: errorSinTransportista } =
+        await this._supabaseClient
+          .from('solicitud')
+          .select(
+            `
           *,
           cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
           localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
           localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-        `)
-        .eq('estado', 'sin transportista')
-        .or(`localidad_origen_id.in.${idsString},localidad_destino_id.in.${idsString}`)
-        .returns<Solicitud[]>();
+        `,
+          )
+          .in('estado', ['sin transportista'])
+          .or(
+            `localidad_origen_id.in.${idsString},localidad_destino_id.in.${idsString}`,
+          )
+          .returns<Solicitud[]>();
 
-      if (error) {
-        console.error('Supabase error al filtrar solicitudes:', error);
+      //Agrego las solicitudes aceptadas
+      const { data: solicitudesAceptadas, error: errorAceptadas } =
+        await this._supabaseClient
+          .from('v_solicitudes_transportista')
+          .select(
+            `
+          *,
+          cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
+          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
+          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
+        `,
+          )
+          .in('estado', ['pendiente', 'en viaje'])
+          .eq('transportista_uuid', session.user.id)
+          .returns<Solicitud[]>();
+      console.log(
+        'Solicitudes encontradas sin transportista:',
+        solicitudSinTransportista?.length,
+      );
+      console.log(
+        'Solicitudes encontradas aceptadas:',
+        solicitudesAceptadas?.length,
+      );
+      if (errorAceptadas || errorSinTransportista) {
+        console.error(
+          'Supabase error al filtrar solicitudes Sin Transportista :',
+          errorSinTransportista,
+        );
+        console.error(
+          'Supabase error al filtrar solicitudes Aceptadas:',
+          errorAceptadas,
+        );
         this._state.update((s) => ({ ...s, error: true }));
         return null;
       }
+      const data = [...solicitudSinTransportista, ...solicitudesAceptadas];
+      console.log(
+        `Solicitudes encontradas en zona (${idsLocalidades.length} locs):`,
+        data?.length,
+      );
 
-      console.log(`Solicitudes encontradas en zona (${idsLocalidades.length} locs):`, data?.length);
-
+      // Actualizar state principal con todas las solicitudes
       this._state.update((s) => ({ ...s, solicitudes: data || [] }));
-      return data || [];
 
+      // Separar y actualizar signals específicos
+      const disponibles = solicitudSinTransportista || [];
+      const pendientes = solicitudesAceptadas || [];
+
+      this.solicitudes_disponibles.set(disponibles);
+      this.solicitudes_pendientes.set(pendientes);
+
+      console.log(
+        `✅ Actualizados: ${disponibles.length} disponibles, ${pendientes.length} pendientes`,
+      );
+      console.log('📋 Disponibles:', disponibles);
+      console.log('⏳ Pendientes:', pendientes);
+
+      return data || [];
     } catch (err) {
       console.error('getAllPedidos catch:', err);
       this._state.update((s) => ({ ...s, error: true }));
@@ -320,7 +377,6 @@ export class SolcitudService {
     }
   }
 
-
   //
   async getAllLocalidades(): Promise<Localidad[] | null> {
     try {
@@ -377,7 +433,15 @@ export class SolcitudService {
             : sol,
         ),
       }));
+      this.solicitudes_pendientes.update((pendientes) =>
+        pendientes.map((sol) =>
+          sol.solicitud_id === solicitudId
+            ? { ...sol, estado: 'en viaje' }
+            : sol,
+        ),
+      );
 
+      console.log('✅ Solicitud marcada en viaje:', solicitudId);
       return true;
     } catch (err) {
       console.error('Error al marcar solicitud en viaje:', err);
@@ -402,7 +466,13 @@ export class SolcitudService {
             : sol,
         ),
       }));
-
+      this.solicitudes_pendientes.update((pendientes) =>
+        pendientes.map((sol) =>
+          sol.solicitud_id === solicitudId
+            ? { ...sol, estado: 'completado' }
+            : sol,
+        ),
+      );
       return true;
     } catch (err) {
       console.error('Error al marcar solicitud en viaje:', err);
@@ -816,7 +886,4 @@ export class SolcitudService {
       return [];
     }
   }
-
-
-
- }
+}
