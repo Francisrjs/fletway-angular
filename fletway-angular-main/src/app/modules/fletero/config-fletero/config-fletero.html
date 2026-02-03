@@ -1,213 +1,216 @@
 <div class="min-h-screen bg-[#f9f5f0] p-6 md:p-12 pb-20">
-  <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
 
-    <div class="bg-gray-800 p-6 text-white">
-      <h1 class="text-2xl font-bold flex items-center gap-2">
-        <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path></svg>
-        Configuración de Fletero
-      </h1>
-      <p class="text-gray-400 mt-1">Gestiona tus datos personales y de tu vehículo</p>
-    </div>
+  <div class="max-w-4xl mx-auto space-y-8">
 
-    @if (loading) {
-      <div class="p-12 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-        <p class="mt-4 text-gray-500">Cargando datos del transportista...</p>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+
+      <div class="bg-gray-800 p-6 text-white">
+        <h1 class="text-2xl font-bold flex items-center gap-2">
+          <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path></svg>
+          Configuración de Fletero
+        </h1>
+        <p class="text-gray-400 mt-1">Gestiona tus datos personales y de tu vehículo</p>
       </div>
-    } @else {
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-8 space-y-8">
 
-        <section>
-          <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Datos Personales</h2>
-          <div class="grid md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-              <input type="text" formControlName="nombre" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-              <input type="text" formControlName="apellido" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-              <input type="tel" formControlName="telefono" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Nacimiento</label>
-              <input type="date" formControlName="fecha_nacimiento" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
-            </div>
-          </div>
-        </section>
+      @if (loading) {
+        <div class="p-12 text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p class="mt-4 text-gray-500">Cargando datos del transportista...</p>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-8 space-y-8">
 
-        <section>
-          <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Detalles del Servicio</h2>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción del Servicio</label>
-              <textarea formControlName="descripcion" rows="3" placeholder="Ej: Realizo mudanzas pequeñas, cuento con ayudante..." class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"></textarea>
-            </div>
-
+          <section>
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Datos Personales</h2>
             <div class="grid md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Vehículo</label>
-                <input type="text" formControlName="vehiculo" placeholder="Ej: Furgoneta" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input type="text" formControlName="nombre" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Modelo (Opcional)</label>
-                <input type="text" formControlName="modelo_vehiculo" placeholder="Ej: Fiat Fiorino 2018" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                <input type="text" formControlName="apellido" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Patente</label>
-                <input type="text" formControlName="patente" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 uppercase">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <input type="tel" formControlName="telefono" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Capacidad de Carga (kg)</label>
-                <input type="number" formControlName="capacidad_kg" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Nacimiento</label>
+                <input type="date" formControlName="fecha_nacimiento" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section>
-          <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Zonas de Cobertura</h2>
+          <section>
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Detalles del Servicio</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción del Servicio</label>
+                <textarea formControlName="descripcion" rows="3" placeholder="Ej: Realizo mudanzas pequeñas, cuento con ayudante..." class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"></textarea>
+              </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Localidades donde trabajas</label>
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Vehículo</label>
+                  <input type="text" formControlName="vehiculo" placeholder="Ej: Furgoneta" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Modelo (Opcional)</label>
+                  <input type="text" formControlName="modelo_vehiculo" placeholder="Ej: Fiat Fiorino 2018" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Patente</label>
+                  <input type="text" formControlName="patente" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 uppercase">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Capacidad de Carga (kg)</label>
+                  <input type="number" formControlName="capacidad_kg" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
+                </div>
+              </div>
+            </div>
+          </section>
 
-            @if (localidadesSeleccionadas.length > 0) {
-              <div class="flex flex-wrap gap-2 mb-3 p-2 bg-gray-50 rounded-lg border border-gray-100">
-                @for (loc of localidadesSeleccionadas; track loc.localidad_id) {
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7c2d12] text-white rounded-full text-sm font-medium shadow-sm transition-all hover:bg-[#9a3412]">
-                    {{ loc.nombre }}
-                    <button
-                      type="button"
-                      (click)="quitarLocalidad(loc)"
-                      class="text-orange-200 hover:text-white rounded-full p-0.5 focus:outline-none transition-colors"
-                      title="Eliminar localidad"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                    </button>
-                  </span>
+          <section>
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Zonas de Cobertura</h2>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Localidades donde trabajas</label>
+
+              @if (localidadesSeleccionadas.length > 0) {
+                <div class="flex flex-wrap gap-2 mb-3 p-2 bg-gray-50 rounded-lg border border-gray-100">
+                  @for (loc of localidadesSeleccionadas; track loc.localidad_id) {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7c2d12] text-white rounded-full text-sm font-medium shadow-sm transition-all hover:bg-[#9a3412]">
+                      {{ loc.nombre }}
+                      <button
+                        type="button"
+                        (click)="quitarLocalidad(loc)"
+                        class="text-orange-200 hover:text-white rounded-full p-0.5 focus:outline-none transition-colors"
+                        title="Eliminar localidad"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </span>
+                  }
+                </div>
+              } @else {
+                <p class="text-sm text-gray-500 mb-3 italic">No has seleccionado ninguna localidad aún.</p>
+              }
+
+              <div class="relative">
+                <input
+                  type="text"
+                  formControlName="buscarLocalidad"
+                  placeholder="Escribe para buscar y agregar (ej: Campana)..."
+                  class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-shadow bg-slate-50"
+                  (blur)="mostrarResultados = false"
+                  (focus)="mostrarResultados = localidadesBuscadas.length > 0"
+                  autocomplete="off"
+                >
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+
+                @if (buscandoLocalidades) {
+                  <div class="absolute right-3 top-3">
+                    <svg class="animate-spin h-5 w-5 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  </div>
+                }
+
+                @if (mostrarResultados && localidadesBuscadas.length > 0) {
+                  <ul class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-60 overflow-y-auto">
+                    @for (loc of localidadesBuscadas; track loc.localidad_id) {
+                      <li
+                        (mousedown)="agregarLocalidad(loc)"
+                        class="px-4 py-2 hover:bg-orange-50 cursor-pointer text-gray-700 border-b last:border-0 flex justify-between items-center group"
+                      >
+                        <span>
+                          <span class="font-medium">{{ loc.nombre }}</span>,
+                          <span class="text-sm text-gray-500">{{ loc.provincia }}</span>
+                        </span>
+                        <span class="text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium flex items-center gap-1">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                          Agregar
+                        </span>
+                      </li>
+                    }
+                  </ul>
                 }
               </div>
-            } @else {
-              <p class="text-sm text-gray-500 mb-3 italic">No has seleccionado ninguna localidad aún.</p>
-            }
-
-            <div class="relative">
-              <input
-                type="text"
-                formControlName="buscarLocalidad"
-                placeholder="Escribe para buscar y agregar (ej: Campana)..."
-                class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-shadow bg-slate-50"
-                (blur)="mostrarResultados = false"
-                (focus)="mostrarResultados = localidadesBuscadas.length > 0"
-                autocomplete="off"
-              >
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              </div>
-
-              @if (buscandoLocalidades) {
-                <div class="absolute right-3 top-3">
-                  <svg class="animate-spin h-5 w-5 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                </div>
-              }
-
-              @if (mostrarResultados && localidadesBuscadas.length > 0) {
-                <ul class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-60 overflow-y-auto">
-                  @for (loc of localidadesBuscadas; track loc.localidad_id) {
-                    <li
-                      (mousedown)="agregarLocalidad(loc)"
-                      class="px-4 py-2 hover:bg-orange-50 cursor-pointer text-gray-700 border-b last:border-0 flex justify-between items-center group"
-                    >
-                      <span>
-                        <span class="font-medium">{{ loc.nombre }}</span>,
-                        <span class="text-sm text-gray-500">{{ loc.provincia }}</span>
-                      </span>
-                      <span class="text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Agregar
-                      </span>
-                    </li>
-                  }
-                </ul>
-              }
+              <p class="text-xs text-gray-500 mt-2">Puedes agregar múltiples localidades. Estas serán las zonas donde recibirás solicitudes de viaje.</p>
             </div>
-            <p class="text-xs text-gray-500 mt-2">Puedes agregar múltiples localidades. Estas serán las zonas donde recibirás solicitudes de viaje.</p>
-          </div>
-        </section>
+          </section>
 
-        <div class="pt-6 border-t flex justify-end gap-4">
-          <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
-          <button
-            type="submit"
-            [disabled]="submitting || form.invalid"
-            class="px-8 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            @if (submitting) {
-              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-              Guardando...
-            } @else {
-              Guardar Cambios
+          <div class="pt-6 border-t flex justify-end gap-4">
+            <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
+            <button
+              type="submit"
+              [disabled]="submitting || form.invalid"
+              class="px-8 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              @if (submitting) {
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Guardando...
+              } @else {
+                Guardar Cambios
+              }
+            </button>
+          </div>
+
+        </form>
+      }
+    </div>
+
+    <section class="pt-8 border-t border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        Seguridad
+      </h2>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="onUpdatePassword()" class="bg-white shadow-sm p-6 rounded-xl border border-gray-200">
+        <div class="grid md:grid-cols-2 gap-6 items-start">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="••••••••"
+              class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
+            >
+            @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
+              <p class="text-xs text-red-600 mt-1">Mínimo 6 caracteres.</p>
             }
-          </button>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="••••••••"
+              class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
+            >
+            @if (passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched) {
+              <p class="text-xs text-red-600 mt-1">Las contraseñas no coinciden.</p>
+            }
+          </div>
         </div>
 
+        <div class="mt-4 flex justify-end">
+          <button
+            type="submit"
+            [disabled]="submittingPassword || passwordForm.invalid"
+            class="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-lg shadow transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            @if (submittingPassword) {
+              <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            }
+            Actualizar Contraseña
+          </button>
+        </div>
       </form>
-    }
-  </div>
+    </section>
 
-  <section class="mt-8 pt-8 border-t border-gray-200">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-    Seguridad
-  </h2>
-
-  <form [formGroup]="passwordForm" (ngSubmit)="onUpdatePassword()" class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-    <div class="grid md:grid-cols-2 gap-6 items-start">
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
-        <input
-          type="password"
-          formControlName="password"
-          placeholder="••••••••"
-          class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
-        >
-        @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
-          <p class="text-xs text-red-600 mt-1">Mínimo 6 caracteres.</p>
-        }
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
-        <input
-          type="password"
-          formControlName="confirmPassword"
-          placeholder="••••••••"
-          class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
-        >
-        @if (passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched) {
-          <p class="text-xs text-red-600 mt-1">Las contraseñas no coinciden.</p>
-        }
-      </div>
-    </div>
-
-    <div class="mt-4 flex justify-end">
-      <button
-        type="submit"
-        [disabled]="submittingPassword || passwordForm.invalid"
-        class="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-lg shadow transition-colors disabled:opacity-50 flex items-center gap-2"
-      >
-        @if (submittingPassword) {
-          <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        }
-        Actualizar Contraseña
-      </button>
-    </div>
-  </form>
-</section>
-</div>
+  </div> </div>
