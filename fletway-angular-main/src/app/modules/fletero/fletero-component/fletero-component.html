@@ -14,8 +14,8 @@
             <p class="text-sm text-gray-500">Total de pedidos</p>
             <p class="text-2xl font-bold text-orange-600">
               {{
-                (solicitudes_disponibles?.length || 0) +
-                  (solicitudes_pendientes?.length || 0)
+                (solicitudes_disponibles()?.length || 0) +
+                  (solicitudes_pendientes()?.length || 0)
               }}
             </p>
           </div>
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Estados de carga y error -->
-    <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <div *ngIf="loading()" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div
           class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"
@@ -34,7 +34,7 @@
     </div>
 
     <div
-      *ngIf="error"
+      *ngIf="error()"
       class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
     >
       <div class="flex items-center gap-3">
@@ -51,12 +51,12 @@
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <p class="text-red-800 font-medium">{{ error }}</p>
+        <p class="text-red-800 font-medium">{{ error() }}</p>
       </div>
     </div>
 
     <div
-      *ngIf="!loading && solicitudes.length === 0"
+      *ngIf="!loading() && ((solicitudes_disponibles()?.length || 0) + (solicitudes_pendientes()?.length || 0)) === 0"
       class="text-center py-20 bg-white rounded-xl border border-gray-200"
     >
       <div
@@ -83,7 +83,7 @@
     </div>
 
     <!-- Solicitudes Disponibles -->
-    <div *ngIf="!loading && solicitudes_disponibles.length > 0" class="mb-12">
+    <div *ngIf="!loading() && solicitudes_disponibles().length > 0" class="mb-12">
       <div class="flex items-center gap-3 mb-6">
         <div class="flex-1">
           <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -107,11 +107,11 @@
             Nuevas Solicitudes
           </h2>
           <p class="text-gray-600 mt-1">
-            {{ solicitudes_disponibles.length }} solicitud<span
-              *ngIf="solicitudes_disponibles.length !== 1"
+            {{ solicitudes_disponibles().length }} solicitud<span
+              *ngIf="solicitudes_disponibles().length !== 1"
               >es</span
             >
-            disponible<span *ngIf="solicitudes_disponibles.length !== 1"
+            disponible<span *ngIf="solicitudes_disponibles().length !== 1"
               >s</span
             >
           </p>
@@ -119,13 +119,13 @@
         <span
           class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
         >
-          {{ solicitudes_disponibles.length }}
+          {{ solicitudes_disponibles().length }}
         </span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <app-solicitud-card
-          *ngFor="let s of solicitudes_disponibles || []"
+          *ngFor="let s of solicitudes_disponibles() || []"
           [solicitud]="s"
           [modo]="'fletero'"
           [mostrarBotones]="true"
@@ -138,7 +138,7 @@
     </div>
 
     <!-- Solicitudes Pendientes / En Viaje -->
-    <div *ngIf="!loading && solicitudes_pendientes.length > 0">
+    <div *ngIf="!loading() && solicitudes_pendientes().length > 0">
       <div class="flex items-center gap-3 mb-6">
         <div class="flex-1">
           <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -160,8 +160,8 @@
             Viajes Activos
           </h2>
           <p class="text-gray-600 mt-1">
-            {{ solicitudes_pendientes.length }} viaje<span
-              *ngIf="solicitudes_pendientes.length !== 1"
+            {{ solicitudes_pendientes().length }} viaje<span
+              *ngIf="solicitudes_pendientes().length !== 1"
               >s</span
             >
             en progreso
@@ -170,13 +170,13 @@
         <span
           class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
         >
-          {{ solicitudes_pendientes.length }}
+          {{ solicitudes_pendientes().length }}
         </span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <app-solicitud-card
-          *ngFor="let s of solicitudes_pendientes || []"
+          *ngFor="let s of solicitudes_pendientes() || []"
           [solicitud]="s"
           [modo]="'fletero'"
           [mostrarBotones]="true"

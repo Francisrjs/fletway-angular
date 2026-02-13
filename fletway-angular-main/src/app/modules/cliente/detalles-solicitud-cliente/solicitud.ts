@@ -31,7 +31,7 @@ import { MapComponent } from '../../../shared/features/map/map';
 import { SolcitudService } from '../../data-access/solicitud-service';
 import { MapService } from '../../../shared/features/map/map-service';
 import { ToastService } from '../../../shared/modal/toast/toast.service';
-import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service'; // Importar el nuevo servicio
+import { SolicitudFlaskService } from '../../data-access/solicitud-flask.service';
 import { Solicitud } from '../../../core/layouts/solicitud';
 
 @Component({
@@ -57,8 +57,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   files: FileList | null = null;
   mostrarDropdownOrigen = false;
   mostrarDropdownDestino = false;
-  textoLocalidadOrigen = ''; // Lo que se muestra en el input
-  textoLocalidadDestino = ''; // Lo que se muestra en el input
+  textoLocalidadOrigen = '';
+  textoLocalidadDestino = '';
 
   // Variables para fotos múltiples
   fotosSeleccionadas: File[] = [];
@@ -94,7 +94,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private fb = inject(FormBuilder);
   private solicitudService = inject(SolcitudService);
-  private solicitudFlaskService = inject(SolicitudFlaskService); // Inyectar servicio Flask
+  private solicitudFlaskService = inject(SolicitudFlaskService);
   private router = inject(Router);
   private mapService = inject(MapService);
   private toastService = inject(ToastService);
@@ -148,9 +148,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((value) => {
         this.originSearch$.next(value || '');
-        // Invalidar validación cuando cambia la dirección
         this.direccionOrigenValida = false;
-        // Revalidar dirección automáticamente
         if (value && value.trim().length > 5) {
           this.validarDireccionOrigen(value);
         }
@@ -172,14 +170,12 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: Localidad[]) => {
           this.localidadesOrigenFiltradas = res ?? [];
-          // Siempre incluir la localidad seleccionada en los resultados filtrados
           const origenId = this.solicitudForm.get('localidad_origen_id')?.value;
           if (origenId) {
             const localidadSeleccionada = this.todasLasLocalidades.find(
               (l) => l.localidad_id === Number(origenId),
             );
             if (localidadSeleccionada) {
-              // Remover duplicados y agregar al inicio
               this.localidadesOrigenFiltradas =
                 this.localidadesOrigenFiltradas.filter(
                   (l) => l.localidad_id !== localidadSeleccionada.localidad_id,
@@ -204,9 +200,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((value) => {
         this.destinoSearch$.next(value || '');
-        // Invalidar validación cuando cambia la dirección
         this.direccionDestinoValida = false;
-        // Revalidar dirección automáticamente
         if (value && value.trim().length > 5) {
           this.validarDireccionDestino(value);
         }
@@ -228,7 +222,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: Localidad[]) => {
           this.localidadesDestinoFiltradas = res ?? [];
-          // Siempre incluir la localidad seleccionada en los resultados filtrados
           const destinoId = this.solicitudForm.get(
             'localidad_destino_id',
           )?.value;
@@ -237,7 +230,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
               (l) => l.localidad_id === Number(destinoId),
             );
             if (localidadSeleccionada) {
-              // Remover duplicados y agregar al inicio
               this.localidadesDestinoFiltradas =
                 this.localidadesDestinoFiltradas.filter(
                   (l) => l.localidad_id !== localidadSeleccionada.localidad_id,
@@ -258,9 +250,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Carga los datos de la solicitud en el formulario para edición
-   */
   private cargarDatosSolicitud(): void {
     if (!this.solicitud) return;
 
@@ -284,7 +273,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       tolerancia_min: 0,
     });
 
-    // Marcar direcciones como válidas si ya existen
     if (this.solicitud.direccion_origen) {
       this.direccionOrigenValida = true;
     }
@@ -293,9 +281,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Maneja la selección de múltiples fotos
-   */
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -304,9 +289,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     const fotosValidas: File[] = [];
     const errores: string[] = [];
 
-    // Validar cada archivo
     for (const file of files) {
-      // Verificar límite de cantidad
       if (
         this.fotosSeleccionadas.length + fotosValidas.length >=
         this.MAX_FOTOS
@@ -315,13 +298,11 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         break;
       }
 
-      // Validar tipo de archivo
       if (!this.ALLOWED_TYPES.includes(file.type)) {
         errores.push(`${file.name}: Solo se permiten archivos PNG o JPG`);
         continue;
       }
 
-      // Validar tamaño
       if (file.size > this.MAX_FILE_SIZE) {
         errores.push(
           `${file.name}: Tamaño máximo ${this.MAX_FILE_SIZE / (1024 * 1024)}MB`,
@@ -332,11 +313,8 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       fotosValidas.push(file);
     }
 
-    // Agregar fotos válidas
     fotosValidas.forEach((file) => {
       this.fotosSeleccionadas.push(file);
-
-      // Crear previsualización
       const reader = new FileReader();
       reader.onload = (e) => {
         this.previsualizacionFotos.push(e.target?.result as string);
@@ -344,7 +322,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       reader.readAsDataURL(file);
     });
 
-    // Mostrar errores si hay
     if (errores.length > 0) {
       this.toastService.showWarning(
         'Algunas fotos no se agregaron',
@@ -359,38 +336,25 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Limpiar input
     input.value = '';
   }
 
-  /**
-   * Elimina una foto de la lista
-   */
   onRemoveFoto(index: number): void {
     this.fotosSeleccionadas.splice(index, 1);
     this.previsualizacionFotos.splice(index, 1);
     this.toastService.showSuccess('Foto eliminada', '', 2000);
   }
 
-  /**
-   * Abre el popup para previsualizar una foto
-   */
   abrirPopupFoto(index: number): void {
     this.fotoSeleccionadaIndex = index;
     this.mostrarPopupFoto = true;
   }
 
-  /**
-   * Cierra el popup de previsualización
-   */
   cerrarPopupFoto(): void {
     this.mostrarPopupFoto = false;
     this.fotoSeleccionadaIndex = null;
   }
 
-  /**
-   * Sube múltiples fotos a Supabase Storage y las guarda en la tabla fotos
-   */
   private async uploadFotos(solicitudId: number): Promise<void> {
     if (this.fotosSeleccionadas.length === 0) return;
 
@@ -402,7 +366,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         const file = this.fotosSeleccionadas[i];
         const fileName = `${solicitudId}/${Date.now()}-${i}-${file.name}`;
 
-        // 1. Subir archivo a Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('fotos_solicitud')
           .upload(fileName, file, {
@@ -420,12 +383,10 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
           continue;
         }
 
-        // 2. Obtener URL pública
         const { data: urlData } = supabase.storage
           .from('fotos_solicitud')
           .getPublicUrl(fileName);
 
-        // 3. Guardar en tabla fotos
         const { error: dbError } = await supabase.from('fotos').insert({
           solc_id: solicitudId,
           url: urlData.publicUrl,
@@ -472,6 +433,9 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     );
   }
 
+  // =========================================================================
+  // CORRECCIÓN APLICADA AQUÍ EN EL MÉTODO onSubmit
+  // =========================================================================
   async onSubmit() {
     if (this.solicitudForm.invalid) {
       this.solicitudForm.markAllAsTouched();
@@ -486,7 +450,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     }
     this.toastService.showWarning('Guardando solicitud...');
 
-    // Validar fecha de recogida no sea anterior a hoy
     const fechaRecogida = this.solicitudForm.value.fechaRecogida;
     if (fechaRecogida) {
       const hoy = new Date();
@@ -504,7 +467,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Validar direcciones
     const origenValido = await this.validarDireccion(
       this.solicitudForm.value.origen,
       'origen',
@@ -552,22 +514,18 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
 
     try {
       if (this.editMode && this.solicitud) {
-        // Modo edición
+        // === MODO EDICIÓN ===
         console.log('✏️ Editando solicitud...', this.solicitudForm.value);
 
-        const { data, error } = await this.solicitudService.updateSolicitud(
+        // CORRECCIÓN: Eliminada desestructuración { data, error }
+        const data = await this.solicitudService.updateSolicitud(
           this.solicitud.solicitud_id,
           payload,
         );
 
-        if (error) {
-          console.error('Error editando solicitud:', error);
-          this.message = {
-            type: 'error',
-            text: 'Error editando la solicitud. Revisá la consola.',
-          };
-          this.submitting = false;
-          return;
+        if (!data) {
+          // Si data es null, lanzamos error para caer en el catch
+          throw new Error('No se pudo actualizar la solicitud.');
         }
 
         this.toastService.showSuccess(
@@ -581,27 +539,21 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
           text: 'Pedido actualizado correctamente.',
         };
 
-        this.solicitudEditada.emit(data as Solicitud);
+        this.solicitudEditada.emit(data);
       } else {
-        // Modo creación
+        // === MODO CREACIÓN ===
         console.log('Creando solicitud...', this.solicitudForm.value);
 
-        const { data, error } =
-          await this.solicitudService.createSolicitud(payload);
+        // CORRECCIÓN: Eliminada desestructuración { data, error }
+        const data = await this.solicitudService.createSolicitud(payload);
 
-        if (error || !data?.solicitud_id) {
-          console.error('Error creando solicitud:', error);
-          this.message = {
-            type: 'error',
-            text: 'Error creando la solicitud. Revisá la consola.',
-          };
-          this.submitting = false;
-          return;
+        if (!data || !data.solicitud_id) {
+          // Si data es null, lanzamos error para caer en el catch
+          throw new Error('No se pudo crear la solicitud.');
         }
 
         console.log('Solicitud creada con ID:', data.solicitud_id);
 
-        // Si hay fotos seleccionadas, subirlas a Supabase Storage
         if (this.fotosSeleccionadas.length > 0) {
           console.log(`Subiendo ${this.fotosSeleccionadas.length} foto(s)...`);
           await this.uploadFotos(data.solicitud_id);
@@ -626,7 +578,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      this.toastService.showDanger('Error al crear pedido', errorMessage, 4000);
+      this.toastService.showDanger('Error al procesar pedido', errorMessage, 4000);
       this.message = {
         type: 'error',
         text: errorMessage,
@@ -635,6 +587,7 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       this.submitting = false;
     }
   }
+  // =========================================================================
 
   get puedeMostrarMapa(): boolean {
     const v = this.solicitudForm.value;
@@ -672,7 +625,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         { origen: nuevaDireccion },
         { emitEvent: false },
       );
-      // Validar la nueva dirección
       this.validarDireccionOrigen(nuevaDireccion);
     }
   }
@@ -683,29 +635,18 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
         { destino: nuevaDireccion },
         { emitEvent: false },
       );
-      // Validar la nueva dirección
       this.validarDireccionDestino(nuevaDireccion);
     }
   }
 
-  /**
-   * Valida dirección de origen (método público para uso reactivo)
-   */
   validarDireccionOrigen(direccion: string): void {
     this.validarDireccion(direccion, 'origen');
   }
 
-  /**
-   * Valida dirección de destino (método público para uso reactivo)
-   */
   validarDireccionDestino(direccion: string): void {
     this.validarDireccion(direccion, 'destino');
   }
 
-  /**
-   * Valida que una dirección tenga coordenadas válidas
-   * Se ejecuta cada vez que cambia la dirección
-   */
   private async validarDireccion(
     direccion: string,
     tipo: 'origen' | 'destino',
@@ -719,7 +660,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Marcar que estamos validando
     if (tipo === 'origen') {
       this.validandoDireccionOrigen = true;
     } else {
@@ -772,9 +712,6 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Obtiene la fecha mínima permitida (hoy)
-   */
   get fechaMinima(): string {
     const hoy = new Date();
     return hoy.toISOString().split('T')[0];
@@ -788,60 +725,58 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     }
   }
 
-
   filtrarLocalidadesOrigen(event: Event): void {
-  const termino = (event.target as HTMLInputElement).value.toLowerCase();
-  this.textoLocalidadOrigen = (event.target as HTMLInputElement).value;
-  this.mostrarDropdownOrigen = true;
+    const termino = (event.target as HTMLInputElement).value.toLowerCase();
+    this.textoLocalidadOrigen = (event.target as HTMLInputElement).value;
+    this.mostrarDropdownOrigen = true;
 
-  if (!termino) {
-    this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
-  } else {
-    this.localidadesOrigenFiltradas = this.todasLasLocalidades.filter(loc =>
-      (loc.nombre || '').toLowerCase().includes(termino) ||
-      (loc.provincia || '').toLowerCase().includes(termino)
-    );
+    if (!termino) {
+      this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
+    } else {
+      this.localidadesOrigenFiltradas = this.todasLasLocalidades.filter((loc) =>
+        (loc.nombre || '').toLowerCase().includes(termino) ||
+        (loc.provincia || '').toLowerCase().includes(termino)
+      );
+    }
+    this.solicitudForm.get('localidad_origen_id')?.setValue(null);
   }
 
-  // Si el usuario escribe, reseteamos el ID hasta que seleccione una
-  this.solicitudForm.get('localidad_origen_id')?.setValue(null);
-}
-
-seleccionarLocalidadOrigen(localidad: Localidad): void {
-  this.textoLocalidadOrigen = `${localidad.nombre}, ${localidad.provincia}`;
-  this.solicitudForm.get('localidad_origen_id')?.setValue(localidad.localidad_id);
-  this.mostrarDropdownOrigen = false;
-}
-
-// --- Lógica Destino ---
-filtrarLocalidadesDestino(event: Event): void {
-  const termino = (event.target as HTMLInputElement).value.toLowerCase();
-  this.textoLocalidadDestino = (event.target as HTMLInputElement).value;
-  this.mostrarDropdownDestino = true;
-
-  if (!termino) {
-    this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
-  } else {
-    this.localidadesDestinoFiltradas = this.todasLasLocalidades.filter(loc =>
-     (loc.nombre || '').toLowerCase().includes(termino) ||
-     (loc.provincia || '').toLowerCase().includes(termino)
-    );
+  seleccionarLocalidadOrigen(localidad: Localidad): void {
+    this.textoLocalidadOrigen = `${localidad.nombre}, ${localidad.provincia}`;
+    this.solicitudForm
+      .get('localidad_origen_id')
+      ?.setValue(localidad.localidad_id);
+    this.mostrarDropdownOrigen = false;
   }
 
-  this.solicitudForm.get('localidad_destino_id')?.setValue(null);
-}
+  filtrarLocalidadesDestino(event: Event): void {
+    const termino = (event.target as HTMLInputElement).value.toLowerCase();
+    this.textoLocalidadDestino = (event.target as HTMLInputElement).value;
+    this.mostrarDropdownDestino = true;
 
-seleccionarLocalidadDestino(localidad: Localidad): void {
-  this.textoLocalidadDestino = `${localidad.nombre}, ${localidad.provincia}`;
-  this.solicitudForm.get('localidad_destino_id')?.setValue(localidad.localidad_id);
-  this.mostrarDropdownDestino = false;
-}
+    if (!termino) {
+      this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
+    } else {
+      this.localidadesDestinoFiltradas = this.todasLasLocalidades.filter((loc) =>
+        (loc.nombre || '').toLowerCase().includes(termino) ||
+        (loc.provincia || '').toLowerCase().includes(termino)
+      );
+    }
+    this.solicitudForm.get('localidad_destino_id')?.setValue(null);
+  }
 
-// Método auxiliar para cerrar dropdowns con delay (para permitir el click)
-onBlurOrigen() {
-  setTimeout(() => this.mostrarDropdownOrigen = false, 200);
-}
-onBlurDestino() {
-  setTimeout(() => this.mostrarDropdownDestino = false, 200);
-}
+  seleccionarLocalidadDestino(localidad: Localidad): void {
+    this.textoLocalidadDestino = `${localidad.nombre}, ${localidad.provincia}`;
+    this.solicitudForm
+      .get('localidad_destino_id')
+      ?.setValue(localidad.localidad_id);
+    this.mostrarDropdownDestino = false;
+  }
+
+  onBlurOrigen() {
+    setTimeout(() => (this.mostrarDropdownOrigen = false), 200);
+  }
+  onBlurDestino() {
+    setTimeout(() => (this.mostrarDropdownDestino = false), 200);
+  }
 }

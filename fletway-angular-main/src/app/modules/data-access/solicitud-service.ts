@@ -1,11 +1,11 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-
 import { AuthService } from '../../core/auth/data-access/auth-service';
 import { Localidad } from '../../core/layouts/localidad';
 import { Solicitud } from '../../core/layouts/solicitud';
 import { Supabase } from '../../shared/data-access/supabase';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 
 interface SolicitudState {
   solicitudes: Solicitud[];
@@ -13,877 +13,1013 @@ interface SolicitudState {
   error: boolean;
 }
 
+interface PresupuestoAceptadoEvent {
+  solicitud_id: number;
+  presupuesto_id: number;
+  transportista_id: number;
+  presupuesto: any;  // Presupuesto completo con transportista
+}
+
+
+
 @Injectable({
   providedIn: 'root',
 })
 export class SolcitudService {
-  // CORRECCIÓN: asegúrate que tu provider exponga exactamente 'supabaseClient'
   private _supabaseClient = inject(Supabase).supabaseCLient;
   private _authService = inject(AuthService);
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:5000'; // Tu URL de Flask
+  private socket: Socket;
+  private apiUrl = 'http://127.0.0.1:5000';
+
+  // 📊 ESTADO PRINCIPAL
   private _state = signal<SolicitudState>({
     solicitudes: [],
     loading: false,
     error: false,
   });
 
-  // Exponer como computed/signals para que la UI pueda suscribirse si querés
+  // 🎯 SIGNALS PÚBLICOS
   solicitudes = computed(() => this._state().solicitudes);
   loading = computed(() => this._state().loading);
   error = computed(() => this._state().error);
-  // Signals writable para solicitudes pendientes y disponibles
+
+  // 🚚 SIGNALS PARA TRANSPORTISTA
   solicitudes_pendientes = signal<Solicitud[]>([]);
   solicitudes_disponibles = signal<Solicitud[]>([]);
 
+  // 📈 COMPUTED DERIVADOS
   solicitudes_completadas = computed(() =>
-    this._state().solicitudes.filter((s) => s.estado === 'completado'),
+    this._state().solicitudes.filter((s) => s.estado === 'completado' || s.estado === 'completada')
   );
-  // ahora devuelve la data y maneja errores
-  // ... imports existentes
 
-  // Agrega este método a tu clase SolcitudService
-  async getAllPedidos(): Promise<Solicitud[] | null> {
+  get sesion() {
+    return this._authService.userState();
+  }
+
+  constructor() {
+    console.log('🚀 [SolicitudService] Inicializando...');
+
+    // Inicializar socket
+    this.socket = io(this.apiUrl, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5
+    });
+
+    this.initSocketListeners();
+  }
+
+  /**
+   * 🔌 CONFIGURACIÓN DE SOCKET.IO - EVENTOS DEL BACKEND
+   */
+  private initSocketListeners() {
+    // Conexión/Desconexión
+    this.socket.on('connect', () => {
+      console.log('✅ [Socket] Conectado al servidor');
+    });
+
+    this.socket.on('disconnect', () => {
+      console.warn('⚠️ [Socket] Desconectado del servidor');
+    });
+
+    /*this.socket.on('presupuesto_aceptado',(data: PresupuestoAceptadoEvent) => {
+      console.log('Presupuesto acepta')});*/
+
+
+    // ========================================
+    // 1️⃣ CREAR SOLICITUD
+    // ========================================
+    this.socket.on('nueva_solicitud', (solicitudCompleta: Solicitud) => {
+      console.log('🆕 [Socket] Nueva solicitud creada:', solicitudCompleta);
+
+      const session = this.sesion;
+      if (!session) return;
+
+      if (session.isFletero) {
+        // FLETERO: Agregar a solicitudes disponibles si está en sus zonas
+        this.handleNuevaSolicitudFletero(solicitudCompleta);
+      } else {
+        // CLIENTE: Agregar a su lista de solicitudes
+        this.handleNuevaSolicitudCliente(solicitudCompleta);
+      }
+    });
+
+    // ========================================
+    // 2️⃣ EDITAR SOLICITUD
+    // ========================================
+    this.socket.on('solicitud_actualizada', (data: any) => {
+      console.log('✏️ [Socket] Solicitud actualizada:', data);
+
+      const session = this.sesion;
+      if (!session) return;
+
+      if (session.isFletero) {
+        // FLETERO: Actualizar en disponibles o pendientes
+        this.handleActualizarSolicitudFletero(data);
+      } else {
+        // CLIENTE: Actualizar en su lista
+        this.handleActualizarSolicitudCliente(data);
+      }
+    });
+
+    // ========================================
+    // 3️⃣ CANCELAR SOLICITUD
+    // ========================================
+    this.socket.on('solicitud_cancelada', (data: { solicitud_id: number }) => {
+      console.log('🗑️ [Socket] Solicitud cancelada:', data);
+
+      const session = this.sesion;
+      if (!session) return;
+
+      if (session.isFletero) {
+        // FLETERO: Eliminar de disponibles/pendientes
+        this.handleCancelarSolicitudFletero(data.solicitud_id);
+      } else {
+        // CLIENTE: Eliminar de su lista
+        this.handleCancelarSolicitudCliente(data.solicitud_id);
+      }
+    });
+
+    // ========================================
+    // 4️⃣ ACEPTAR PRESUPUESTO
+    // ========================================
+    this.socket.on('presupuesto_aceptado', (data: PresupuestoAceptadoEvent)=>{
+
+      console.log('💰 [Socket] Presupuesto aceptado:', data);
+
+      const session = this.sesion;
+      if (!session) return;
+
+      if (session.isFletero) {
+        // FLETERO: Mover de disponibles a pendiente0s y actualizar
+        this.handlePresupuestoAceptadoFletero(data)
+
+  } else {
+        // CLIENTE: Actualizar solicitud a pendiente con datos del fletero
+        this.handlePresupuestoAceptadoCliente(data);
+      }
+    });
+
+
+    this.socket.on('aceptar_solicitud', (data) => {
+  // Para fleteros: verificar si soy el ganador
+  // Si no soy el ganador, remover la solicitud
+      this.handleSolicitudAceptada(data);
+    });
+
+
+    // ========================================
+    // 5️⃣ COMENZAR VIAJE
+    // ========================================
+    this.socket.on('viaje_iniciado', (solicitudCompleta: Solicitud) => {
+      console.log('🚚 [Socket] Viaje iniciado:', solicitudCompleta);
+
+      const session = this.sesion;
+      if (!session) return;
+
+      if (session.isFletero) {
+        // FLETERO: Actualizar estado en pendientes
+        this.handleViajeIniciadoFletero(solicitudCompleta);
+      } else {
+        // CLIENTE: Actualizar estado de la solicitud
+        this.handleViajeIniciadoCliente(solicitudCompleta);
+      }
+    });
+
+    // ========================================
+    // 6️⃣ COMPLETAR VIAJE
+    // ========================================
+    this.socket.on('viaje_completado', (solicitud: Solicitud) => {
+      console.log('✅ [Socket] Viaje completado:', solicitud);
+
+      const session = this.sesion;
+      if (!session) return;
+
+      if (session.isFletero) {
+        // FLETERO: Actualizar o mover a completadas
+        this.handleViajeCompletadoFletero(solicitud);
+      } else {
+        // CLIENTE: Actualizar y habilitar calificación
+        this.handleViajeCompletadoCliente(solicitud);
+      }
+    });
+  }
+
+
+  private handlePresupuestoAceptadoFletero(data: {
+    solicitud_id: number;
+    presupuesto_id: number;
+    transportista_id: number;
+    presupuesto: any;  // ✅ Ahora incluye datos completos
+  }) {
+    const session = this.sesion;
+    if (!session) return;
+
+    // ✅ Verificar si es mi presupuesto usando el userId de la sesión
+    // Esto asume que el backend incluye el usuario_id en presupuesto.transportista.usuario
+    const esmiPresupuesto = data.presupuesto?.transportista?.usuario?.u_id === session.userId;
+
+    if (!esmiPresupuesto) {
+      // Si no es mi presupuesto, eliminar de disponibles
+      const disponibles = this.solicitudes_disponibles();
+      this.solicitudes_disponibles.set(
+        disponibles.filter(s => s.solicitud_id !== data.solicitud_id)
+      );
+      console.log('✅ [Fletero] Solicitud eliminada - presupuesto aceptado fue de otro');
+      return;
+    }
+
+    // Es MI presupuesto: mover de disponibles a pendientes
+    const disponibles = this.solicitudes_disponibles();
+    const solicitud = disponibles.find(s => s.solicitud_id === data.solicitud_id);
+
+    if (solicitud) {
+      // Eliminar de disponibles
+      this.solicitudes_disponibles.set(
+        disponibles.filter(s => s.solicitud_id !== data.solicitud_id)
+      );
+
+      // ✅ Actualizar estado y agregar datos del presupuesto
+      const solicitudActualizada: Solicitud = {
+        ...solicitud,
+        estado: 'pendiente' as any,
+        presupuesto_aceptado: data.presupuesto_id,
+        presupuesto: data.presupuesto  // ✅ Datos completos del backend
+      };
+
+      const pendientes = this.solicitudes_pendientes();
+      this.solicitudes_pendientes.set([solicitudActualizada, ...pendientes]);
+
+      console.log('✅ [Fletero] Solicitud movida a pendientes con botón para realizar viaje');
+    }
+  }
+
+
+  // HANDLERS PARA FLETERO
+  // ========================================
+
+  /**
+   * 🚚 FLETERO: Nueva solicitud disponible
+   */
+  private handleNuevaSolicitudFletero(solicitud: Solicitud) {
+    // Agregar a solicitudes disponibles
+    const disponibles = this.solicitudes_disponibles();
+
+    // Verificar que no esté ya en la lista
+    const existe = disponibles.some(s => s.solicitud_id === solicitud.solicitud_id);
+    if (!existe) {
+      this.solicitudes_disponibles.set([solicitud, ...disponibles]);
+      console.log('✅ [Fletero] Solicitud agregada a disponibles');
+    }
+  }
+
+
+    //
+  private handleSolicitudAceptada(solicitud: any) {
+    const usuario = this.sesion;
+
+    if (!usuario) {
+      console.log('⚠️ [handleSolicitudAceptada] No hay usuario en sesión');
+      return;
+    }
+
+    // ========================================
+    // VERIFICAR SI SOY FLETERO
+    // ========================================
+
+
+    const miTransportistaId = usuario.transportista?.transportista_id;
+
+    if (!miTransportistaId) {
+      // No soy fletero, probablemente soy cliente
+      // El cliente no necesita filtrar solicitudes aquí
+      console.log('👤 [handleSolicitudAceptada] Soy cliente, actualizando solicitud');
+
+      // Para el cliente: solo actualizar la solicitud con el presupuesto aceptado
+      this._state.update(s => ({
+        ...s,
+        solicitudes: s.solicitudes.map(sol => {
+          if (sol.solicitud_id === solicitud.solicitud_id) {
+            return {
+              ...sol,
+              estado: solicitud.estado,
+              presupuesto_aceptado: solicitud.presupuesto_aceptado,
+              presupuesto: solicitud.presupuesto
+            };
+          }
+          return sol;
+        })
+      }));
+
+      return;
+    }
+
+    // ========================================
+    // LÓGICA PARA FLETEROS
+    // ========================================
+
+    const presupuestoGanador = solicitud.presupuesto;
+
+    if (!presupuestoGanador) {
+      console.log('⚠️ [handleSolicitudAceptada] No hay presupuesto ganador en la solicitud');
+      return;
+    }
+
+    const transportistaGanadorId = presupuestoGanador.transportista_id;
+
+    if (!transportistaGanadorId) {
+      console.log('⚠️ [handleSolicitudAceptada] No hay transportista_id en el presupuesto ganador');
+      return;
+    }
+
+    // ========================================
+    // DECISIÓN: ¿SOY EL GANADOR?
+    // ========================================
+
+    if (transportistaGanadorId === miTransportistaId) {
+      // ✅ SOY EL GANADOR
+      console.log('🎉 [Socket] ¡GANÉ! Actualizando solicitud a pendiente');
+      console.log('   → Solicitud:', solicitud.solicitud_id);
+      console.log('   → Presupuesto:', presupuestoGanador.presupuesto_id);
+      console.log('   → Precio:', presupuestoGanador.precio_estimado);
+
+      this._state.update(s => ({
+        ...s,
+        solicitudes: s.solicitudes.map(sol => {
+          if (sol.solicitud_id === solicitud.solicitud_id) {
+            return {
+              ...sol,
+              estado: 'pendiente',
+              presupuesto_aceptado: presupuestoGanador.presupuesto_id,
+              presupuesto: presupuestoGanador
+            };
+          }
+          return sol;
+        })
+      }));
+
+      console.log('✅ [Socket] Solicitud actualizada - Ahora puedo iniciar viaje');
+
+    } else {
+      // ❌ NO SOY EL GANADOR
+      console.log('😞 [Socket] No gané el presupuesto - Removiendo solicitud');
+      console.log('   → Mi transportista_id:', miTransportistaId);
+      console.log('   → Ganador transportista_id:', transportistaGanadorId);
+      console.log('   → Solicitud:', solicitud.solicitud_id);
+
+      this._state.update(s => ({
+        ...s,
+        solicitudes: s.solicitudes.filter(
+          sol => sol.solicitud_id !== solicitud.solicitud_id
+        )
+      }));
+
+      console.log('❌ [Socket] Solicitud removida de mi vista');
+    }
+  }
+
+  /**
+   * 🚚 FLETERO: Actualizar solicitud
+   */
+  private handleActualizarSolicitudFletero(data: any) {
+    // Actualizar en disponibles
+    const disponibles = this.solicitudes_disponibles();
+    const indexDisp = disponibles.findIndex(s => s.solicitud_id === data.solicitud_id);
+
+    if (indexDisp !== -1) {
+      const nuevasDisponibles = [...disponibles];
+      nuevasDisponibles[indexDisp] = { ...nuevasDisponibles[indexDisp], ...data } as Solicitud;
+      this.solicitudes_disponibles.set(nuevasDisponibles);
+      console.log('✅ [Fletero] Solicitud actualizada en disponibles');
+    }
+
+    // Actualizar en pendientes
+    const pendientes = this.solicitudes_pendientes();
+    const indexPend = pendientes.findIndex(s => s.solicitud_id === data.solicitud_id);
+
+    if (indexPend !== -1) {
+      const nuevasPendientes = [...pendientes];
+      nuevasPendientes[indexPend] = { ...nuevasPendientes[indexPend], ...data } as Solicitud;
+      this.solicitudes_pendientes.set(nuevasPendientes);
+      console.log('✅ [Fletero] Solicitud actualizada en pendientes');
+    }
+  }
+
+  /**
+   * 🚚 FLETERO: Cancelar solicitud
+   */
+  private handleCancelarSolicitudFletero(solicitudId: number) {
+    // Eliminar de disponibles
+    const disponibles = this.solicitudes_disponibles();
+    this.solicitudes_disponibles.set(
+      disponibles.filter(s => s.solicitud_id !== solicitudId)
+    );
+
+    // Eliminar de pendientes
+    const pendientes = this.solicitudes_pendientes();
+    this.solicitudes_pendientes.set(
+      pendientes.filter(s => s.solicitud_id !== solicitudId)
+    );
+
+    console.log('✅ [Fletero] Solicitud eliminada de disponibles y pendientes');
+  }
+
+  /**
+   * 🚚 FLETERO: Presupuesto aceptado - mover de disponibles a pendientes
+   */
+/*
+  private async handlePresupuestoAceptadoFletero(data: {
+    solicitud_id: number;
+    presupuesto_id: number;
+    transportista_id: number;
+  }) {
+    const session = this.sesion;
+    if (!session) return;
+
+    // Obtener el transportista actual
+    const usuario = await firstValueFrom(
+      this.http.get<any>(`${this.apiUrl}/api/usuarios/me`)
+    );
+
+    const transportista = await firstValueFrom(
+      this.http.get<any>(`${this.apiUrl}/api/transportista/${usuario.usuario_id}`)
+    );
+
+    // Solo procesar si es MI presupuesto el aceptado
+    if (transportista?.transportista_id !== data.transportista_id) {
+      // Si no es mi presupuesto, eliminar de disponibles
+      const disponibles = this.solicitudes_disponibles();
+      this.solicitudes_disponibles.set(
+        disponibles.filter(s => s.solicitud_id !== data.solicitud_id)
+      );
+      return;
+    }
+
+    // Es MI presupuesto: mover de disponibles a pendientes
+    const disponibles = this.solicitudes_disponibles();
+    const solicitud = disponibles.find(s => s.solicitud_id === data.solicitud_id);
+
+    if (solicitud) {
+      // Eliminar de disponibles
+      this.solicitudes_disponibles.set(
+        disponibles.filter(s => s.solicitud_id !== data.solicitud_id)
+      );
+
+      // Actualizar estado y agregar a pendientes
+      const solicitudActualizada: Solicitud = {
+        ...solicitud,
+        estado: 'pendiente' as any,
+        presupuesto_aceptado: data.presupuesto_id
+      };
+
+      const pendientes = this.solicitudes_pendientes();
+      this.solicitudes_pendientes.set([solicitudActualizada, ...pendientes]);
+
+      console.log('✅ [Fletero] Solicitud movida a pendientes con botón para realizar viaje');
+    }
+  } */
+
+  /**
+   * 🚚 FLETERO: Viaje iniciado
+   */
+  private handleViajeIniciadoFletero(solicitud: Solicitud) {
+    const pendientes = this.solicitudes_pendientes();
+    const index = pendientes.findIndex(s => s.solicitud_id === solicitud.solicitud_id);
+
+    if (index !== -1) {
+      const nuevasPendientes = [...pendientes];
+      nuevasPendientes[index] = {
+        ...nuevasPendientes[index],
+        ...solicitud,
+        estado: 'en viaje' as any
+      } as Solicitud;
+      this.solicitudes_pendientes.set(nuevasPendientes);
+      console.log('✅ [Fletero] Viaje iniciado - estado actualizado');
+    }
+  }
+
+  /**
+   * 🚚 FLETERO: Viaje completado
+   */
+  private handleViajeCompletadoFletero(solicitud: Solicitud) {
+    // Eliminar de pendientes
+    const pendientes = this.solicitudes_pendientes();
+    this.solicitudes_pendientes.set(
+      pendientes.filter(s => s.solicitud_id !== solicitud.solicitud_id)
+    );
+
+    // Actualizar en estado general
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol =>
+        sol.solicitud_id === solicitud.solicitud_id
+          ? ({ ...sol, ...solicitud, estado: 'completado' as any } as Solicitud)
+          : sol
+      )
+    }));
+
+    console.log('✅ [Fletero] Viaje completado - movido a historial');
+  }
+
+  // ========================================
+  // HANDLERS PARA CLIENTE
+  // ========================================
+
+  /**
+   * 👤 CLIENTE: Nueva solicitud creada
+   */
+  private handleNuevaSolicitudCliente(solicitud: Solicitud) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: [solicitud, ...s.solicitudes]
+    }));
+    console.log('✅ [Cliente] Nueva solicitud agregada');
+  }
+
+  /**
+   * 👤 CLIENTE: Actualizar solicitud
+   */
+  private handleActualizarSolicitudCliente(data: any) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol =>
+        sol.solicitud_id === data.solicitud_id
+          ? ({ ...sol, ...data } as Solicitud)
+          : sol
+      )
+    }));
+    console.log('✅ [Cliente] Solicitud actualizada');
+  }
+
+  /**
+   * 👤 CLIENTE: Cancelar solicitud
+   */
+  private handleCancelarSolicitudCliente(solicitudId: number) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.filter(sol => sol.solicitud_id !== solicitudId)
+    }));
+    console.log('✅ [Cliente] Solicitud eliminada');
+  }
+
+  /**
+   * 👤 CLIENTE: Presupuesto aceptado - actualizar a pendiente con datos del fletero
+   */
+  private handlePresupuestoAceptadoCliente(data: {
+    solicitud_id: number;
+    presupuesto_id: number;
+    transportista_id: number;
+    presupuesto: any;  // ✅ Ahora incluye datos completos
+  }) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol =>
+        sol.solicitud_id === data.solicitud_id
+          ? ({
+              ...sol,
+              estado: 'pendiente' as any,
+              presupuesto_aceptado: data.presupuesto_id,
+              presupuesto: data.presupuesto  // ✅ Usar datos del evento
+            } as Solicitud)
+          : sol
+      )
+    }));
+
+    console.log('✅ [Cliente] Presupuesto aceptado - solicitud actualizada con datos del fletero');
+  }
+
+  /**
+   * 👤 CLIENTE: Viaje iniciado
+   */
+  private handleViajeIniciadoCliente(solicitud: Solicitud) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol =>
+        sol.solicitud_id === solicitud.solicitud_id
+          ? ({ ...sol, ...solicitud, estado: 'en viaje' as any } as Solicitud)
+          : sol
+      )
+    }));
+    console.log('✅ [Cliente] Viaje iniciado - estado actualizado');
+  }
+
+  /**
+   * 👤 CLIENTE: Viaje completado - habilitar calificación
+   */
+  private handleViajeCompletadoCliente(solicitud: Solicitud) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol =>
+        sol.solicitud_id === solicitud.solicitud_id
+          ? ({
+              ...sol,
+              ...solicitud,
+              estado: 'completado' as any,
+              puede_calificar: true
+            } as Solicitud)
+          : sol
+      )
+    }));
+    console.log('✅ [Cliente] Viaje completado - puede calificar');
+  }
+
+  // ========================================
+  // MÉTODOS DE CARGA INICIAL DE DATOS
+  // ========================================
+
+  /**
+   * 🚚 OBTENER PEDIDOS DEL TRANSPORTISTA (Dashboard)
+   */
+  async getAllPedidos(isBackgroundUpdate = false): Promise<Solicitud[] | null> {
     try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
+      console.log('🔍 [getAllPedidos] Iniciando...', { isBackgroundUpdate });
 
-      // 1. Obtener sesión
-      const {
-        data: { session },
-      } = await this._authService.session();
-      if (!session?.user?.id) {
-        console.warn('Usuario no autenticado');
-        return null;
+      if (!isBackgroundUpdate) {
+        this._state.update((s) => ({ ...s, loading: true, error: false }));
       }
 
-      // 2. Obtener el transportista_id vinculado al usuario logueado
-      // Primero buscamos el usuario por su UUID
-      const { data: usuarioData, error: userError } = await this._supabaseClient
-        .from('usuario')
-        .select('usuario_id')
-        .eq('u_id', session.user.id)
-        .maybeSingle();
-
-      if (userError || !usuarioData) {
-        console.error('Error obteniendo usuario:', userError);
-        return null;
-      }
-
-      // Luego buscamos el transportista usando el usuario_id
-      const { data: transportistaData, error: transError } =
-        await this._supabaseClient
-          .from('transportista')
-          .select('transportista_id')
-          .eq('usuario_id', usuarioData.usuario_id)
-          .maybeSingle();
-      console.log('Transportista encontrado:', session.user.id);
-      if (transError || !transportistaData) {
-        console.error(
-          'El usuario actual no es un transportista o error:',
-          transError,
-        );
-        return null;
-      }
-
-      const transportistaId = transportistaData.transportista_id;
-
-      // 3. Obtener las localidades de la vista vw_transportista_localidades
-      const { data: localidadesData, error: viewError } =
-        await this._supabaseClient
-          .from('vw_transportista_localidades')
-          .select('localidad_id')
-          .eq('transportista_id', transportistaId);
-
-      if (viewError) {
-        console.error('Error consultando vista de localidades:', viewError);
-        return null;
-      }
-
-      // Extraemos los IDs en un array simple: [1, 5, 20, ...]
-      const idsLocalidades = localidadesData.map((l: any) => l.localidad_id);
-
-      if (idsLocalidades.length === 0) {
-        console.warn('El fletero no tiene localidades asignadas.');
-        this._state.update((s) => ({ ...s, solicitudes: [] }));
-        return [];
-      }
-
-      // Formateamos el array para usarlo en el filtro de Supabase: (1,5,20)
-      const idsString = `(${idsLocalidades.join(',')})`;
-
-      // 4. Buscar solicitudes 'sin transportista' que coincidan con esas zonas
-      // LÓGICA: Origen IN (mis_zonas) OR Destino IN (mis_zonas)
-
-      const { data: solicitudSinTransportista, error: errorSinTransportista } =
-        await this._supabaseClient
-          .from('solicitud')
-          .select(
-            `
-          *,
-          cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-        `,
-          )
-          .in('estado', ['sin transportista'])
-          .or(
-            `localidad_origen_id.in.${idsString},localidad_destino_id.in.${idsString}`,
-          )
-          .returns<Solicitud[]>();
-
-      //Agrego las solicitudes aceptadas
-      const { data: solicitudesAceptadas, error: errorAceptadas } =
-        await this._supabaseClient
-          .from('v_solicitudes_transportista')
-          .select(
-            `
-          *,
-          cliente:cliente_id(u_id,email,nombre,apellido,telefono,usuario_id),
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-        `,
-          )
-          .in('estado', ['pendiente', 'en viaje'])
-          .eq('transportista_uuid', session.user.id)
-          .returns<Solicitud[]>();
-      console.log(
-        'Solicitudes encontradas sin transportista:',
-        solicitudSinTransportista?.length,
-      );
-      console.log(
-        'Solicitudes encontradas aceptadas:',
-        solicitudesAceptadas?.length,
-      );
-      if (errorAceptadas || errorSinTransportista) {
-        console.error(
-          'Supabase error al filtrar solicitudes Sin Transportista :',
-          errorSinTransportista,
-        );
-        console.error(
-          'Supabase error al filtrar solicitudes Aceptadas:',
-          errorAceptadas,
-        );
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-      const data = [...solicitudSinTransportista, ...solicitudesAceptadas];
-      console.log(
-        `Solicitudes encontradas en zona (${idsLocalidades.length} locs):`,
-        data?.length,
+      const response = await firstValueFrom(
+        this.http.get<{ disponibles: Solicitud[], pendientes: Solicitud[] }>(
+          `${this.apiUrl}/api/transportista/dashboard`
+        )
       );
 
-      // Actualizar state principal con todas las solicitudes
-      this._state.update((s) => ({ ...s, solicitudes: data || [] }));
+      const disponibles = response.disponibles || [];
+      const pendientes = response.pendientes || [];
+      const totalData = [...disponibles, ...pendientes];
 
-      // Separar y actualizar signals específicos
-      const disponibles = solicitudSinTransportista || [];
-      const pendientes = solicitudesAceptadas || [];
+      console.log('📦 [getAllPedidos] Datos recibidos:', {
+        disponibles: disponibles.length,
+        pendientes: pendientes.length,
+        total: totalData.length
+      });
 
       this.solicitudes_disponibles.set(disponibles);
       this.solicitudes_pendientes.set(pendientes);
 
-      console.log(
-        `✅ Actualizados: ${disponibles.length} disponibles, ${pendientes.length} pendientes`,
-      );
-      console.log('📋 Disponibles:', disponibles);
-      console.log('⏳ Pendientes:', pendientes);
+      this._state.update((s) => ({
+        ...s,
+        solicitudes: totalData,
+        loading: false,
+        error: false
+      }));
 
+      return totalData;
+
+    } catch (err: any) {
+      console.error('❌ [getAllPedidos] Error:', err);
+      this._state.update((s) => ({ ...s, error: true, loading: false }));
+      return null;
+    }
+  }
+
+  /**
+   * 👤 OBTENER PEDIDOS DEL CLIENTE
+   */
+  async getAllPedidosUsuario(isBackgroundUpdate = false): Promise<Solicitud[] | null> {
+    try {
+      console.log('🔍 [getAllPedidosUsuario] Iniciando...', { isBackgroundUpdate });
+
+      if (!isBackgroundUpdate) {
+        this._state.update((s) => ({ ...s, loading: true, error: false }));
+      }
+
+      const data = await firstValueFrom(
+        this.http.get<any[]>(`${this.apiUrl}/solicitudes/mis-pedidos-optimizado`)
+      );
+
+      console.log('📦 [getAllPedidosUsuario] Datos recibidos:', data?.length || 0);
+
+      const solicitudes = data || [];
+
+      this._state.update((s) => ({
+        ...s,
+        solicitudes: solicitudes,
+        loading: false,
+        error: false
+      }));
+
+      return solicitudes;
+
+    } catch (err: any) {
+      console.error('❌ [getAllPedidosUsuario] Error:', err);
+      this._state.update((s) => ({ ...s, error: true, loading: false }));
+      return null;
+    }
+  }
+
+  // ========================================
+  // MÉTODOS HTTP (CRUD)
+  // ========================================
+
+  /**
+   * ➕ CREAR SOLICITUD
+   */
+  async createSolicitud(solicitud: Partial<Solicitud>): Promise<Solicitud | null> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      const nuevaSolicitud = await firstValueFrom(
+        this.http.post<Solicitud>(`${this.apiUrl}/api/solicitudes`, solicitud)
+      );
+
+      // El socket ya manejará la actualización del estado
+      this._state.update(s => ({ ...s, loading: false }));
+
+      return nuevaSolicitud;
+
+    } catch (err) {
+      console.error('❌ Error al crear solicitud:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * ✏️ EDITAR SOLICITUD
+   */
+  async editarSolicitud(id: number, datos: Partial<Solicitud>): Promise<Solicitud | null> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      const solicitudActualizada = await firstValueFrom(
+        this.http.patch<Solicitud>(`${this.apiUrl}/api/solicitudes/${id}`, datos)
+      );
+
+      // El socket ya manejará la actualización del estado
+      this._state.update(s => ({ ...s, loading: false }));
+
+      return solicitudActualizada;
+
+    } catch (err) {
+      console.error('❌ Error al editar solicitud:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * ❌ CANCELAR SOLICITUD
+   */
+  async cancelarSolicitud(id: number): Promise<void> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      await firstValueFrom(
+        this.http.patch(`${this.apiUrl}/api/solicitudes/${id}/cancelar`, {})
+      );
+
+      // El socket ya manejará la eliminación del estado
+      this._state.update(s => ({ ...s, loading: false }));
+
+    } catch (err) {
+      console.error('❌ Error al cancelar solicitud:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * 💰 ACEPTAR PRESUPUESTO
+   */
+  async aceptarPresupuesto(solicitudId: number, presupuestoId: number): Promise<void> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/aceptar-presupuesto`, {
+          presupuesto_id: presupuestoId
+        })
+      );
+
+      // El socket ya manejará la actualización del estado
+      this._state.update(s => ({ ...s, loading: false }));
+
+    } catch (err) {
+      console.error('❌ Error al aceptar presupuesto:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * 🚀 COMENZAR VIAJE
+   */
+  async comenzarViaje(solicitudId: number): Promise<void> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/comenzar-viaje`, {})
+      );
+
+      // El socket ya manejará la actualización del estado
+      this._state.update(s => ({ ...s, loading: false }));
+
+    } catch (err) {
+      console.error('❌ Error al comenzar viaje:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * ✅ COMPLETAR VIAJE
+   */
+  async completarViaje(solicitudId: number): Promise<void> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/completar-viaje`, {})
+      );
+
+      // El socket ya manejará la actualización del estado
+      this._state.update(s => ({ ...s, loading: false }));
+
+    } catch (err) {
+      console.error('❌ Error al completar viaje:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * ⭐ CALIFICAR SOLICITUD
+   */
+  async calificarSolicitud(solicitudId: number, calificacion: number): Promise<void> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/calificar`, {
+          calificacion
+        })
+      );
+
+      // Actualizar localmente
+      this._state.update(s => ({
+        ...s,
+        solicitudes: s.solicitudes.map(sol =>
+          sol.solicitud_id === solicitudId
+            ? ({ ...sol, calificacion } as Solicitud)
+            : sol
+        ),
+        loading: false
+      }));
+
+    } catch (err) {
+      console.error('❌ Error al calificar solicitud:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  // ========================================
+  // MÉTODOS AUXILIARES
+  // ========================================
+
+  /**
+   * 🔍 BUSCAR LOCALIDADES
+   */
+  async searchLocalidades(query: string): Promise<Localidad[]> {
+    const q = query.trim();
+    if (!q) return [];
+
+    try {
+      const encodedQuery = encodeURIComponent(q);
+      const data = await firstValueFrom(
+        this.http.get<Localidad[]>(
+          `${this.apiUrl}/api/localidades/buscar?q=${encodedQuery}`
+        )
+      );
       return data || [];
     } catch (err) {
-      console.error('getAllPedidos catch:', err);
-      this._state.update((s) => ({ ...s, error: true }));
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
-    }
-  }
-
-  async getSolicitudByid(id: number): Promise<Solicitud | null> {
-    try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
-
-      const { data, error } = await this._supabaseClient
-        .from('solicitud')
-        .select(
-          `
-          *,
-          cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-        `,
-        )
-        .eq('solicitud_id', id)
-        .single<Solicitud>();
-
-      if (error) {
-        console.error('Supabase error:', error);
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-
-      if (data) {
-        // actualizo la propiedad correcta
-        this._state.update((s) => ({ ...s, solicitudes: [data] }));
-      }
-
-      if (
-        data &&
-        !Array.isArray(data) &&
-        !(typeof (data as { Error?: unknown }).Error !== 'undefined')
-      ) {
-        return data;
-      }
-      return null;
-    } catch (err) {
-      console.error('getSolicitudByid catch:', err);
-      this._state.update((s) => ({ ...s, error: true }));
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
-    }
-  }
-  // Método genérico por estado (usa la columna 'estado')
-  async getPedidosByEstado(stateValue: string): Promise<Solicitud[] | null> {
-    try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
-
-      const { data, error } = await this._supabaseClient
-        .from('solicitud')
-        .select(
-          `
-          *,
-          cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-        `,
-        )
-        .eq('estado', stateValue) // FILTRAMOS por la columna 'estado'
-        .returns<Solicitud[]>();
-
-      if (error) {
-        console.error('Supabase error:', error);
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-
-      if (data) {
-        this._state.update((s) => ({ ...s, solicitudes: data }));
-      } else {
-        this._state.update((s) => ({ ...s, solicitudes: [] }));
-      }
-
-      if (data && Array.isArray(data)) {
-        return data;
-      }
-      return null;
-    } catch (err) {
-      console.error('getPedidosByEstado catch:', err);
-      this._state.update((s) => ({ ...s, error: true }));
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
-    }
-  }
-
-  // Método específico para "pendiente"
-  async getAllPedidosPendientes(): Promise<Solicitud[] | null> {
-    // ajustalo si tu DB tiene 'PENDIENTE' en mayúsculas
-    return this.getPedidosByEstado('pendiente');
-  }
-
-  async getAllPedidosDisponibles(): Promise<Solicitud[] | null> {
-    return this.getPedidosByEstado('sin transportista');
-  }
-  async getAllPedidosEnViaje(): Promise<Solicitud[] | null> {
-    return this.getPedidosByEstado('en viaje');
-  }
-
-  async getAllPedidosUsuario(): Promise<Solicitud[] | null> {
-    try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
-
-      const {
-        data: { session },
-      } = await this._authService.session();
-
-      if (!session?.user?.id) {
-        console.warn('Usuario no autenticado (session.user.id faltante)');
-        this._state.update((s) => ({ ...s, solicitudes: [] }));
-        return null;
-      }
-
-      // => usar maybeSingle() en lugar de single()
-      const { data: userData, error: userError } = await this._supabaseClient
-        .from('usuario')
-        .select('usuario_id')
-        .eq('u_id', session.user.id)
-        .maybeSingle();
-
-      if (userError) {
-        console.error('Error al obtener id_usuario:', userError);
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-
-      // si no existe usuario asociado al uuid, devolvemos lista vacía
-      if (!userData) {
-        console.warn('No se encontró usuario para el u_id:', session.user.id);
-        this._state.update((s) => ({ ...s, solicitudes: [] }));
-        return [];
-      }
-
-      const idUsuario = userData.usuario_id;
-
-      const { data, error } = await this._supabaseClient
-        .from('solicitud')
-        .select(
-          `
-          *,
-          localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-          localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal),
-            presupuesto:presupuesto_aceptado (
-            presupuesto_id,
-            transportista:transportista_id (
-              transportista_id,
-              total_calificaciones,
-              cantidad_calificaciones,
-              usuario:usuario_id (
-                usuario_id,
-                nombre,
-                apellido
-              )
-            )
-          )
-        `,
-        )
-        .eq('cliente_id', idUsuario)
-        .returns<Solicitud[]>();
-
-      if (error) {
-        console.error('Supabase error (getAllPedidosUsuario):', error);
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-
-      this._state.update((s) => ({ ...s, solicitudes: data ?? [] }));
-
-      return data ?? [];
-    } catch (err) {
-      console.error('getAllPedidosUsuario catch:', err);
-      this._state.update((s) => ({ ...s, error: true }));
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
-    }
-  }
-
-  //
-  async getAllLocalidades(): Promise<Localidad[] | null> {
-    try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
-
-      const { data, error } = await this._supabaseClient
-        .from('localidad')
-        .select(
-          `
-          localidad_id,
-          nombre,
-          provincia,
-          codigo_postal
-        `,
-        )
-        .returns<Localidad[]>();
-
-      if (error) {
-        console.error('Supabase error:', error);
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-
-      if (data) {
-        // actualizo la propiedad correcta
-        this._state.update((s) => ({ ...s, Localidad: data }));
-      }
-      console.log('LOCALIDADES:', data);
-      return data ?? null;
-    } catch (err) {
-      console.error('getAllLocalidades catch:', err);
-      this._state.update((s) => ({ ...s, error: true }));
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
-    }
-  }
-
-  async solicitudEnViaje(solicitudId: number): Promise<boolean> {
-    try {
-      const { error } = await this._supabaseClient
-        .from('solicitud')
-        .update({ estado: 'en viaje' })
-        .eq('solicitud_id', solicitudId);
-
-      if (error) throw error;
-
-      // Actualiza la señal local si la solicitud está en el array
-      this._state.update((s) => ({
-        ...s,
-        solicitudes: s.solicitudes.map((sol) =>
-          sol.solicitud_id === solicitudId
-            ? { ...sol, estado: 'en viaje' }
-            : sol,
-        ),
-      }));
-      this.solicitudes_pendientes.update((pendientes) =>
-        pendientes.map((sol) =>
-          sol.solicitud_id === solicitudId
-            ? { ...sol, estado: 'en viaje' }
-            : sol,
-        ),
-      );
-
-      console.log('✅ Solicitud marcada en viaje:', solicitudId);
-      return true;
-    } catch (err) {
-      console.error('Error al marcar solicitud en viaje:', err);
-      return false;
-    }
-  }
-  async solicitudCompletada(solicitudId: number): Promise<boolean> {
-    try {
-      const { error } = await this._supabaseClient
-        .from('solicitud')
-        .update({ estado: 'completado' })
-        .eq('solicitud_id', solicitudId);
-
-      if (error) throw error;
-
-      // Actualiza la señal local si la solicitud está en el array
-      this._state.update((s) => ({
-        ...s,
-        solicitudes: s.solicitudes.map((sol) =>
-          sol.solicitud_id === solicitudId
-            ? { ...sol, estado: 'completado' }
-            : sol,
-        ),
-      }));
-      this.solicitudes_pendientes.update((pendientes) =>
-        pendientes.map((sol) =>
-          sol.solicitud_id === solicitudId
-            ? { ...sol, estado: 'completado' }
-            : sol,
-        ),
-      );
-      return true;
-    } catch (err) {
-      console.error('Error al marcar solicitud en viaje:', err);
-      return false;
-    }
-  }
-
-  async calificarSolicitud(
-    solicitudId: number,
-    transportistaId: number,
-    calificacion: number,
-    cantidadActual: number,
-    totalActual: number,
-  ): Promise<void> {
-    /* Actualizar solicitud */
-    const { error: errorSolicitud } = await this._supabaseClient
-      .from('solicitud')
-      .update({ calificacion })
-      .eq('solicitud_id', solicitudId);
-
-    if (errorSolicitud) {
-      throw errorSolicitud;
-    }
-
-    /* Actualizar transportista */
-    const { error: errorTransportista } = await this._supabaseClient
-      .from('transportista')
-      .update({
-        cantidad_calificaciones: cantidadActual + 1,
-        total_calificaciones: totalActual + calificacion,
-      })
-      .eq('transportista_id', transportistaId);
-
-    if (errorTransportista) {
-      throw errorTransportista;
-    }
-  }
-
-  async getPedidoById(solicitudId: number | string): Promise<Solicitud | null> {
-    try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
-
-      const { data, error } = await this._supabaseClient
-        .from('solicitud')
-        .select(
-          `
-        *,
-        cliente:cliente_id(u_id,email,nombre,apellido,telefono,creado_en,usuario_id,actualizado_en,borrado_logico,fecha_registro,fecha_nacimiento),
-        localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-        localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal)
-      `,
-        )
-        .eq('solicitud_id', solicitudId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Supabase error (getPedidoById):', error);
-        this._state.update((s) => ({ ...s, error: true }));
-        return null;
-      }
-
-      return (data as Solicitud) ?? null;
-    } catch (err) {
-      console.error('getPedidoById catch:', err);
-      this._state.update((s) => ({ ...s, error: true }));
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
-    }
-  }
-  // solo incluyo el método modificado dentro de tu SolcitudService
-  async createSolicitud(
-    payload: {
-      direccion_origen: string;
-      direccion_destino: string;
-      localidad_origen_id: number;
-      localidad_destino_id: number;
-      fecha_recogida?: string; // yyyy-mm-dd
-      hora_recogida_time?: string; // HH:mm
-      detalles_carga?: string;
-      medidas?: string;
-      peso?: number | null;
-    },
-    // files queda para compatibilidad pero lo ignoramos
-  ): Promise<{ data?: Solicitud | null; error?: unknown }> {
-    try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await this._supabaseClient.auth.getSession();
-
-      if (sessionError) return { error: sessionError };
-      if (!session?.user?.id)
-        return { error: new Error('Usuario no autenticado') };
-
-      const { data: userData, error: userError } = await this._supabaseClient
-        .from('usuario')
-        .select('usuario_id')
-        .eq('u_id', session.user.id)
-        .maybeSingle();
-
-      if (userError) return { error: userError };
-      if (!userData)
-        return { error: new Error('No se encontró usuario asociado al u_id') };
-
-      const cliente_id = userData.usuario_id;
-
-      // construir hora_recogida ISO si recibimos fecha + hora
-      let hora_recogida_iso: string | null = null;
-      if (payload.fecha_recogida && payload.hora_recogida_time) {
-        hora_recogida_iso = new Date(
-          `${payload.fecha_recogida}T${payload.hora_recogida_time}:00`,
-        ).toISOString();
-      }
-
-      const row: Partial<Solicitud> = {
-        cliente_id,
-        direccion_origen: payload.direccion_origen,
-        direccion_destino: payload.direccion_destino,
-        detalles_carga: payload.detalles_carga ?? null,
-        medidas: payload.medidas ?? null,
-        peso: payload.peso ?? null,
-        estado: 'sin transportista',
-        hora_recogida: hora_recogida_iso,
-        localidad_origen_id: payload.localidad_origen_id,
-        localidad_destino_id: payload.localidad_destino_id,
-      };
-
-      const { data: insertData, error: insertError } =
-        await this._supabaseClient
-          .from('solicitud')
-          .insert(row)
-          .select()
-          .maybeSingle();
-
-      if (insertError) return { error: insertError };
-
-      return { data: insertData as Solicitud };
-    } catch (err) {
-      console.error('createSolicitud catch:', err);
-      return { error: err };
-    }
-  }
-  async searchLocalidades(query: string): Promise<Localidad[]> {
-    try {
-      const q = query.trim();
-      if (!q) return [];
-
-      const { data, error } = await this._supabaseClient
-        .from('localidad')
-        .select('localidad_id, nombre, provincia, codigo_postal')
-        .ilike('nombre', `%${q}%`)
-        .limit(10);
-
-      if (error) {
-        console.error('searchLocalidades error:', error);
-        return [];
-      }
-      return data ?? [];
-    } catch (err) {
-      console.error('searchLocalidades catch:', err);
+      console.error('searchLocalidades error:', err);
       return [];
     }
   }
 
-  // agregado por mateo para actualizar la solicitud cuando se acepta un presupuesto.
-
-  async actualizarSolicitudConPresupuesto(
-    solicitudId: number,
-    presupuestoId: number,
-  ): Promise<boolean> {
-    try {
-      const { error } = await this._supabaseClient
-        .from('solicitud')
-        .update({
-          presupuesto_aceptado: presupuestoId, // 👈 campo de tu tabla solicitud
-          estado: 'pendiente',
-        })
-        .eq('solicitud_id', solicitudId);
-
-      if (error) throw error;
-
-      return true;
-    } catch (err) {
-      console.error('Error al actualizar solicitud:', err);
-      return false;
-    }
-  }
   /**
-   * Sube una foto para una solicitud específica
+   * 📍 OBTENER TODAS LAS LOCALIDADES
    */
-  subirFoto(solicitudId: number, foto: File): Observable<object> {
-    const formData = new FormData();
-    formData.append('foto', foto);
-
-    return this.http.post(
-      `${this.apiUrl}/solicitudes/${solicitudId}/foto`,
-      formData,
-    );
-  }
-
-  /**
-   * Obtiene la URL de la foto
-   */
-  obtenerUrlFoto(nombreFoto: string): string {
-    return `${this.apiUrl}/uploads/${nombreFoto}`;
-  }
-  async eliminarSolicitud(solicitud_id: number): Promise<void> {
+  async getAllLocalidades(): Promise<Localidad[]> {
     try {
-      const { error } = await this._supabaseClient
-        .from('solicitud')
-        .delete()
-        .eq('solicitud_id', solicitud_id);
-      if (error) throw new Error('Error al eliminar solicitud');
-      this._state.update((s) => ({
-        ...s,
-        solicitudes: s.solicitudes.filter(
-          (solicitud) => solicitud.solicitud_id !== solicitud_id,
-        ),
-        loading: false,
-        error: false,
-      }));
-    } catch (error) {
-      console.error('Error al eliminar solicitud:', error);
-      this._state.update((s) => ({
-        ...s,
-        loading: false,
-        error: true,
-      }));
-    }
-  }
-  async updateSolicitud(
-    solicitudId: number,
-    datos: Partial<{
-      foto: string | null;
-      estado: string;
-      direccion_origen: string;
-      direccion_destino: string;
-      detalles_carga: string;
-      medidas: string;
-      peso: number;
-      hora_recogida: string;
-      localidad_origen_id: number;
-      localidad_destino_id: number;
-    }>,
-  ): Promise<{ data?: Solicitud | null; error?: unknown }> {
-    try {
-      const { data, error } = await this._supabaseClient
-        .from('solicitud')
-        .update(datos)
-        .eq('solicitud_id', solicitudId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error actualizando solicitud en Supabase:', error);
-      }
-
-      return { data, error };
-    } catch (err) {
-      console.error('Error en updateSolicitud:', err);
-      return { data: null, error: err };
-    }
-  }
-  async getSolicitudesDisponibles(): Promise<Solicitud[] | null> {
-    try {
-      this._state.update((s) => ({ ...s, loading: true, error: false }));
-
-      const {
-        data: { session },
-      } = await this._authService.session();
-
-      if (!session?.user?.id) {
-        console.warn('Usuario no autenticado');
-        return null;
-      }
-
-      // Obtener solicitudes del transportista usando la vista
-      const { data, error } = await this._supabaseClient
-        .from('v_solicitudes_transportista')
-        .select(
-          `
-    *,
-    localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-    localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal),
-    presupuesto:presupuesto_aceptado (
-      presupuesto_id,
-      transportista:transportista_id (
-        transportista_id,
-        total_calificaciones,
-        cantidad_calificaciones,
-        usuario:usuario_id (
-          usuario_id,
-          nombre,
-          apellido
-        )
-      )
-    )
-  `,
-        )
-        .eq('transportista_uuid', session.user.id)
-        .eq('estado', 'pendiente')
-        .returns<Solicitud[]>();
-
-      if (error) {
-        console.error('Error obteniendo historial del fletero:', error);
-        return null;
-      }
-
-      console.log(
-        ' Historial de viajes del transportista:',
-        data?.length || 0,
-        'solicitudes encontradas',
+      const data = await firstValueFrom(
+        this.http.get<Localidad[]>(`${this.apiUrl}/api/localidades`)
       );
-      this.solicitudes_pendientes.update((s) => ({
-        ...s,
-        solicitudes_disponibles: data || [],
-      }));
       return data || [];
     } catch (err) {
-      console.error('getHistorialFletero catch:', err);
-      return null;
-    } finally {
-      this._state.update((s) => ({ ...s, loading: false }));
+      console.error('getAllLocalidades error:', err);
+      return [];
     }
   }
+
   /**
-   * Obtiene el historial de viajes del fletero actual
-   * Filtra las solicitudes donde el transportista es el usuario logueado
-   * @returns Array de solicitudes del fletero
+   * 📊 OBTENER HISTORIAL DEL FLETERO
    */
   async getHistorialFletero(): Promise<Solicitud[] | null> {
     try {
       this._state.update((s) => ({ ...s, loading: true, error: false }));
 
-      const {
-        data: { session },
-      } = await this._authService.session();
-
-      if (!session?.user?.id) {
-        console.warn('Usuario no autenticado');
-        return null;
-      }
-
-      // Obtener solicitudes del transportista usando la vista
-      const { data, error } = await this._supabaseClient
-        .from('v_solicitudes_transportista')
-        .select(
-          `
-    *,
-    localidad_origen:localidad_origen_id(localidad_id,nombre,provincia,codigo_postal),
-    localidad_destino:localidad_destino_id(localidad_id,nombre,provincia,codigo_postal),
-    presupuesto:presupuesto_aceptado (
-      presupuesto_id,
-      transportista:transportista_id (
-        transportista_id,
-        total_calificaciones,
-        cantidad_calificaciones,
-        usuario:usuario_id (
-          usuario_id,
-          nombre,
-          apellido
-        )
-      )
-    )
-  `,
-        )
-        .eq('transportista_uuid', session.user.id)
-        .returns<Solicitud[]>();
-
-      if (error) {
-        console.error('Error obteniendo historial del fletero:', error);
-        return null;
-      }
-
-      console.log(
-        ' Historial de viajes del transportista:',
-        data?.length || 0,
-        'solicitudes encontradas',
+      const data = await firstValueFrom(
+        this.http.get<Solicitud[]>(`${this.apiUrl}/api/transportista/historial`)
       );
-      return data || [];
-    } catch (err) {
-      console.error('getHistorialFletero catch:', err);
-      return null;
-    } finally {
+
+      console.log('Historial del transportista:', data?.length || 0);
       this._state.update((s) => ({ ...s, loading: false }));
+      return data || [];
+
+    } catch (err) {
+      console.error('getHistorialFletero error:', err);
+      this._state.update((s) => ({ ...s, loading: false }));
+      return null;
     }
   }
 
   /**
-   * Obtiene todas las fotos de una solicitud desde la tabla fotos
-   * @param solicitudId ID de la solicitud
-   * @returns Array de fotos ordenadas
+   * 📷 OBTENER FOTOS DE UNA SOLICITUD
    */
   async getFotosBySolicitudId(solicitudId: number): Promise<any[]> {
     try {
-      const { data, error } = await this._supabaseClient
-        .from('fotos')
-        .select('*')
-        .eq('solc_id', solicitudId)
-        .order('orden', { ascending: true });
-
-      if (error) {
-        console.error('Error obteniendo fotos:', error);
-        return [];
-      }
-
+      const data = await firstValueFrom(
+        this.http.get<any[]>(`${this.apiUrl}/api/solicitudes/${solicitudId}/fotos`)
+      );
       return data || [];
     } catch (err) {
       console.error('Error en getFotosBySolicitudId:', err);
       return [];
+    }
+  }
+
+  /**
+   * 📤 SUBIR FOTO
+   */
+  async subirFoto(solicitudId: number, foto: File): Promise<any> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+
+      const formData = new FormData();
+      formData.append('foto', foto);
+
+      const response = await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/foto`, formData)
+      );
+
+      this._state.update(s => ({ ...s, loading: false }));
+      return response;
+
+    } catch (err) {
+      console.error('Error al subir foto:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * 🖼️ OBTENER URL DE FOTO
+   */
+  obtenerUrlFoto(nombreFoto: string): string {
+    return `${this.apiUrl}/uploads/${nombreFoto}`;
+  }
+
+  /**
+   * 🔍 OBTENER SOLICITUD POR ID
+   */
+  async getPedidoById(id: number): Promise<Solicitud | null> {
+    try {
+      console.log(`🔍 [getPedidoById] Obteniendo solicitud ${id}`);
+
+      const solicitud = await firstValueFrom(
+        this.http.get<Solicitud>(`${this.apiUrl}/api/solicitudes/${id}`)
+      );
+
+      console.log('✅ [getPedidoById] Solicitud obtenida:', solicitud);
+      return solicitud;
+
+    } catch (err) {
+      console.error('❌ [getPedidoById] Error:', err);
+      return null;
+    }
+  }
+
+  /**
+   * ✏️ ACTUALIZAR SOLICITUD (Alias de editarSolicitud)
+   * Para compatibilidad con código existente
+   */
+  async updateSolicitud(id: number, datos: Partial<Solicitud>): Promise<Solicitud | null> {
+    return this.editarSolicitud(id, datos);
+  }
+
+  /**
+   * 🧹 LIMPIAR al destruir el servicio
+   */
+  ngOnDestroy() {
+    if (this.socket) {
+      this.socket.disconnect();
+      console.log('🔌 [Socket] Desconectado');
     }
   }
 }

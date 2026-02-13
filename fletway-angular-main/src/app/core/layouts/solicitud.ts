@@ -1,10 +1,11 @@
 import { Cliente } from './cliente';
 import { Localidad } from './localidad';
+import { Presupuesto } from './presupuesto';
 
 export interface Solicitud {
   solicitud_id: number;
   cliente_id?: number | null;
-  presupuesto_aceptado?: string | null;
+  presupuesto_aceptado?: number | null;
   localidad_origen_id?: number | null;
   localidad_destino_id?: number | null;
   direccion_origen?: string | null;
@@ -18,6 +19,8 @@ export interface Solicitud {
   actualizado_en?: string | null;
   medidas?: string | null;
   hora_recogida?: string | null;
+  presupuesto?: Presupuesto | null;
+
 
   // IMPORTANTE: Campo foto debe ser opcional y nullable
   foto?: string | null;

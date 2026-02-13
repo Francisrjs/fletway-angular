@@ -29,21 +29,31 @@ export class FleteroComponent implements OnInit {
   private _solicitudFlaskService = inject(SolicitudFlaskService);
   private _router = inject(Router);
 
-  solicitudes: Solicitud[] = [];
-  solicitudes_pendientes: Solicitud[] = [];
-  solicitudes_disponibles: Solicitud[] = [];
-  loading = false;
-  error: string | null = null;
+  // ✅ SIGNALS REACTIVOS DEL SERVICIO
+  // Los sockets actualizarán estos signals automáticamente:
+  //
+  // 1. Socket 'nueva_solicitud' → Agrega a solicitudes_disponibles
+  // 2. Socket 'solicitud_actualizada' → Actualiza solicitud existente
+  // 3. Socket 'aceptar_solicitud' → Remueve solicitud de otros fleteros
+  //    (excepto el ganador que la ve cambiar a 'pendiente')
+  // 4. Socket 'presupuesto_aceptado' → El SolicitudService maneja el filtrado
+  // 5. Socket 'viaje_iniciado' → Cambia estado a 'en viaje'
+  // 6. Socket 'viaje_completado' → Cambia estado a 'completado'
+  solicitudes_pendientes = this._solService.solicitudes_pendientes;
+  solicitudes_disponibles = this._solService.solicitudes_disponibles;
+  loading = this._solService.loading;
+  error = this._solService.error;
 
   // Para el modal de fotos
   fotoModalAbierta = false;
   fotoModalUrl: string | null = null;
   fotoModalTitulo: string | null = null;
 
-  // popup chat parametros
+  // Popup chat parametros
   popupChatAbierto = false;
   popupChatComponente: Type<any> | undefined;
   popupChatInputs: any = {};
+
   // Sidebar para cotización
   sidebarVisible = false;
   sidebarTitle = '';
@@ -56,34 +66,58 @@ export class FleteroComponent implements OnInit {
   popupMapaInputs: any = {};
 
   constructor() {
-    // Efecto para escuchar cambios en solicitudes
+    // ✅ EFECTO REACTIVO: Monitoreo de cambios en tiempo real
     effect(() => {
-      this.solicitudes = this._solService.solicitudes();
+      const disponibles = this.solicitudes_disponibles();
+      const pendientes = this.solicitudes_pendientes();
+      
+      console.log('🔄 [Fletero-Socket] Estado actualizado:', {
+        disponibles: disponibles.length,
+        pendientes: pendientes.length,
+        total: disponibles.length + pendientes.length
+      });
+
+      // 📊 Detalles de cambios
+      if (disponibles.length > 0) {
+        console.log('   📋 Disponibles:', disponibles.map(s => ({
+          id: s.solicitud_id,
+          estado: s.estado,
+          desde: s.localidad_origen?.nombre,
+          hasta: s.localidad_destino?.nombre
+        })));
+      }
+
+      if (pendientes.length > 0) {
+        console.log('   🚚 Pendientes:', pendientes.map(s => ({
+          id: s.solicitud_id,
+          estado: s.estado,
+          desde: s.localidad_origen?.nombre,
+          hasta: s.localidad_destino?.nombre
+        })));
+      }
     });
-    // Efecto para escuchar cambios en solicitudes_pendientes
+
+    // ✅ EFECTO: Detectar cuando una solicitud desaparece (fue aceptada por otro)
     effect(() => {
-      this.solicitudes_pendientes = this._solService.solicitudes_pendientes
-        ? this._solService.solicitudes_pendientes()
-        : [];
-      console.log(this.solicitudes_pendientes);
-    });
-    effect(() => {
-      this.solicitudes_disponibles = this._solService.solicitudes_disponibles
-        ? this._solService.solicitudes_disponibles()
-        : [];
-      console.log(this.solicitudes_disponibles);
+      const disponibles = this.solicitudes_disponibles();
+      
+      // Este effect se ejecutará cada vez que cambie la lista
+      // Si una solicitud desaparece, es porque otro fletero fue seleccionado
+      console.log('👀 [Fletero] Vigilando cambios en solicitudes disponibles');
     });
   }
 
   async ngOnInit(): Promise<void> {
-    this.loading = true;
+    console.log('🚀 [Fletero] Inicializando componente...');
+
+    // ✅ CARGA INICIAL: Solo una vez al inicio
+    // Los sockets se encargarán de las actualizaciones posteriores
     try {
-      await this._solService.getAllPedidos(); // Solo este método, trae todas
+      await this._solService.getAllPedidos();
+      console.log('✅ [Fletero] Datos iniciales cargados');
+      console.log('🔌 [Fletero] Sockets activos - Escuchando eventos en tiempo real');
     } catch (err) {
-      console.error(err);
-      this.error = 'Error cargando solicitudes';
-    } finally {
-      this.loading = false;
+      console.error('❌ [Fletero] Error cargando datos iniciales:', err);
     }
   }
 
@@ -104,23 +138,32 @@ export class FleteroComponent implements OnInit {
     };
     this.popupMapaAbierto = true;
   }
+
   /**
    * Inicia el viaje para una solicitud pendiente
    */
   async realizarViaje(s: Solicitud): Promise<void> {
     this.popupModalService.showSuccess(
       '¿Desea realizar el viaje?',
-      'Una vez hecho, al usuario se le notificará que está en camino y se contará el tiempo',
-      () => {
-        this._solService.solicitudEnViaje(s.solicitud_id);
-        console.log('Iniciando viaje para solicitud:', s.solicitud_id);
+      'Una vez hecho, al usuario se le notificará que está en camino',
+      async () => {
+        try {
+          await this._solService.comenzarViaje(s.solicitud_id);
+          console.log('✅ [Fletero] Viaje iniciado:', s.solicitud_id);
+          
+          // ✅ El socket 'viaje_iniciado' actualizará el estado automáticamente
+          // La solicitud pasará de solicitudes_pendientes a tener estado 'en viaje'
+          console.log('🔌 [Socket] Esperando confirmación de viaje_iniciado...');
+        } catch (error) {
+          console.error('❌ [Fletero] Error al iniciar viaje:', error);
+        }
       },
       () => {
-        // OnCancel - Usuario canceló
-        console.log('Viaje cancelado');
-      },
+        console.log('❌ [Fletero] Viaje cancelado');
+      }
     );
   }
+
   /**
    * Completa el viaje de una solicitud en progreso
    */
@@ -128,14 +171,21 @@ export class FleteroComponent implements OnInit {
     this.popupModalService.showSuccess(
       '¿Usted desea terminar el viaje?',
       'Una vez hecho, al usuario se le notificará y no podrá modificar',
-      () => {
-        this._solService.solicitudCompletada(s.solicitud_id);
-        console.log('Completando viaje para solicitud:', s.solicitud_id);
+      async () => {
+        try {
+          await this._solService.completarViaje(s.solicitud_id);
+          console.log('✅ [Fletero] Viaje completado:', s.solicitud_id);
+          
+          // ✅ El socket 'viaje_completado' actualizará el estado automáticamente
+          // La solicitud cambiará a estado 'completado'
+          console.log('🔌 [Socket] Esperando confirmación de viaje_completado...');
+        } catch (error) {
+          console.error('❌ [Fletero] Error al completar viaje:', error);
+        }
       },
       () => {
-        // OnCancel - Usuario canceló
-        console.log('Completado cancelado');
-      },
+        console.log('❌ [Fletero] Completado cancelado');
+      }
     );
   }
 
@@ -178,10 +228,13 @@ export class FleteroComponent implements OnInit {
       this.fotoModalAbierta = true;
     }
   }
+
+  /**
+   * Abre el chat para una solicitud
+   */
   enviarMensaje(solicitud: Solicitud): void {
     console.log('💬 Abriendo chat para solicitud:', solicitud.solicitud_id);
 
-    // Usar popup para mejor reactividad
     this.popupChatComponente = ChatComponent;
     this.popupChatInputs = { solicitudId: solicitud.solicitud_id };
     this.popupChatAbierto = true;
@@ -192,6 +245,7 @@ export class FleteroComponent implements OnInit {
     this.popupChatComponente = undefined;
     this.popupChatInputs = {};
   }
+
   /**
    * Cierra el modal de visualización de foto
    */

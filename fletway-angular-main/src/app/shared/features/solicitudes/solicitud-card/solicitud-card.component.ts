@@ -24,11 +24,6 @@ export class SolicitudCardComponent implements OnInit {
 
   @Input() solicitud!: Solicitud;
   @Input() mostrarBotones: boolean = true;
-  /**
-   * Modo de visualización del card:
-   * - 'cliente': Muestra información del transportista y botones para cliente
-   * - 'fletero': Muestra información del cliente y botones para fletero
-   */
   @Input() modo: 'cliente' | 'fletero' = 'cliente';
 
   // Fotos desde Supabase
@@ -46,6 +41,7 @@ export class SolicitudCardComponent implements OnInit {
   @Output() cancelarPedido = new EventEmitter<Solicitud>();
   @Output() calificar = new EventEmitter<Solicitud>();
   @Output() editarSolicitud = new EventEmitter<Solicitud>();
+  
   // Eventos específicos para fletero
   @Output() realizarViaje = new EventEmitter<Solicitud>();
   @Output() completarViaje = new EventEmitter<Solicitud>();
@@ -73,9 +69,6 @@ export class SolicitudCardComponent implements OnInit {
     await this.cargarFotos();
   }
 
-  /**
-   * Carga las fotos de la solicitud desde la tabla fotos de Supabase
-   */
   async cargarFotos(): Promise<void> {
     if (!this.solicitud?.solicitud_id) return;
 
@@ -105,30 +98,93 @@ export class SolicitudCardComponent implements OnInit {
   }
 
   get estadoTransportista(): 'asignado' | 'buscando' {
-    return (this.solicitud as any)._hayAceptado ? 'asignado' : 'buscando';
+    // Verificar si tiene transportista asignado
+    const tieneTransportista = this.solicitud?.presupuesto?.transportista;
+    return tieneTransportista ? 'asignado' : 'buscando';
   }
 
   get totalPresupuestos(): number {
-    return (this.solicitud as any)._totalMostrables ?? 0;
+    return (this.solicitud as any)._cantidadPresupuestos ?? 0;
+  }
+
+  get tienePresupuestos(): boolean {
+    return (this.solicitud as any)._tienePresupuestos ?? false;
   }
 
   get transportista(): any {
     return (this.solicitud as any).presupuesto?.transportista;
   }
 
-  get calificacionPromedio(): number | null {
-    const transp = this.transportista;
-    if (!transp || transp.cantidad_calificaciones === 0) {
-      return null;
-    }
-    return transp.total_calificaciones / transp.cantidad_calificaciones;
+  // ✅ NUEVO: Getter para estadísticas desde datos enriquecidos
+  get estadisticasTransportista(): any {
+    return (this.solicitud as any)._estadisticas || null;
   }
 
+  // ✅ CORREGIDO: Usar estadísticas enriquecidas
+  get calificacionPromedio(): number | null {
+    // Primero intentar con estadísticas enriquecidas
+    const stats = this.estadisticasTransportista;
+    if (stats && stats.total_calificaciones > 0) {
+      return stats.calificacion_promedio;
+    }
+
+    // Fallback: Calcular desde transportista (por si acaso)
+    const transp = this.transportista;
+    if (transp && transp.total_calificaciones > 0) {
+      return transp.calificacion_promedio || 0;
+    }
+
+    return null;
+  }
+
+  // ✅ NUEVO: Total de calificaciones
+  get totalCalificaciones(): number {
+    const stats = this.estadisticasTransportista;
+    if (stats) {
+      return stats.total_calificaciones || 0;
+    }
+
+    const transp = this.transportista;
+    return transp?.total_calificaciones || 0;
+  }
+
+  // ✅ NUEVO: Verificar si ya fue calificado
+  get yaCalificado(): boolean {
+    const calificacion = (this.solicitud as any)._calificacion;
+    return !!calificacion;
+  }
+
+  // ✅ NUEVO: Obtener la calificación existente
+  get miCalificacion(): any {
+    return (this.solicitud as any)._calificacion || null;
+  }
+
+  // ✅ CORREGIDO: Lógica completa para poder calificar
   get puedeCalificar(): boolean {
-    return (
-      this.solicitud.estado === 'completado' &&
-      !(this.solicitud as any).calificacion
-    );
+    // Debe estar completada
+    if (this.solicitud.estado !== 'completado') {
+      return false;
+    }
+
+    // NO debe tener calificación ya
+    if (this.yaCalificado) {
+      return false;
+    }
+
+    // Debe tener transportista asignado
+    if (!this.transportista) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // ✅ NUEVO: Array de estrellas para mostrar calificación
+  get estrellasCalificacion(): boolean[] {
+    if (!this.miCalificacion) return [];
+    
+    const puntuacion = this.miCalificacion.puntuacion || 0;
+    return Array(5).fill(false).map((_, i) => i < puntuacion);
   }
 
   onVerMapa(): void {
@@ -151,16 +207,13 @@ export class SolicitudCardComponent implements OnInit {
     this.verFoto.emit(this.solicitud);
   }
 
-  /**
-   * Eventos específicos para modo fletero
-   */
   onRealizarViaje(): void {
     this.realizarViaje.emit(this.solicitud);
   }
 
   onCompletarViaje(): void {
     console.log(
-      '🔔 Evento completarViaje disparado desde solicitud-card:',
+      '📢 Evento completarViaje disparado desde solicitud-card:',
       this.solicitud.solicitud_id,
     );
     this.completarViaje.emit(this.solicitud);
@@ -173,36 +226,25 @@ export class SolicitudCardComponent implements OnInit {
   onEnviarMensaje(): void {
     this.enviarMensaje.emit(this.solicitud);
   }
+  
   onEditarSolicitud(): void {
     this.editarSolicitud.emit(this.solicitud);
   }
 
-  /**
-   * Abre el popup para ver una foto en grande
-   */
   abrirPopupFoto(index: number): void {
     this.fotoSeleccionadaIndex = index;
     this.mostrarPopupFoto = true;
   }
 
-  /**
-   * Cierra el popup de foto
-   */
   cerrarPopupFoto(): void {
     this.mostrarPopupFoto = false;
     this.fotoSeleccionadaIndex = null;
   }
 
-  /**
-   * Obtiene la URL de una foto (ya viene completa desde Supabase)
-   */
   obtenerUrlFoto(foto: any): string {
     return foto?.url || 'boxes.png';
   }
 
-  /**
-   * Maneja el error de carga de imagen
-   */
   handleImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target) {
@@ -210,16 +252,10 @@ export class SolicitudCardComponent implements OnInit {
     }
   }
 
-  /**
-   * Indica si está en modo cliente
-   */
   get esCliente(): boolean {
     return this.modo === 'cliente';
   }
 
-  /**
-   * Indica si está en modo fletero
-   */
   get esFletero(): boolean {
     return this.modo === 'fletero';
   }

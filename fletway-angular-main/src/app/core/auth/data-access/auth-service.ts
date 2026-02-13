@@ -13,6 +13,11 @@ export interface userState {
   isFletero?: boolean | null;
   isFleteroLoading?: boolean;
   session?: Session | null;
+
+  transportista?: {
+    transportista_id: number;
+  } | null;
+  transportistaLoading?: boolean; // ✅ NUEVO: flag separado para carga de transportista
 }
 
 @Injectable({
@@ -28,6 +33,8 @@ export class AuthService {
     isFletero: null,
     isFleteroLoading: false,
     session: null,
+    transportista: null,
+    transportistaLoading: false,
   });
   isLoggingOut = signal<boolean>(false);
 
@@ -101,11 +108,19 @@ export class AuthService {
             isFletero: cachedIsFletero,
             isFleteroLoading: false,
             session,
+            transportista: null,
+            transportistaLoading: false,
           });
           console.log(
             '[onAuthStateChange] usando cache isFletero:',
             cachedIsFletero,
           );
+
+          // ✅ CARGA EN SEGUNDO PLANO (sin await)
+          if (cachedIsFletero) {
+            this.cargarTransportistaId(userId); // No bloqueante
+          }
+
         } else {
           // No hay cache o usuario cambió, consultar BD
           this.userState.set({
@@ -114,6 +129,8 @@ export class AuthService {
             isFletero: shouldReset ? null : prev.isFletero,
             isFleteroLoading: true,
             session,
+            transportista: null,
+            transportistaLoading: false,
           });
           console.log('[onAuthStateChange] consultando BD para isFletero');
 
@@ -134,6 +151,12 @@ export class AuthService {
               '[onAuthStateChange] isFletero actualizado:',
               isFletero,
             );
+
+            // ✅ CARGA EN SEGUNDO PLANO (sin await)
+            if (isFletero) {
+              this.cargarTransportistaId(userId); // No bloqueante
+            }
+
           } catch (e) {
             this.userState.update((prev) => ({
               ...prev,
@@ -149,6 +172,8 @@ export class AuthService {
           email: null,
           isFletero: null,
           session: null,
+          transportista: null,
+          transportistaLoading: false,
         });
         console.log('[onAuthStateChange] userState reset:', this.userState());
       }
@@ -187,6 +212,8 @@ export class AuthService {
       email: null,
       isFletero: null,
       session: null,
+      transportista: null,
+      transportistaLoading: false,
     });
 
     try {
@@ -219,6 +246,7 @@ export class AuthService {
     return true;
   }
 
+  // ✅ REVERTIDO A VERSIÓN SIMPLE - SOLO VERIFICA EL BOOLEAN
   async esFletero(userId: string): Promise<boolean | null> {
     // Si ya está cargando, evita recalcular
     if (this.userState().isFleteroLoading) return null;
@@ -255,6 +283,101 @@ export class AuthService {
 
     return result;
   }
+
+  /**
+   * ✅ NUEVA FUNCIÓN: Cargar transportista_id en SEGUNDO PLANO
+   * Se ejecuta sin await después de confirmar que es fletero
+   */
+  private async cargarTransportistaId(userId: string): Promise<void> {
+    // Evitar múltiples cargas simultáneas
+    if (this.userState().transportistaLoading) {
+      console.log('[cargarTransportistaId] Ya está cargando, omitiendo...');
+      return;
+    }
+
+    this.userState.update((prev) => ({
+      ...prev,
+      transportistaLoading: true,
+    }));
+
+    try {
+      console.log('[cargarTransportistaId] Iniciando carga para userId:', userId);
+
+      // 1. Obtener usuario_id desde UUID
+      const { data: usuario, error: usuarioError } = await this._supabaseClient
+        .from('usuario')
+        .select('usuario_id')
+        .eq('u_id', userId)
+        .single();
+
+      if (usuarioError) {
+        console.error('[cargarTransportistaId] Error obteniendo usuario:', usuarioError);
+        throw usuarioError;
+      }
+
+      if (!usuario) {
+        console.warn('[cargarTransportistaId] No se encontró usuario');
+        return;
+      }
+
+      console.log('[cargarTransportistaId] usuario_id obtenido:', usuario.usuario_id);
+
+      // 2. Obtener transportista_id
+      const { data: transportista, error: transpError } = await this._supabaseClient
+        .from('transportista')
+        .select('transportista_id')
+        .eq('usuario_id', usuario.usuario_id)
+        .single();
+
+      if (transpError) {
+        console.error('[cargarTransportistaId] Error obteniendo transportista:', transpError);
+        throw transpError;
+      }
+
+      if (!transportista) {
+        console.warn('[cargarTransportistaId] No se encontró transportista');
+        return;
+      }
+
+      // 3. Actualizar estado con el transportista_id
+      this.userState.update((prev) => ({
+        ...prev,
+        transportista: {
+          transportista_id: transportista.transportista_id
+        },
+        transportistaLoading: false,
+      }));
+
+      console.log('✅ [cargarTransportistaId] transportista_id cargado:', transportista.transportista_id);
+
+    } catch (e) {
+      console.error('❌ [cargarTransportistaId] Error:', e);
+      this.userState.update((prev) => ({
+        ...prev,
+        transportista: null,
+        transportistaLoading: false,
+      }));
+    }
+  }
+
+  /**
+   * ✅ MÉTODO PÚBLICO: Para forzar recarga del transportista_id si es necesario
+   */
+  public async recargarTransportistaId(): Promise<void> {
+    const userId = this.userState().userId;
+    if (!userId) {
+      console.warn('[recargarTransportistaId] No hay usuario logueado');
+      return;
+    }
+
+    if (!this.userState().isFletero) {
+      console.warn('[recargarTransportistaId] El usuario no es fletero');
+      return;
+    }
+
+    return this.cargarTransportistaId(userId);
+  }
+
   /**
    * Crear cuenta usuario en tabla 'usuario'
    * Requiere: nombre, apellido, email, telefono, fecha_nacimiento, u_id (UUID de Supabase Auth), contrasena_hash
@@ -363,15 +486,12 @@ export class AuthService {
     }
   }
 
-  // En auth-service.ts
-
   async cambiarContrasena(nuevaContrasena: string) {
     const { data, error } = await this._supabaseClient.auth.updateUser({
-    password: nuevaContrasena
-   });
+      password: nuevaContrasena
+    });
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
   }
-
 }

@@ -66,6 +66,10 @@ export class SolicitudesListComponent {
     return this.ordenarSolicitudes(resultado);
   }
 
+  trackById(index: number, item: Solicitud): number {
+  return item.solicitud_id;
+}
+
   private ordenarSolicitudes(solicitudes: Solicitud[]): Solicitud[] {
     const ordenPrioridad: { [key: string]: number } = {
       'en viaje': 1,

@@ -103,8 +103,12 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   async loadPedido(id: number) {
     this.loading = true;
     this.error = false;
+    let p;
     try {
-      const p = await this.solicitudService.getPedidoById(id);
+      // const p = await this.solicitudService.getPedidoById(id);
+
+       p = await this.solicitudService.getPedidoById(id);
+
       if (!p) {
         console.warn('No se encontró la solicitud con id', id);
         this.pedido = null;
