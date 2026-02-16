@@ -30,7 +30,7 @@ export class SolcitudService {
   private _authService = inject(AuthService);
   private http = inject(HttpClient);
   private socket: Socket;
-  private apiUrl = 'http://127.0.0.1:5000';
+  private apiUrl = 'https://fletway-api-533654897399.us-central1.run.app';
 
   // 📊 ESTADO PRINCIPAL
   private _state = signal<SolicitudState>({
@@ -127,18 +127,26 @@ export class SolcitudService {
     // ========================================
     // 3️⃣ CANCELAR SOLICITUD
     // ========================================
-    this.socket.on('solicitud_cancelada', (data: { solicitud_id: number }) => {
+    this.socket.on('solicitud_cancelada', (data: { solicitud_id: number; cancelado_por: 'cliente' | 'fletero'; solicitud?: any }) => {
       console.log('🗑️ [Socket] Solicitud cancelada:', data);
 
       const session = this.sesion;
       if (!session) return;
 
       if (session.isFletero) {
-        // FLETERO: Eliminar de disponibles/pendientes
+        // FLETERO: Siempre eliminar de disponibles y pendientes
+        // (ya sea que canceló el cliente o el propio fletero)
         this.handleCancelarSolicitudFletero(data.solicitud_id);
       } else {
-        // CLIENTE: Eliminar de su lista
-        this.handleCancelarSolicitudCliente(data.solicitud_id);
+        // CLIENTE:
+        if (data.cancelado_por === 'fletero') {
+          // El fletero canceló → actualizar estado a 'cancelado' en la lista del cliente
+          // (para que la card muestre el estado sin desaparecer)
+          this.handleSolicitudCanceladaPorFletero(data.solicitud_id, data.solicitud);
+        } else {
+          // El cliente mismo canceló → eliminar de su lista
+          this.handleCancelarSolicitudCliente(data.solicitud_id);
+        }
       }
     });
 
@@ -340,43 +348,50 @@ export class SolcitudService {
 
     if (transportistaGanadorId === miTransportistaId) {
       // ✅ SOY EL GANADOR
-      console.log('🎉 [Socket] ¡GANÉ! Actualizando solicitud a pendiente');
+      console.log('🎉 [Socket] ¡GANÉ! Moviendo solicitud de disponibles → pendientes');
       console.log('   → Solicitud:', solicitud.solicitud_id);
       console.log('   → Presupuesto:', presupuestoGanador.presupuesto_id);
-      console.log('   → Precio:', presupuestoGanador.precio_estimado);
 
-      this._state.update(s => ({
-        ...s,
-        solicitudes: s.solicitudes.map(sol => {
-          if (sol.solicitud_id === solicitud.solicitud_id) {
-            return {
-              ...sol,
-              estado: 'pendiente',
-              presupuesto_aceptado: presupuestoGanador.presupuesto_id,
-              presupuesto: presupuestoGanador
-            };
-          }
-          return sol;
-        })
-      }));
+      // La solicitud con datos actualizados
+      const solicitudGanada: Solicitud = {
+        ...solicitud,
+        estado: 'pendiente' as any,
+        presupuesto_aceptado: presupuestoGanador.presupuesto_id,
+        presupuesto: presupuestoGanador
+      };
 
-      console.log('✅ [Socket] Solicitud actualizada - Ahora puedo iniciar viaje');
+      // 1. Remover de disponibles (ya no está sin transportista)
+      const disponibles = this.solicitudes_disponibles();
+      this.solicitudes_disponibles.set(
+        disponibles.filter(s => s.solicitud_id !== solicitud.solicitud_id)
+      );
+
+      // 2. Agregar a pendientes (el fletero puede ahora iniciar el viaje)
+      const pendientes = this.solicitudes_pendientes();
+      const yaEnPendientes = pendientes.some(s => s.solicitud_id === solicitud.solicitud_id);
+      if (!yaEnPendientes) {
+        this.solicitudes_pendientes.set([solicitudGanada, ...pendientes]);
+      } else {
+        // Si ya estaba (re-conexión), actualizar su estado
+        this.solicitudes_pendientes.set(
+          pendientes.map(s => s.solicitud_id === solicitud.solicitud_id ? solicitudGanada : s)
+        );
+      }
+
+      console.log('✅ [Socket] Solicitud movida a pendientes — botón "Iniciar viaje" disponible');
 
     } else {
-      // ❌ NO SOY EL GANADOR
-      console.log('😞 [Socket] No gané el presupuesto - Removiendo solicitud');
+      // ❌ NO SOY EL GANADOR — remover de disponibles
+      console.log('😞 [Socket] No gané — removiendo solicitud de disponibles');
       console.log('   → Mi transportista_id:', miTransportistaId);
       console.log('   → Ganador transportista_id:', transportistaGanadorId);
-      console.log('   → Solicitud:', solicitud.solicitud_id);
 
-      this._state.update(s => ({
-        ...s,
-        solicitudes: s.solicitudes.filter(
-          sol => sol.solicitud_id !== solicitud.solicitud_id
-        )
-      }));
+      const disponibles = this.solicitudes_disponibles();
+      this.solicitudes_disponibles.set(
+        disponibles.filter(s => s.solicitud_id !== solicitud.solicitud_id)
+      );
 
-      console.log('❌ [Socket] Solicitud removida de mi vista');
+      console.log('❌ [Socket] Solicitud removida de disponibles');
     }
   }
 
@@ -561,7 +576,27 @@ export class SolcitudService {
       ...s,
       solicitudes: s.solicitudes.filter(sol => sol.solicitud_id !== solicitudId)
     }));
-    console.log('✅ [Cliente] Solicitud eliminada');
+    console.log('✅ [Cliente] Solicitud eliminada de la lista');
+  }
+
+  /**
+   * 👤 CLIENTE: El fletero canceló la solicitud
+   * No elimina la solicitud — actualiza su estado a 'cancelado' para que
+   * el cliente la vea en su lista con el estado correspondiente
+   */
+  private handleSolicitudCanceladaPorFletero(solicitudId: number, solicitudActualizada?: any) {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol => {
+        if (sol.solicitud_id === solicitudId) {
+          return solicitudActualizada
+            ? { ...sol, ...solicitudActualizada, estado: 'cancelado' as any }
+            : { ...sol, estado: 'cancelado' as any };
+        }
+        return sol;
+      })
+    }));
+    console.log('⚠️ [Cliente] Solicitud cancelada por el fletero — estado actualizado');
   }
 
   /**
@@ -763,19 +798,37 @@ export class SolcitudService {
   /**
    * ❌ CANCELAR SOLICITUD
    */
+  /**
+   * ❌ CANCELAR SOLICITUD (cliente) — solo cuando estado = 'sin transportista'
+   * Rechaza todos los presupuestos pendientes
+   */
   async cancelarSolicitud(id: number): Promise<void> {
     try {
       this._state.update(s => ({ ...s, loading: true }));
-
       await firstValueFrom(
         this.http.patch(`${this.apiUrl}/api/solicitudes/${id}/cancelar`, {})
       );
-
-      // El socket ya manejará la eliminación del estado
       this._state.update(s => ({ ...s, loading: false }));
-
     } catch (err) {
       console.error('❌ Error al cancelar solicitud:', err);
+      this._state.update(s => ({ ...s, loading: false }));
+      throw err;
+    }
+  }
+
+  /**
+   * ❌ CANCELAR SOLICITUD (fletero) — cuando estado = 'pendiente' o 'en viaje'
+   * Notifica al cliente por socket
+   */
+  async cancelarSolicitudFletero(id: number): Promise<void> {
+    try {
+      this._state.update(s => ({ ...s, loading: true }));
+      await firstValueFrom(
+        this.http.patch(`${this.apiUrl}/api/solicitudes/${id}/cancelar-fletero`, {})
+      );
+      this._state.update(s => ({ ...s, loading: false }));
+    } catch (err) {
+      console.error('❌ Error al cancelar solicitud (fletero):', err);
       this._state.update(s => ({ ...s, loading: false }));
       throw err;
     }
@@ -833,7 +886,7 @@ export class SolcitudService {
       this._state.update(s => ({ ...s, loading: true }));
 
       await firstValueFrom(
-        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/completar-viaje`, {})
+        this.http.post(`${this.apiUrl}/api/solicitudes/${solicitudId}/completar`, {})
       );
 
       // El socket ya manejará la actualización del estado

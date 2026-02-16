@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable, catchError, of, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { map, Observable, catchError, of, debounceTime, distinctUntilChanged, switchMap, retry, timer } from 'rxjs';
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
 
 interface NominatimResponse {
@@ -59,11 +59,18 @@ export class MapService {
       format: 'json',
       limit: '1',
       addressdetails: '1',
+      countrycodes: 'ar',
+    };
+
+    const headers = {
+      'Accept': 'application/json',
+      'Accept-Language': 'es',
     };
 
     return this.http
-      .get<NominatimResponse[]>(this.nominatimUrl, { params })
+      .get<NominatimResponse[]>(this.nominatimUrl, { params, headers })
       .pipe(
+        retry({ count: 2, delay: (_, attempt) => timer(attempt * 800) }),
         map((results) => {
           if (results && results.length > 0) {
             const lat = parseFloat(results[0].lat);

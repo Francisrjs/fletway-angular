@@ -190,6 +190,25 @@ export class FleteroComponent implements OnInit {
   }
 
   /**
+   * Cancela la solicitud (solo cuando está pendiente o en viaje)
+   */
+  async cancelarSolicitud(s: Solicitud): Promise<void> {
+    this.popupModalService.showDanger(
+      '¿Cancelar solicitud?',
+      'El cliente será notificado que no podrás realizar el viaje.',
+      async () => {
+        try {
+          await this._solService.cancelarSolicitudFletero(s.solicitud_id);
+          console.log('✅ [Fletero] Solicitud cancelada:', s.solicitud_id);
+        } catch (error) {
+          console.error('❌ [Fletero] Error al cancelar:', error);
+        }
+      },
+      () => {}
+    );
+  }
+
+  /**
    * Obtiene la URL completa de la foto de una solicitud
    */
   obtenerUrlFoto(solicitud: Solicitud): string | null {

@@ -116,7 +116,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
         console.warn('⚠️ Faltan datos de origen o destino');
         this.loading.set(false);
       }
-    }, 100);
+    }, 500);
 
     // Suscribirse al subject con debounce de 3 segundos
     this.updateMap$
@@ -205,7 +205,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
             } else {
               console.error('❌ El contenedor del mapa aún no está disponible');
             }
-          }, 100);
+          }, 300);
         });
     });
   }

@@ -27,7 +27,7 @@ export class PresupuestoService {
   private http = inject(HttpClient);
   private _authService = inject(AuthService);
   private socket: Socket;
-  private apiUrl = 'http://127.0.0.1:5000';
+  private apiUrl = 'https://fletway-api-533654897399.us-central1.run.app';
 
   // 📊 ESTADO PRINCIPAL
   private _state = signal<PresupuestoState>({

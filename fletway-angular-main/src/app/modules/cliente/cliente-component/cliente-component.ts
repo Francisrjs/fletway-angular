@@ -421,7 +421,7 @@ export class ClienteComponent implements OnInit {
         try {
           console.log('✅ [Cliente] Aceptando presupuesto:', presupuesto.presupuesto_id);
 
-          await this._presupuestoService.aceptarPresupuesto(presupuesto.solicitud_id, presupuesto.presupuesto_id);
+          await this._presupuestoService.aceptarPresupuesto(presupuesto.presupuesto_id, presupuesto.solicitud_id);
 
           // ✅ REACTIVIDAD AUTOMÁTICA:
           // 1. Socket 'aceptar_solicitud' → SolicitudService actualiza solicitud

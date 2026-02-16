@@ -45,6 +45,7 @@ export class SolicitudCardComponent implements OnInit {
   // Eventos específicos para fletero
   @Output() realizarViaje = new EventEmitter<Solicitud>();
   @Output() completarViaje = new EventEmitter<Solicitud>();
+  @Output() cancelarViaje = new EventEmitter<Solicitud>();
   @Output() realizarCotizacion = new EventEmitter<Solicitud>();
   @Output() enviarMensaje = new EventEmitter<Solicitud>();
 
@@ -160,6 +161,28 @@ export class SolicitudCardComponent implements OnInit {
   }
 
   // ✅ CORREGIDO: Lógica completa para poder calificar
+  /**
+   * Ocultar "Ver presupuestos" cuando la solicitud está cancelada o completada
+   */
+  get puedeVerPresupuestos(): boolean {
+    return (this.solicitud.estado || '').toLowerCase() !== 'cancelado';
+  }
+
+  /**
+   * El botón Cancelar del cliente solo aparece cuando está sin transportista
+   */
+  get puedeClienteCancelar(): boolean {
+    return (this.solicitud.estado || '').toLowerCase() === 'sin transportista';
+  }
+
+  /**
+   * El botón Cancelar del fletero aparece cuando está pendiente o en viaje
+   */
+  get puedeFleteroCanselar(): boolean {
+    const estado = (this.solicitud.estado || '').toLowerCase();
+    return estado === 'pendiente' || estado === 'en viaje';
+  }
+
   get puedeCalificar(): boolean {
     // Debe estar completada
     if (this.solicitud.estado !== 'completado') {
@@ -221,6 +244,10 @@ export class SolicitudCardComponent implements OnInit {
 
   onRealizarCotizacion(): void {
     this.realizarCotizacion.emit(this.solicitud);
+  }
+
+  onCancelarViaje(): void {
+    this.cancelarViaje.emit(this.solicitud);
   }
 
   onEnviarMensaje(): void {

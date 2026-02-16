@@ -321,6 +321,7 @@
       </button>
 
       <button
+        *ngIf="puedeVerPresupuestos"
         type="button"
         (click)="onVerPresupuestos()"
         [ngClass]="{
@@ -382,14 +383,7 @@
       <button
         type="button"
         (click)="onEditarSolicitud()"
-        *ngIf="
-          esCliente &&
-          solicitud.estado != 'finalizado' &&
-          solicitud.estado != 'en viaje' &&
-          solicitud.estado != 'completado' &&
-          solicitud.estado != 'pendiente' &&
-          solicitud.estado != 'cancelado'
-        "
+        *ngIf="puedeClienteCancelar"
         class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-500 border border-orange-600 rounded-lg text-sm font-medium text-white hover:bg-orange-600 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
       >
         <svg
@@ -488,6 +482,18 @@
 
     <!-- Botones de acción para modo FLETERO -->
     <div *ngIf="mostrarBotones && esFletero" class="flex flex-col gap-2">
+      <!-- Ver en el mapa (todos los estados excepto cancelado) -->
+      <button
+        *ngIf="solicitud.estado !== 'cancelado'"
+        type="button"
+        (click)="onVerMapa()"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-orange-300 transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+      >
+        <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+        </svg>
+        Ver en el mapa
+      </button>
       <button
         type="button"
         (click)="onEnviarMensaje()"
@@ -568,6 +574,19 @@
           />
         </svg>
         Viaje Completado
+      </button>
+
+      <!-- Cancelar solicitud (fletero) — pendiente o en viaje -->
+      <button
+        *ngIf="puedeFleteroCanselar"
+        type="button"
+        (click)="onCancelarViaje()"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 hover:border-red-300 transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Cancelar solicitud
       </button>
     </div>
   </div>
