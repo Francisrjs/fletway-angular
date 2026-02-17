@@ -3,7 +3,7 @@ import { CommonModule, Location } from '@angular/common'; // Importar Location
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReporteService} from '../../modules/data-access/reporte-service'; // Ajusta ruta
 import { ToastService } from '../modal/toast/toast.service';
-import { Solicitud } from '../../core/layouts/solicitud';
+import { SolicitudResumen } from './../../modules/data-access/reporte-service';
 
 @Component({
   selector: 'app-reportes',
@@ -20,7 +20,7 @@ export class ReporteComponent implements OnInit {
 
   submitting = false;
   loadingData = true;
-  listaSolicitudes: Solicitud[] = [];
+  listaSolicitudes: SolicitudResumen[] = [];
 
   form = this.fb.group({
     solicitud_id: ['', [Validators.required]],
