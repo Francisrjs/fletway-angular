@@ -37,7 +37,7 @@
                 <option value="" disabled selected>Selecciona un viaje de la lista...</option>
                 @for (solicitud of listaSolicitudes; track solicitud.solicitud_id) {
                   <option [value]="solicitud.solicitud_id">
-                    #{{ solicitud.solicitud_id }} - {{ solicitud.creado_en | date:'shortDate' }} - {{ solicitud.detalles_carga }} ({{ solicitud.estado }})
+                    #{{ solicitud.solicitud_id }} - {{ solicitud.fecha_creacion | date:'shortDate' }} - {{ solicitud.detalles_carga }} ({{ solicitud.estado }})
                   </option>
                 }
               </select>

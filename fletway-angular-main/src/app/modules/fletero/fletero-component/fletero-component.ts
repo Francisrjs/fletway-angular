@@ -70,7 +70,7 @@ export class FleteroComponent implements OnInit {
     effect(() => {
       const disponibles = this.solicitudes_disponibles();
       const pendientes = this.solicitudes_pendientes();
-      
+
       console.log('🔄 [Fletero-Socket] Estado actualizado:', {
         disponibles: disponibles.length,
         pendientes: pendientes.length,
@@ -100,7 +100,7 @@ export class FleteroComponent implements OnInit {
     // ✅ EFECTO: Detectar cuando una solicitud desaparece (fue aceptada por otro)
     effect(() => {
       const disponibles = this.solicitudes_disponibles();
-      
+
       // Este effect se ejecutará cada vez que cambie la lista
       // Si una solicitud desaparece, es porque otro fletero fue seleccionado
       console.log('👀 [Fletero] Vigilando cambios en solicitudes disponibles');
@@ -150,7 +150,7 @@ export class FleteroComponent implements OnInit {
         try {
           await this._solService.comenzarViaje(s.solicitud_id);
           console.log('✅ [Fletero] Viaje iniciado:', s.solicitud_id);
-          
+
           // ✅ El socket 'viaje_iniciado' actualizará el estado automáticamente
           // La solicitud pasará de solicitudes_pendientes a tener estado 'en viaje'
           console.log('🔌 [Socket] Esperando confirmación de viaje_iniciado...');
@@ -175,7 +175,7 @@ export class FleteroComponent implements OnInit {
         try {
           await this._solService.completarViaje(s.solicitud_id);
           console.log('✅ [Fletero] Viaje completado:', s.solicitud_id);
-          
+
           // ✅ El socket 'viaje_completado' actualizará el estado automáticamente
           // La solicitud cambiará a estado 'completado'
           console.log('🔌 [Socket] Esperando confirmación de viaje_completado...');
