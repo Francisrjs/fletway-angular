@@ -167,6 +167,14 @@ async cargarPresupuestos(): Promise<void> {
 
     if (yaEnMemoria) {
       console.log('⚡ [ClientePresupuesto] Datos ya en memoria, sin HTTP call');
+      const presupuestos = this.presupuestoService.presupuestos()
+      .filter(p => p.solicitud_id === solicitudId);
+
+    console.log('Presupuestos encontrados:', presupuestos);
+
+    presupuestos.forEach(p => {
+      console.log('Transportista:', p.transportista);
+    });
       return;
     }
 
@@ -277,4 +285,12 @@ async cargarPresupuestos(): Promise<void> {
       });
     }
   }
+
+  getEstrellasPromedio(promedio: number | null | undefined): boolean[] {
+    if (promedio == null) return [];
+
+    const entero = Math.round(promedio);
+    return Array.from({ length: 5 }, (_, i) => i < entero);
+  }
+
 }

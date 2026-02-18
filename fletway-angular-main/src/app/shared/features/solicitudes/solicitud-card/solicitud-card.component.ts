@@ -41,7 +41,7 @@ export class SolicitudCardComponent implements OnInit {
   @Output() cancelarPedido = new EventEmitter<Solicitud>();
   @Output() calificar = new EventEmitter<Solicitud>();
   @Output() editarSolicitud = new EventEmitter<Solicitud>();
-  
+
   // Eventos específicos para fletero
   @Output() realizarViaje = new EventEmitter<Solicitud>();
   @Output() completarViaje = new EventEmitter<Solicitud>();
@@ -205,7 +205,7 @@ export class SolicitudCardComponent implements OnInit {
   // ✅ NUEVO: Array de estrellas para mostrar calificación
   get estrellasCalificacion(): boolean[] {
     if (!this.miCalificacion) return [];
-    
+
     const puntuacion = this.miCalificacion.puntuacion || 0;
     return Array(5).fill(false).map((_, i) => i < puntuacion);
   }
@@ -253,7 +253,7 @@ export class SolicitudCardComponent implements OnInit {
   onEnviarMensaje(): void {
     this.enviarMensaje.emit(this.solicitud);
   }
-  
+
   onEditarSolicitud(): void {
     this.editarSolicitud.emit(this.solicitud);
   }
@@ -286,4 +286,20 @@ export class SolicitudCardComponent implements OnInit {
   get esFletero(): boolean {
     return this.modo === 'fletero';
   }
+
+  estrellasPromedio: boolean[] = [];
+
+  ngOnChanges() {
+    this.generarEstrellasPromedio();
+  }
+
+  generarEstrellasPromedio() {
+    if (this.calificacionPromedio !== null) {
+      const entero = Math.round(this.calificacionPromedio);
+      this.estrellasPromedio = Array.from({ length: 5 }, (_, i) => i < entero);
+    } else {
+      this.estrellasPromedio = [];
+    }
+  }
+
 }

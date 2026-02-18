@@ -10,4 +10,5 @@ export interface Fletero {
   patente_vehiculo?: string;
   modelo_vehiculo?: string;
   usuario?: Cliente;
+  total_calificaciones?: number;
 }
