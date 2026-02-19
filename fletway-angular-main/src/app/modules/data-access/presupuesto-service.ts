@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 import { Fletero } from '../../core/layouts/fletero';
 import { Presupuesto } from '../../core/layouts/presupuesto';
 import { AuthService } from '../../core/auth/data-access/auth-service';
+import { environment } from '../../../enviroments/enviroment';
 
 interface PresupuestoState {
   presupuestos: Presupuesto[];
@@ -27,7 +28,7 @@ export class PresupuestoService {
   private http = inject(HttpClient);
   private _authService = inject(AuthService);
   private socket: Socket;
-  private apiUrl = 'https://fletway-api-533654897399.us-central1.run.app';
+  private apiUrl = environment.apiUrl;
 
   // 📊 ESTADO PRINCIPAL
   private _state = signal<PresupuestoState>({
@@ -43,15 +44,15 @@ export class PresupuestoService {
 
   // 📈 COMPUTED DERIVADOS
   presupuestosPendientes = computed(() =>
-    this._state().presupuestos.filter(p => p.estado === 'pendiente')
+    this._state().presupuestos.filter((p) => p.estado === 'pendiente'),
   );
 
   presupuestosAceptados = computed(() =>
-    this._state().presupuestos.filter(p => p.estado === 'aceptado')
+    this._state().presupuestos.filter((p) => p.estado === 'aceptado'),
   );
 
   presupuestosRechazados = computed(() =>
-    this._state().presupuestos.filter(p => p.estado === 'rechazado')
+    this._state().presupuestos.filter((p) => p.estado === 'rechazado'),
   );
 
   get sesion() {
@@ -66,7 +67,7 @@ export class PresupuestoService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5
+      reconnectionAttempts: 5,
     });
 
     this.initSocketListeners();
@@ -82,7 +83,7 @@ export class PresupuestoService {
       console.log('📊 [PresupuestoState]', {
         presupuestos: state.presupuestos.length,
         loading: state.loading,
-        error: state.error
+        error: state.error,
       });
     });
   }
@@ -110,7 +111,7 @@ export class PresupuestoService {
      *   transportista: { transportista_id, calificacion_promedio, total_calificaciones, usuario: {...} }
      * }
      */
-    this.socket.on('nuevo_presupuesto', (data) => {
+    this.socket.on('nuevo_presupuesto', (data: any) => {
       console.log('🆕 [Socket] Nuevo presupuesto recibido:', data);
       this.handleNuevoPresupuesto(data);
     });
@@ -125,7 +126,7 @@ export class PresupuestoService {
      *
      * Data: solicitud.to_dict() completa
      */
-    this.socket.on('aceptar_solicitud', (data) => {
+    this.socket.on('aceptar_solicitud', (data: any) => {
       console.log('✅ [Socket] Presupuesto aceptado - Solicitud:', data);
       this.handlePresupuestoAceptado(data);
     });
@@ -143,21 +144,25 @@ export class PresupuestoService {
 
     // Si ya existe, no duplicar
     const yaExiste = presupuestosActuales.some(
-      p => p.presupuesto_id === presupuesto.presupuesto_id
+      (p) => p.presupuesto_id === presupuesto.presupuesto_id,
     );
 
     if (yaExiste) {
-      console.log('⚠️ [handleNuevoPresupuesto] Presupuesto ya existe, ignorando');
+      console.log(
+        '⚠️ [handleNuevoPresupuesto] Presupuesto ya existe, ignorando',
+      );
       return;
     }
 
     // Agregar al estado
-    this._state.update(s => ({
+    this._state.update((s) => ({
       ...s,
-      presupuestos: [...s.presupuestos, presupuesto]
+      presupuestos: [...s.presupuestos, presupuesto],
     }));
 
-    console.log('✅ [handleNuevoPresupuesto] Presupuesto agregado al estado local');
+    console.log(
+      '✅ [handleNuevoPresupuesto] Presupuesto agregado al estado local',
+    );
   }
 
   /**
@@ -180,14 +185,16 @@ export class PresupuestoService {
     const presupuestoAceptadoId = solicitud.presupuesto_aceptado;
 
     if (!presupuestoAceptadoId) {
-      console.log('⚠️ [handlePresupuestoAceptado] No hay presupuesto aceptado en la solicitud');
+      console.log(
+        '⚠️ [handlePresupuestoAceptado] No hay presupuesto aceptado en la solicitud',
+      );
       return;
     }
 
     // Actualizar estado: marcar presupuestos como rechazados excepto el ganador
-    this._state.update(s => ({
+    this._state.update((s) => ({
       ...s,
-      presupuestos: s.presupuestos.map(p => {
+      presupuestos: s.presupuestos.map((p) => {
         if (p.solicitud_id === solicitud.solicitud_id) {
           if (p.presupuesto_id === presupuestoAceptadoId) {
             // Este es el ganador
@@ -198,10 +205,12 @@ export class PresupuestoService {
           }
         }
         return p;
-      })
+      }),
     }));
 
-    console.log('✅ [handlePresupuestoAceptado] Estados de presupuestos actualizados');
+    console.log(
+      '✅ [handlePresupuestoAceptado] Estados de presupuestos actualizados',
+    );
   }
 
   // ========================================
@@ -219,17 +228,14 @@ export class PresupuestoService {
     try {
       console.log('💰 [addPresupuesto] Creando presupuesto:', payload);
 
-      this._state.update(s => ({ ...s, loading: true, error: null }));
+      this._state.update((s) => ({ ...s, loading: true, error: null }));
 
       const response = await firstValueFrom(
-        this.http.post<Presupuesto>(
-          `${this.apiUrl}/api/presupuestos`,
-          {
-            solicitud_id: payload.solicitud,
-            precio_estimado: payload.precio,
-            comentario: payload.comentario
-          }
-        )
+        this.http.post<Presupuesto>(`${this.apiUrl}/api/presupuestos`, {
+          solicitud_id: payload.solicitud,
+          precio_estimado: payload.precio,
+          comentario: payload.comentario,
+        }),
       );
 
       console.log('✅ [addPresupuesto] Presupuesto creado:', response);
@@ -237,20 +243,19 @@ export class PresupuestoService {
       // ⚠️ NO actualizamos el estado local aquí
       // El socket 'nuevo_presupuesto' se encargará de notificar al cliente
       // Para el transportista, agregamos manualmente a su lista
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         loading: false,
-        presupuestos: [...s.presupuestos, response]
+        presupuestos: [...s.presupuestos, response],
       }));
 
       return response;
-
     } catch (err: any) {
       console.error('❌ [addPresupuesto] Error:', err);
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         loading: false,
-        error: err.message || 'Error al crear presupuesto'
+        error: err.message || 'Error al crear presupuesto',
       }));
       return null;
     }
@@ -272,7 +277,7 @@ export class PresupuestoService {
           pendientes: number;
           aceptados: number;
           rechazados: number;
-        }>(`${this.apiUrl}/api/presupuestos/resumen/${solicitudId}`)
+        }>(`${this.apiUrl}/api/presupuestos/resumen/${solicitudId}`),
       );
 
       const mostrables = response.pendientes;
@@ -281,7 +286,6 @@ export class PresupuestoService {
       console.log('✅ [getResumenPresupuestos]', { mostrables, hayAceptado });
 
       return { mostrables, hayAceptado };
-
     } catch (err) {
       console.error('❌ [getResumenPresupuestos] Error:', err);
       return { mostrables: 0, hayAceptado: false };
@@ -291,21 +295,26 @@ export class PresupuestoService {
   /**
    * 📊 OBTENER RESÚMENES EN BATCH (OPTIMIZADO)
    */
-  async getResumenesBatch(solicitudIds: number[]): Promise<Record<string, any>> {
+  async getResumenesBatch(
+    solicitudIds: number[],
+  ): Promise<Record<string, any>> {
     try {
-      console.log('📦 [getResumenesBatch] Procesando', solicitudIds.length, 'solicitudes');
+      console.log(
+        '📦 [getResumenesBatch] Procesando',
+        solicitudIds.length,
+        'solicitudes',
+      );
 
       const response = await firstValueFrom(
         this.http.post<Record<string, any>>(
           `${this.apiUrl}/api/presupuestos/resumenes-batch`,
-          { solicitud_ids: solicitudIds }
-        )
+          { solicitud_ids: solicitudIds },
+        ),
       );
 
       console.log('✅ [getResumenesBatch] Resúmenes recibidos');
 
       return response;
-
     } catch (err) {
       console.error('❌ [getResumenesBatch] Error:', err);
       return {};
@@ -317,37 +326,39 @@ export class PresupuestoService {
    */
   async getPresupuestosBySolicitudId(
     solicitudId: number,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<Presupuesto[] | null> {
     try {
       console.log('🔍 [getPresupuestosBySolicitudId] Solicitud:', solicitudId);
 
-      this._state.update(s => ({ ...s, loading: true, error: null }));
+      this._state.update((s) => ({ ...s, loading: true, error: null }));
 
       const response = await firstValueFrom(
         this.http.get<Presupuesto[]>(
-          `${this.apiUrl}/api/presupuestos/solicitud/${solicitudId}`
-        )
+          `${this.apiUrl}/api/presupuestos/solicitud/${solicitudId}`,
+        ),
       );
 
-      console.log('✅ [getPresupuestosBySolicitudId] Presupuestos:', response?.length || 0);
+      console.log(
+        '✅ [getPresupuestosBySolicitudId] Presupuestos:',
+        response?.length || 0,
+      );
 
       // Actualizar estado
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         presupuestos: response || [],
         loading: false,
-        error: null
+        error: null,
       }));
 
       return response || [];
-
     } catch (err: any) {
       console.error('❌ [getPresupuestosBySolicitudId] Error:', err);
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         error: err.message || 'Error al cargar presupuestos',
-        loading: false
+        loading: false,
       }));
       return null;
     }
@@ -357,60 +368,61 @@ export class PresupuestoService {
    * 📦 OBTENER PRESUPUESTOS COMPLETOS EN BATCH (OPTIMIZADO)
    */
 
-
-
-
-
   async getPresupuestosCompletoBatch(): Promise<void> {
-      try {
-        console.log('📦 [getPresupuestosCompletoBatch] Cargando todos los presupuestos...');
+    try {
+      console.log(
+        '📦 [getPresupuestosCompletoBatch] Cargando todos los presupuestos...',
+      );
 
-        this._state.update(s => ({ ...s, loading: true, error: null }));
+      this._state.update((s) => ({ ...s, loading: true, error: null }));
 
-        const response = await firstValueFrom(
-          this.http.get<Record<string, Presupuesto[]>>(
-            `${this.apiUrl}/api/presupuestos/completo-batch`)
-        );
+      const response = await firstValueFrom(
+        this.http.get<Record<string, Presupuesto[]>>(
+          `${this.apiUrl}/api/presupuestos/completo-batch`,
+        ),
+      );
 
-        // Aplanar el objeto { "solicitud_id": [presupuestos] } en un array plano
-        const todosLosPresupuestos: Presupuesto[] = Object.values(response).flat();
+      // Aplanar el objeto { "solicitud_id": [presupuestos] } en un array plano
+      const todosLosPresupuestos: Presupuesto[] =
+        Object.values(response).flat();
 
-        console.log(`✅ [getPresupuestosCompletoBatch] ${todosLosPresupuestos.length} presupuestos cargados`);
+      console.log(
+        `✅ [getPresupuestosCompletoBatch] ${todosLosPresupuestos.length} presupuestos cargados`,
+      );
 
-        this._state.update(s => ({
-          ...s,
-          presupuestos: todosLosPresupuestos,
-          loading: false,
-          error: null
-        }));
-
-      } catch (err: any) {
-        console.error('❌ [getPresupuestosCompletoBatch] Error:', err);
-        this._state.update(s => ({
-          ...s,
-          loading: false,
-          error: err.message || 'Error al cargar presupuestos'
-        }));
-      }
+      this._state.update((s) => ({
+        ...s,
+        presupuestos: todosLosPresupuestos,
+        loading: false,
+        error: null,
+      }));
+    } catch (err: any) {
+      console.error('❌ [getPresupuestosCompletoBatch] Error:', err);
+      this._state.update((s) => ({
+        ...s,
+        loading: false,
+        error: err.message || 'Error al cargar presupuestos',
+      }));
     }
+  }
 
   /**
    * ✅ ACEPTAR PRESUPUESTO
    */
   async aceptarPresupuesto(
     presupuestoId: number,
-    solicitudId: number
+    solicitudId: number,
   ): Promise<boolean> {
     try {
       console.log('✅ [aceptarPresupuesto]', { presupuestoId, solicitudId });
 
-      this._state.update(s => ({ ...s, loading: true, error: null }));
+      this._state.update((s) => ({ ...s, loading: true, error: null }));
 
       await firstValueFrom(
         this.http.post(
           `${this.apiUrl}/api/presupuestos/${presupuestoId}/aceptar`,
-          { solicitud_id: solicitudId }
-        )
+          { solicitud_id: solicitudId },
+        ),
       );
 
       console.log('✅ [aceptarPresupuesto] Presupuesto aceptado');
@@ -418,16 +430,15 @@ export class PresupuestoService {
       // ⚠️ NO actualizamos el estado local aquí
       // El socket 'aceptar_solicitud' se encargará de actualizar los estados
 
-      this._state.update(s => ({ ...s, loading: false }));
+      this._state.update((s) => ({ ...s, loading: false }));
 
       return true;
-
     } catch (err: any) {
       console.error('❌ [aceptarPresupuesto] Error:', err);
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         loading: false,
-        error: err.message || 'Error al aceptar presupuesto'
+        error: err.message || 'Error al aceptar presupuesto',
       }));
       return false;
     }
@@ -438,41 +449,40 @@ export class PresupuestoService {
    */
   async rechazarPresupuesto(
     presupuestoId: number,
-    solicitudId: number
+    solicitudId: number,
   ): Promise<boolean> {
     try {
       console.log('❌ [rechazarPresupuesto]', { presupuestoId, solicitudId });
 
-      this._state.update(s => ({ ...s, loading: true, error: null }));
+      this._state.update((s) => ({ ...s, loading: true, error: null }));
 
       await firstValueFrom(
         this.http.post(
           `${this.apiUrl}/api/presupuestos/${presupuestoId}/rechazar`,
-          {}
-        )
+          {},
+        ),
       );
 
       console.log('✅ [rechazarPresupuesto] Presupuesto rechazado');
 
       // Actualizar estado local
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         loading: false,
-        presupuestos: s.presupuestos.map(p =>
+        presupuestos: s.presupuestos.map((p) =>
           p.presupuesto_id === presupuestoId
             ? { ...p, estado: 'rechazado' }
-            : p
-        )
+            : p,
+        ),
       }));
 
       return true;
-
     } catch (err: any) {
       console.error('❌ [rechazarPresupuesto] Error:', err);
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         loading: false,
-        error: err.message || 'Error al rechazar presupuesto'
+        error: err.message || 'Error al rechazar presupuesto',
       }));
       return false;
     }
@@ -487,14 +497,13 @@ export class PresupuestoService {
 
       const response = await firstValueFrom(
         this.http.get<Fletero>(
-          `${this.apiUrl}/api/transportistas/${fleteroId}`
-        )
+          `${this.apiUrl}/api/transportistas/${fleteroId}`,
+        ),
       );
 
       console.log('✅ [getFleteroById] Transportista obtenido:', response);
 
       return response;
-
     } catch (err) {
       console.error('❌ [getFleteroById] Error:', err);
       return null;
@@ -508,30 +517,32 @@ export class PresupuestoService {
     try {
       console.log('📋 [getPresupuestosDelTransportista] Obteniendo...');
 
-      this._state.update(s => ({ ...s, loading: true, error: null }));
+      this._state.update((s) => ({ ...s, loading: true, error: null }));
 
       const response = await firstValueFrom(
         this.http.get<Presupuesto[]>(
-          `${this.apiUrl}/api/presupuestos/mis-presupuestos`
-        )
+          `${this.apiUrl}/api/presupuestos/mis-presupuestos`,
+        ),
       );
 
-      console.log('✅ [getPresupuestosDelTransportista] Presupuestos:', response?.length || 0);
+      console.log(
+        '✅ [getPresupuestosDelTransportista] Presupuestos:',
+        response?.length || 0,
+      );
 
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         presupuestos: response || [],
-        loading: false
+        loading: false,
       }));
 
       return response || [];
-
     } catch (err: any) {
       console.error('❌ [getPresupuestosDelTransportista] Error:', err);
-      this._state.update(s => ({
+      this._state.update((s) => ({
         ...s,
         loading: false,
-        error: err.message || 'Error al cargar presupuestos'
+        error: err.message || 'Error al cargar presupuestos',
       }));
       return null;
     }
@@ -544,7 +555,7 @@ export class PresupuestoService {
     this._state.set({
       presupuestos: [],
       loading: false,
-      error: null
+      error: null,
     });
   }
 

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth/data-access/auth-service';
+import { environment } from '../../../enviroments/enviroment';
 
 // Solo los 4 campos que necesita el formulario de reporte
 export interface SolicitudResumen {
@@ -11,13 +12,13 @@ export interface SolicitudResumen {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ReporteService {
   private _http = inject(HttpClient);
   private _authService = inject(AuthService);
 
-  private apiUrl = 'https://fletway-api-533654897399.us-central1.run.app';
+  private apiUrl = environment.apiUrl;
 
   async crearReporte(datos: {
     motivo: string;
@@ -31,13 +32,13 @@ export class ReporteService {
       usuario_id: session.userId,
       solicitud_id: datos.solicitud_id || null,
       motivo: datos.motivo,
-      mensaje: datos.descripcion
+      mensaje: datos.descripcion,
     };
 
     return new Promise((resolve, reject) => {
       this._http.post(`${this.apiUrl}/enviar-reporte`, payload).subscribe({
         next: (res) => resolve(res),
-        error: (err) => reject(err)
+        error: (err) => reject(err),
       });
     });
   }
@@ -54,18 +55,18 @@ export class ReporteService {
       this._http.get<any[]>(endpoint).subscribe({
         next: (data) => {
           // Solo los 4 campos que usa el formulario
-          const lista: SolicitudResumen[] = data.map(item => ({
-            solicitud_id:   item.solicitud_id,
+          const lista: SolicitudResumen[] = data.map((item) => ({
+            solicitud_id: item.solicitud_id,
             detalles_carga: item.detalles_carga || 'Sin descripción',
             fecha_creacion: item.fecha_creacion || null,
-            estado:         item.estado
+            estado: item.estado,
           }));
           resolve(lista);
         },
         error: (err) => {
           console.error('Error cargando solicitudes para reporte:', err);
           resolve([]);
-        }
+        },
       });
     });
   }
