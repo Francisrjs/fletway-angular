@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  supabaseUrl: import.meta.env.NG_APP_SUPABASE_URL || '',
-  supabaseKey: import.meta.env.NG_APP_SUPABASE_KEY || '',
-  apiUrl: import.meta.env.NG_APP_API_URL || '',
+  supabaseUrl: 'https://cscsodzphvosifgduqtc.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzY3NvZHpwaHZvc2lmZ2R1cXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzY3MzEsImV4cCI6MjA3MDM1MjczMX0.nqv8p8z_XbhvhN_VqqDCIjV3qP1q2yWN6DALHtMP4nM',
+  apiUrl: 'https://fletway-api-533654897399.us-central1.run.app',
 };
