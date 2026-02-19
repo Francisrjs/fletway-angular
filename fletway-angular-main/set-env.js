@@ -27,4 +27,4 @@ fs.writeFileSync(targetPath, envFileContent);
 console.log("✅ Variables de entorno cargadas desde .env.local");
 console.log(`   - SUPABASE_URL: ${env.NG_APP_SUPABASE_URL ? "✓" : "✗"}`);
 console.log(`   - SUPABASE_KEY: ${env.NG_APP_SUPABASE_KEY ? "✓" : "✗"}`);
-console.log(`   - API_URL: ${env.NG_APP_API_URL || "http://127.0.0.1:5000"}`);
+console.log(`   - API_URL: ${"http://127.0.0.1:5000"}`);
