@@ -149,7 +149,19 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       .subscribe((value) => {
         this.originSearch$.next(value || '');
         this.direccionOrigenValida = false;
+      });
+
+    // === VALIDACIÓN DE DIRECCIÓN ORIGEN (2.5 segundos después de escribir) ===
+    this.solicitudForm
+      .get('origen')
+      ?.valueChanges.pipe(
+        debounceTime(2500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((value) => {
         if (value && value.trim().length > 5) {
+          console.log('🔍 Validando dirección origen después de 2.5s...');
           this.validarDireccionOrigen(value);
         }
       });
@@ -201,7 +213,19 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       .subscribe((value) => {
         this.destinoSearch$.next(value || '');
         this.direccionDestinoValida = false;
+      });
+
+    // === VALIDACIÓN DE DIRECCIÓN DESTINO (2.5 segundos después de escribir) ===
+    this.solicitudForm
+      .get('destino')
+      ?.valueChanges.pipe(
+        debounceTime(2500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((value) => {
         if (value && value.trim().length > 5) {
+          console.log('🔍 Validando dirección destino después de 2.5s...');
           this.validarDireccionDestino(value);
         }
       });
@@ -254,11 +278,17 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     if (!this.solicitud) return;
 
     console.log('📝 Cargando datos de solicitud para edición:', this.solicitud);
-    const locOrigen = this.todasLasLocalidades.find(l => l.localidad_id === this.solicitud?.localidad_origen_id);
-    const locDestino = this.todasLasLocalidades.find(l => l.localidad_id === this.solicitud?.localidad_destino_id);
+    const locOrigen = this.todasLasLocalidades.find(
+      (l) => l.localidad_id === this.solicitud?.localidad_origen_id,
+    );
+    const locDestino = this.todasLasLocalidades.find(
+      (l) => l.localidad_id === this.solicitud?.localidad_destino_id,
+    );
 
-    if (locOrigen) this.textoLocalidadOrigen = `${locOrigen.nombre}, ${locOrigen.provincia}`;
-    if (locDestino) this.textoLocalidadDestino = `${locDestino.nombre}, ${locDestino.provincia}`;
+    if (locOrigen)
+      this.textoLocalidadOrigen = `${locOrigen.nombre}, ${locOrigen.provincia}`;
+    if (locDestino)
+      this.textoLocalidadDestino = `${locDestino.nombre}, ${locDestino.provincia}`;
 
     this.solicitudForm.patchValue({
       origen: this.solicitud.direccion_origen,
@@ -578,7 +608,11 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      this.toastService.showDanger('Error al procesar pedido', errorMessage, 4000);
+      this.toastService.showDanger(
+        'Error al procesar pedido',
+        errorMessage,
+        4000,
+      );
       this.message = {
         type: 'error',
         text: errorMessage,
@@ -733,9 +767,10 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     if (!termino) {
       this.localidadesOrigenFiltradas = [...this.todasLasLocalidades];
     } else {
-      this.localidadesOrigenFiltradas = this.todasLasLocalidades.filter((loc) =>
-        (loc.nombre || '').toLowerCase().includes(termino) ||
-        (loc.provincia || '').toLowerCase().includes(termino)
+      this.localidadesOrigenFiltradas = this.todasLasLocalidades.filter(
+        (loc) =>
+          (loc.nombre || '').toLowerCase().includes(termino) ||
+          (loc.provincia || '').toLowerCase().includes(termino),
       );
     }
     this.solicitudForm.get('localidad_origen_id')?.setValue(null);
@@ -757,9 +792,10 @@ export class SolicitudFormComponent implements OnInit, OnDestroy {
     if (!termino) {
       this.localidadesDestinoFiltradas = [...this.todasLasLocalidades];
     } else {
-      this.localidadesDestinoFiltradas = this.todasLasLocalidades.filter((loc) =>
-        (loc.nombre || '').toLowerCase().includes(termino) ||
-        (loc.provincia || '').toLowerCase().includes(termino)
+      this.localidadesDestinoFiltradas = this.todasLasLocalidades.filter(
+        (loc) =>
+          (loc.nombre || '').toLowerCase().includes(termino) ||
+          (loc.provincia || '').toLowerCase().includes(termino),
       );
     }
     this.solicitudForm.get('localidad_destino_id')?.setValue(null);
