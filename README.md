@@ -27,5 +27,5 @@ En este caso se va a usar para desplegar en Vercel. Usando el APi desplegado en 
 ejecuta el siguiente comando:
 
 ```bash
-npm run build
+npm run start
 ```
