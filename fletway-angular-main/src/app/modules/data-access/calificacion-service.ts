@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../enviroments/enviroment';
 
 /**
  * 📊 Interfaz de Calificación
@@ -64,7 +65,7 @@ interface CalificacionState {
 })
 export class CalificacionService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://fletway-api-533654897399.us-central1.run.app';
+  private apiUrl = environment.apiUrl;
 
   // 📊 ESTADO PRINCIPAL
   private _state = signal<CalificacionState>({
@@ -234,7 +235,7 @@ export class CalificacionService {
     }
   }
 
-    clearCalificacionCache(solicitudId?: number): void {
+  clearCalificacionCache(solicitudId?: number): void {
     if (solicitudId) {
       this._calificacionesSolicitudCache.delete(solicitudId);
       console.log('🗑️ Cache de calificación invalidado para solicitud:', solicitudId);

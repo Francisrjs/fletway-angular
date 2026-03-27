@@ -344,10 +344,47 @@
 
           <!-- Formulario de Cotización -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">
-              Realizar Cotización
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center justify-between">
+              <span>{{ presupuestoPropio ? 'Tu Cotización' : 'Realizar Cotización' }}</span>
+              <!-- Badge de estado si ya existe -->
+              <span *ngIf="presupuestoPropio" 
+                    [ngClass]="{
+                      'bg-yellow-100 text-yellow-800': presupuestoPropio.estado === 'pendiente',
+                      'bg-green-100 text-green-800': presupuestoPropio.estado === 'aceptado',
+                      'bg-red-100 text-red-800': presupuestoPropio.estado === 'rechazado'
+                    }"
+                    class="text-xs px-2.5 py-1 rounded-full font-medium capitalize">
+                {{ presupuestoPropio.estado }}
+              </span>
             </h2>
+
+            <!-- Vista Resumen (si ya tiene presupuesto y NO está editando) -->
+            <div *ngIf="presupuestoPropio && !modoEdicion" class="space-y-4">
+              <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <p class="text-sm font-medium text-gray-500 mb-1">Precio Ofertado:</p>
+                <p class="text-2xl font-bold text-gray-900">${{ presupuestoPropio.precio_estimado | number }}</p>
+                
+                <p class="text-sm font-medium text-gray-500 mt-4 mb-1">Tu Comentario:</p>
+                <p class="text-sm text-gray-700 italic">"{{ presupuestoPropio.comentario }}"</p>
+              </div>
+
+              <!-- Botón Editar (solo si está pendiente) -->
+              <button
+                *ngIf="presupuestoPropio.estado === 'pendiente'"
+                type="button"
+                (click)="toggleModoEdicion()"
+                class="w-full py-3 px-4 bg-white text-orange-600 border border-orange-600 rounded-lg font-medium hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Editar Mi Cotización
+              </button>
+            </div>
+
+            <!-- Formulario (si NO tiene presupuesto O está editando) -->
             <form
+              *ngIf="!presupuestoPropio || modoEdicion"
               [formGroup]="presupuestoForm"
               (ngSubmit)="submitQuote()"
               class="space-y-4"
@@ -390,15 +427,27 @@
                   [disabled]="presupuestoForm.invalid || loading"
                   class="w-full py-3 px-4 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
-                  Enviar Cotización
+                  {{ modoEdicion ? 'Actualizar Cotización' : 'Enviar Cotización' }}
                 </button>
 
+                <!-- Botón Cancelar Edición -->
                 <button
+                  *ngIf="modoEdicion"
+                  type="button"
+                  (click)="toggleModoEdicion()"
+                  class="w-full py-3 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar Edición
+                </button>
+
+                <!-- Botón Volver (solo si no es edición) -->
+                <button
+                  *ngIf="!modoEdicion"
                   type="button"
                   (click)="cancelQuote()"
                   class="w-full py-3 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
-                  Cancelar
+                  Volver al Listado
                 </button>
               </div>
             </form>

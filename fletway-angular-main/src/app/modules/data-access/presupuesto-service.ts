@@ -59,6 +59,8 @@ export class PresupuestoService {
     return this._authService.userState();
   }
 
+  private _joinedRooms = new Set<string>();
+
   constructor() {
     console.log('💰 [PresupuestoService] Inicializando...');
 
@@ -72,6 +74,53 @@ export class PresupuestoService {
 
     this.initSocketListeners();
     this.initDebugLogger();
+
+    // Observar cambios en la sesión para unirse a las rooms correctas
+    effect(() => {
+      const session = this._authService.userState();
+      if (session.userId && session.isFletero !== null && !session.isFleteroLoading) {
+        this.joinSocketRooms(session);
+      }
+    });
+  }
+
+  /**
+   * 🏠 Unirse a las rooms de Socket.IO según el rol del usuario
+   */
+  private joinSocketRooms(session: any) {
+    if (!this.socket.connected) return;
+
+    if (session.isFletero) {
+      if (!this._joinedRooms.has('fleteros')) {
+        this.socket.emit('join_room', { room: 'fleteros' });
+        this._joinedRooms.add('fleteros');
+        console.log('🏠 [Socket-Presupuestos] Unido a room: fleteros');
+      }
+      const transportistaId = session.transportista?.transportista_id;
+      if (transportistaId) {
+        const personalRoom = `fletero_${transportistaId}`;
+        if (!this._joinedRooms.has(personalRoom)) {
+          this.socket.emit('join_room', { room: personalRoom });
+          this._joinedRooms.add(personalRoom);
+          console.log(`🏠 [Socket-Presupuestos] Unido a room: ${personalRoom}`);
+        }
+      }
+    } else {
+      if (!this._joinedRooms.has('clientes')) {
+        this.socket.emit('join_room', { room: 'clientes' });
+        this._joinedRooms.add('clientes');
+        console.log('🏠 [Socket-Presupuestos] Unido a room: clientes');
+      }
+      const usuarioIdNum = session.usuarioIdNumerico;
+      if (usuarioIdNum) {
+        const personalRoom = `cliente_${usuarioIdNum}`;
+        if (!this._joinedRooms.has(personalRoom)) {
+          this.socket.emit('join_room', { room: personalRoom });
+          this._joinedRooms.add(personalRoom);
+          console.log(`🏠 [Socket-Presupuestos] Unido a room: ${personalRoom}`);
+        }
+      }
+    }
   }
 
   /**
@@ -94,10 +143,17 @@ export class PresupuestoService {
   private initSocketListeners() {
     this.socket.on('connect', () => {
       console.log('✅ [Socket-Presupuestos] Conectado');
+      // Re-unirse a las rooms al reconectar
+      this._joinedRooms.clear();
+      const session = this._authService.userState();
+      if (session.userId && session.isFletero !== null) {
+        this.joinSocketRooms(session);
+      }
     });
 
     this.socket.on('disconnect', () => {
       console.warn('⚠️ [Socket-Presupuestos] Desconectado');
+      this._joinedRooms.clear();
     });
 
     // ========================================
@@ -262,6 +318,52 @@ export class PresupuestoService {
   }
 
   /**
+   * ✏️ EDITAR PRESUPUESTO
+   */
+  async editarPresupuesto(presupuestoId: number, payload: {
+    precio: number;
+    comentario: string;
+  }): Promise<Presupuesto | null> {
+    try {
+      console.log(`💰 [editarPresupuesto] Editando presupuesto ${presupuestoId}:`, payload);
+
+      this._state.update(s => ({ ...s, loading: true, error: null }));
+
+      const response = await firstValueFrom(
+        this.http.put<Presupuesto>(
+          `${this.apiUrl}/api/presupuestos/${presupuestoId}`,
+          {
+            precio_estimado: payload.precio,
+            comentario: payload.comentario
+          }
+        )
+      );
+
+      console.log('✅ [editarPresupuesto] Presupuesto actualizado:', response);
+
+      // Actualizar estado local
+      this._state.update(s => ({
+        ...s,
+        loading: false,
+        presupuestos: s.presupuestos.map(p =>
+          p.presupuesto_id === presupuestoId ? response : p
+        )
+      }));
+
+      return response;
+
+    } catch (err: any) {
+      console.error('❌ [editarPresupuesto] Error:', err);
+      this._state.update(s => ({
+        ...s,
+        loading: false,
+        error: err.message || 'Error al actualizar presupuesto'
+      }));
+      return null;
+    }
+  }
+
+  /**
    * 📊 OBTENER RESUMEN DE PRESUPUESTOS
    */
   async getResumenPresupuestos(solicitudId: number): Promise<{
@@ -398,10 +500,10 @@ export class PresupuestoService {
       }));
     } catch (err: any) {
       console.error('❌ [getPresupuestosCompletoBatch] Error:', err);
-      this._state.update((s) => ({
+      this._state.update(s => ({
         ...s,
         loading: false,
-        error: err.message || 'Error al cargar presupuestos',
+        error: err.message || 'Error al cargar presupuestos'
       }));
     }
   }
@@ -418,8 +520,8 @@ export class PresupuestoService {
 
       this._state.update((s) => ({ ...s, loading: true, error: null }));
 
-      await firstValueFrom(
-        this.http.post(
+      const response = await firstValueFrom(
+        this.http.post<any>(
           `${this.apiUrl}/api/presupuestos/${presupuestoId}/aceptar`,
           { solicitud_id: solicitudId },
         ),
@@ -427,10 +529,21 @@ export class PresupuestoService {
 
       console.log('✅ [aceptarPresupuesto] Presupuesto aceptado');
 
-      // ⚠️ NO actualizamos el estado local aquí
-      // El socket 'aceptar_solicitud' se encargará de actualizar los estados
-
-      this._state.update((s) => ({ ...s, loading: false }));
+      // ✅ Actualizar estado local: marcar ganador como 'aceptado', demás como 'rechazado'
+      this._state.update(s => ({
+        ...s,
+        loading: false,
+        presupuestos: s.presupuestos.map(p => {
+          if (p.solicitud_id === solicitudId) {
+            if (p.presupuesto_id === presupuestoId) {
+              return { ...p, estado: 'aceptado' };
+            } else {
+              return { ...p, estado: 'rechazado' };
+            }
+          }
+          return p;
+        })
+      }));
 
       return true;
     } catch (err: any) {

@@ -14,6 +14,8 @@ export interface userState {
   isFleteroLoading?: boolean;
   session?: Session | null;
 
+  usuarioIdNumerico?: number | null; // PK entero de tabla 'usuario'
+
   transportista?: {
     transportista_id: number;
   } | null;
@@ -33,6 +35,7 @@ export class AuthService {
     isFletero: null,
     isFleteroLoading: false,
     session: null,
+    usuarioIdNumerico: null,
     transportista: null,
     transportistaLoading: false,
   });
@@ -108,6 +111,7 @@ export class AuthService {
             isFletero: cachedIsFletero,
             isFleteroLoading: false,
             session,
+            usuarioIdNumerico: null,
             transportista: null,
             transportistaLoading: false,
           });
@@ -115,6 +119,9 @@ export class AuthService {
             '[onAuthStateChange] usando cache isFletero:',
             cachedIsFletero,
           );
+
+          // ✅ CARGAR usuario_id numérico en segundo plano
+          this.cargarUsuarioIdNumerico(userId);
 
           // ✅ CARGA EN SEGUNDO PLANO (sin await)
           if (cachedIsFletero) {
@@ -129,10 +136,14 @@ export class AuthService {
             isFletero: shouldReset ? null : prev.isFletero,
             isFleteroLoading: true,
             session,
+            usuarioIdNumerico: null,
             transportista: null,
             transportistaLoading: false,
           });
           console.log('[onAuthStateChange] consultando BD para isFletero');
+
+          // ✅ CARGAR usuario_id numérico en segundo plano
+          this.cargarUsuarioIdNumerico(userId);
 
           try {
             const isFletero = await this.esFletero(userId);
@@ -172,6 +183,7 @@ export class AuthService {
           email: null,
           isFletero: null,
           session: null,
+          usuarioIdNumerico: null,
           transportista: null,
           transportistaLoading: false,
         });
@@ -212,6 +224,7 @@ export class AuthService {
       email: null,
       isFletero: null,
       session: null,
+      usuarioIdNumerico: null,
       transportista: null,
       transportistaLoading: false,
     });
@@ -285,6 +298,35 @@ export class AuthService {
   }
 
   /**
+   * ✅ CARGAR el usuario_id numérico (PK entero de tabla 'usuario') en segundo plano
+   */
+  private async cargarUsuarioIdNumerico(userId: string): Promise<void> {
+    // Si ya lo tenemos, no recargamos
+    if (this.userState().usuarioIdNumerico) return;
+
+    try {
+      const { data: usuario, error } = await this._supabaseClient
+        .from('usuario')
+        .select('usuario_id')
+        .eq('u_id', userId)
+        .single();
+
+      if (error || !usuario) {
+        console.warn('[cargarUsuarioIdNumerico] Error:', error);
+        return;
+      }
+
+      this.userState.update((prev) => ({
+        ...prev,
+        usuarioIdNumerico: usuario.usuario_id,
+      }));
+      console.log('✅ [cargarUsuarioIdNumerico] usuario_id:', usuario.usuario_id);
+    } catch (e) {
+      console.error('❌ [cargarUsuarioIdNumerico] Error:', e);
+    }
+  }
+
+  /**
    * ✅ NUEVA FUNCIÓN: Cargar transportista_id en SEGUNDO PLANO
    * Se ejecuta sin await después de confirmar que es fletero
    */
@@ -339,9 +381,10 @@ export class AuthService {
         return;
       }
 
-      // 3. Actualizar estado con el transportista_id
+      // 3. Actualizar estado con el transportista_id y el usuario_id numérico
       this.userState.update((prev) => ({
         ...prev,
+        usuarioIdNumerico: usuario.usuario_id,
         transportista: {
           transportista_id: transportista.transportista_id
         },

@@ -7,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { Solicitud } from '../../../core/layouts/solicitud';
 import { MapComponent } from '../../../shared/features/map/map';
@@ -43,6 +44,10 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   cargandoFotos = false;
   fotoSeleccionadaIndex: number | null = null;
   mostrarPopupFoto = false;
+
+  // Presupuesto existente
+  presupuestoPropio: any = null;
+  modoEdicion = false;
 
   // Popup del mapa
   popupMapaAbierto = false;
@@ -118,6 +123,8 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
       this.pedido = p;
       // Cargar fotos de la solicitud
       await this.cargarFotos();
+      // Verificar si ya tengo un presupuesto para esta solicitud
+      await this.verificarPresupuestoExistente();
     } catch (err) {
       console.error('Error cargando pedido:', err);
       this.error = true;
@@ -147,6 +154,49 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
   }
 
   /**
+   * Verifica si el transportista actual ya envió un presupuesto para esta solicitud
+   */
+  async verificarPresupuestoExistente(): Promise<void> {
+    if (!this.pedido?.solicitud_id) return;
+
+    const transportistaId = this.presupuestoService.sesion.transportista?.transportista_id;
+    if (!transportistaId) return;
+
+    try {
+      const response = await this.presupuestoService.getPresupuestosBySolicitudId(this.pedido.solicitud_id);
+      
+      if (!response) return;
+
+      // Buscar si hay uno mío
+      const mio = response.find(p => p.transportista_id === transportistaId);
+      if (mio) {
+        this.presupuestoPropio = mio;
+        this.modoEdicion = true;
+        this.presupuestoForm.patchValue({
+          precio: mio.precio_estimado,
+          comentario: mio.comentario
+        });
+        console.log('💰 Presupuesto propio encontrado:', mio);
+      }
+    } catch (error) {
+      console.error('Error verificando presupuesto existente:', error);
+    }
+  }
+
+  toggleModoEdicion() {
+    if (this.presupuestoPropio) {
+      this.modoEdicion = !this.modoEdicion;
+      if (!this.modoEdicion) {
+         // Reset al valor original si cancela edición
+         this.presupuestoForm.patchValue({
+          precio: this.presupuestoPropio.precio_estimado,
+          comentario: this.presupuestoPropio.comentario
+        });
+      }
+    }
+  }
+
+  /**
    * Cancela la cotización y vuelve a la vista anterior
    */
   cancelQuote() {
@@ -156,7 +206,6 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
 
   async submitQuote() {
     if (!this.presupuestoForm.valid || !this.pedido) {
-      console.log(this.presupuestoForm.value);
       this.toastService.showWarning(
         'Formulario inválido',
         'Por favor completa todos los campos requeridos',
@@ -165,35 +214,40 @@ export class DetallesSolicitudFleteroComponent implements OnInit {
     }
 
     this.loading = true;
-    this.error = false;
     try {
       const v = this.presupuestoForm.value;
-      const payload = {
-        solicitud: this.pedido.solicitud_id,
-        precio: v.precio,
-        comentario: v.comentario,
-      };
-      const result = await this.presupuestoService.addPresupuesto(payload);
-      if (!result) {
-        this.toastService.showDanger(
-          'Error',
-          'No se pudo enviar el presupuesto',
+      
+      if (this.presupuestoPropio) {
+        // MODO EDICIÓN
+        const result = await this.presupuestoService.editarPresupuesto(
+          this.presupuestoPropio.presupuesto_id,
+          {
+            precio: v.precio,
+            comentario: v.comentario
+          }
         );
-        this.error = true;
-        return;
+
+        if (result) {
+          this.toastService.showSuccess('¡Éxito!', 'Presupuesto actualizado correctamente');
+          this.presupuestoPropio = result;
+          this.modoEdicion = false;
+        }
+      } else {
+        // MODO CREACIÓN
+        const payload = {
+          solicitud: this.pedido.solicitud_id,
+          precio: v.precio,
+          comentario: v.comentario,
+        };
+        const result = await this.presupuestoService.addPresupuesto(payload);
+        if (result) {
+          this.toastService.showSuccess('¡Éxito!', 'Presupuesto enviado correctamente');
+          this.router.navigate(['/fletero']);
+        }
       }
-      this.toastService.showSuccess(
-        '¡Éxito!',
-        'Presupuesto enviado correctamente',
-      );
-      this.router.navigate(['/fletero']);
     } catch (err) {
       console.error('submitQuote catch:', err);
-      this.toastService.showDanger(
-        'Error inesperado',
-        'Ocurrió un error al enviar el presupuesto',
-      );
-      this.error = true;
+      this.toastService.showDanger('Error', 'Ocurrió un error al procesar el presupuesto');
     } finally {
       this.loading = false;
     }

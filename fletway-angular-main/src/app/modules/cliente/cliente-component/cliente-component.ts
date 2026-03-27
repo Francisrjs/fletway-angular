@@ -423,21 +423,18 @@ export class ClienteComponent implements OnInit {
 
           await this._presupuestoService.aceptarPresupuesto(presupuesto.presupuesto_id, presupuesto.solicitud_id);
 
-          // ✅ REACTIVIDAD AUTOMÁTICA:
-          // 1. Socket 'aceptar_solicitud' → SolicitudService actualiza solicitud
-          // 2. Socket también actualiza presupuestos en PresupuestoService
-          // 3. Effect en este componente procesa la solicitud actualizada
-          // 4. solicitudesVisuales se actualiza con transportista asignado
-          // 5. ClientePresupuesto reactúa a cambios en PresupuestoService
-          // 6. UI se actualiza automáticamente en ambas vistas
+          // ✅ Actualizar solicitud local a estado 'pendiente' inmediatamente
+          this._solService.actualizarSolicitudLocal(
+            presupuesto.solicitud_id,
+            {
+              estado: 'pendiente' as any,
+              presupuesto_aceptado: presupuesto.presupuesto_id,
+              presupuesto: presupuesto
+            }
+          );
 
           this.sidebarVisible = false;
           this.toastService.showSuccess('Presupuesto aceptado', 'Transportista notificado');
-
-          console.log('🔌 [Socket] Esperando actualizaciones automáticas...');
-          console.log('   - Solicitud cambiará a estado "pendiente"');
-          console.log('   - Transportista asignado se mostrará en la card');
-          console.log('   - Otros presupuestos se removerán de la vista');
 
         } catch (error) {
           console.error('❌ [Cliente] Error al aceptar presupuesto:', error);

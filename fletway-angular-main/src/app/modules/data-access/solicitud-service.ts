@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '../../core/auth/data-access/auth-service';
 import { Localidad } from '../../core/layouts/localidad';
 import { Solicitud } from '../../core/layouts/solicitud';
@@ -58,6 +58,8 @@ export class SolcitudService {
     return this._authService.userState();
   }
 
+  private _joinedRooms = new Set<string>();
+
   constructor() {
     console.log('🚀 [SolicitudService] Inicializando...');
 
@@ -70,6 +72,58 @@ export class SolcitudService {
     });
 
     this.initSocketListeners();
+
+    // Observar cambios en la sesión para unirse a las rooms correctas
+    effect(() => {
+      const session = this._authService.userState();
+      if (session.userId && session.isFletero !== null && !session.isFleteroLoading) {
+        this.joinSocketRooms(session);
+      }
+    });
+  }
+
+  /**
+   * 🏠 Unirse a las rooms de Socket.IO según el rol del usuario
+   */
+  private joinSocketRooms(session: any) {
+    if (!this.socket.connected) {
+      // Si el socket no está conectado aún, se unirá al reconectar (ver handler 'connect')
+      return;
+    }
+
+    if (session.isFletero) {
+      // FLETERO: unirse a room general y personal
+      if (!this._joinedRooms.has('fleteros')) {
+        this.socket.emit('join_room', { room: 'fleteros' });
+        this._joinedRooms.add('fleteros');
+        console.log('🏠 [Socket] Unido a room: fleteros');
+      }
+      const transportistaId = session.transportista?.transportista_id;
+      if (transportistaId) {
+        const personalRoom = `fletero_${transportistaId}`;
+        if (!this._joinedRooms.has(personalRoom)) {
+          this.socket.emit('join_room', { room: personalRoom });
+          this._joinedRooms.add(personalRoom);
+          console.log(`🏠 [Socket] Unido a room: ${personalRoom}`);
+        }
+      }
+    } else {
+      // CLIENTE: unirse a room general y personal
+      if (!this._joinedRooms.has('clientes')) {
+        this.socket.emit('join_room', { room: 'clientes' });
+        this._joinedRooms.add('clientes');
+        console.log('🏠 [Socket] Unido a room: clientes');
+      }
+      const usuarioIdNum = session.usuarioIdNumerico;
+      if (usuarioIdNum) {
+        const personalRoom = `cliente_${usuarioIdNum}`;
+        if (!this._joinedRooms.has(personalRoom)) {
+          this.socket.emit('join_room', { room: personalRoom });
+          this._joinedRooms.add(personalRoom);
+          console.log(`🏠 [Socket] Unido a room: ${personalRoom}`);
+        }
+      }
+    }
   }
 
   /**
@@ -79,10 +133,17 @@ export class SolcitudService {
     // Conexión/Desconexión
     this.socket.on('connect', () => {
       console.log('✅ [Socket] Conectado al servidor');
+      // Re-unirse a las rooms al reconectar
+      this._joinedRooms.clear();
+      const session = this._authService.userState();
+      if (session.userId && session.isFletero !== null) {
+        this.joinSocketRooms(session);
+      }
     });
 
     this.socket.on('disconnect', () => {
       console.warn('⚠️ [Socket] Desconectado del servidor');
+      this._joinedRooms.clear();
     });
 
     /*this.socket.on('presupuesto_aceptado',(data: PresupuestoAceptadoEvent) => {
@@ -178,7 +239,7 @@ export class SolcitudService {
       }
     });
 
-    this.socket.on('aceptar_solicitud', (data: any) => {
+    this.socket.on('aceptar_solicitud', (data) => {
       // Para fleteros: verificar si soy el ganador
       // Si no soy el ganador, remover la solicitud
       this.handleSolicitudAceptada(data);
@@ -295,6 +356,7 @@ export class SolcitudService {
       console.log('✅ [Fletero] Solicitud agregada a disponibles');
     }
   }
+
 
   //
   private handleSolicitudAceptada(solicitud: any) {
@@ -475,60 +537,6 @@ export class SolcitudService {
     console.log('✅ [Fletero] Solicitud eliminada de disponibles y pendientes');
   }
 
-  /**
-   * 🚚 FLETERO: Presupuesto aceptado - mover de disponibles a pendientes
-   */
-  /*
-  private async handlePresupuestoAceptadoFletero(data: {
-    solicitud_id: number;
-    presupuesto_id: number;
-    transportista_id: number;
-  }) {
-    const session = this.sesion;
-    if (!session) return;
-
-    // Obtener el transportista actual
-    const usuario = await firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/api/usuarios/me`)
-    );
-
-    const transportista = await firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/api/transportista/${usuario.usuario_id}`)
-    );
-
-    // Solo procesar si es MI presupuesto el aceptado
-    if (transportista?.transportista_id !== data.transportista_id) {
-      // Si no es mi presupuesto, eliminar de disponibles
-      const disponibles = this.solicitudes_disponibles();
-      this.solicitudes_disponibles.set(
-        disponibles.filter(s => s.solicitud_id !== data.solicitud_id)
-      );
-      return;
-    }
-
-    // Es MI presupuesto: mover de disponibles a pendientes
-    const disponibles = this.solicitudes_disponibles();
-    const solicitud = disponibles.find(s => s.solicitud_id === data.solicitud_id);
-
-    if (solicitud) {
-      // Eliminar de disponibles
-      this.solicitudes_disponibles.set(
-        disponibles.filter(s => s.solicitud_id !== data.solicitud_id)
-      );
-
-      // Actualizar estado y agregar a pendientes
-      const solicitudActualizada: Solicitud = {
-        ...solicitud,
-        estado: 'pendiente' as any,
-        presupuesto_aceptado: data.presupuesto_id
-      };
-
-      const pendientes = this.solicitudes_pendientes();
-      this.solicitudes_pendientes.set([solicitudActualizada, ...pendientes]);
-
-      console.log('✅ [Fletero] Solicitud movida a pendientes con botón para realizar viaje');
-    }
-  } */
 
   /**
    * 🚚 FLETERO: Viaje iniciado
@@ -578,15 +586,18 @@ export class SolcitudService {
   // HANDLERS PARA CLIENTE
   // ========================================
 
-  /**
-   * 👤 CLIENTE: Nueva solicitud creada
-   */
   private handleNuevaSolicitudCliente(solicitud: Solicitud) {
-    this._state.update((s) => ({
-      ...s,
-      solicitudes: [solicitud, ...s.solicitudes],
-    }));
-    console.log('✅ [Cliente] Nueva solicitud agregada');
+    this._state.update(s => {
+      // Evitar duplicados si el socket llega muy rápido o se re-emite
+      const existe = s.solicitudes.some(sol => sol.solicitud_id === solicitud.solicitud_id);
+      if (existe) return s;
+
+      return {
+        ...s,
+        solicitudes: [solicitud, ...s.solicitudes]
+      };
+    });
+    console.log('✅ [Cliente] Nueva solicitud agregada o actualizada en la lista');
   }
 
   /**
@@ -699,7 +710,7 @@ export class SolcitudService {
               estado: 'completado' as any,
               puede_calificar: true,
             } as Solicitud)
-          : sol,
+          : sol
       ),
     }));
     console.log('✅ [Cliente] Viaje completado - puede calificar');
@@ -930,15 +941,24 @@ export class SolcitudService {
     try {
       this._state.update((s) => ({ ...s, loading: true }));
 
-      await firstValueFrom(
-        this.http.post(
-          `${this.apiUrl}/api/solicitudes/${solicitudId}/comenzar-viaje`,
-          {},
-        ),
+      const response = await firstValueFrom(
+        this.http.post<any>(`${this.apiUrl}/api/solicitudes/${solicitudId}/comenzar-viaje`, {})
       );
 
-      // El socket ya manejará la actualización del estado
-      this._state.update((s) => ({ ...s, loading: false }));
+      // ✅ Actualizar estado local inmediatamente con la respuesta de la API
+      const solicitudActualizada = response.solicitud;
+      if (solicitudActualizada) {
+        const pendientes = this.solicitudes_pendientes();
+        this.solicitudes_pendientes.set(
+          pendientes.map(s =>
+            s.solicitud_id === solicitudId
+              ? { ...s, ...solicitudActualizada, estado: 'en viaje' as any }
+              : s
+          )
+        );
+      }
+
+      this._state.update(s => ({ ...s, loading: false }));
     } catch (err) {
       console.error('❌ Error al comenzar viaje:', err);
       this._state.update((s) => ({ ...s, loading: false }));
@@ -953,15 +973,18 @@ export class SolcitudService {
     try {
       this._state.update((s) => ({ ...s, loading: true }));
 
-      await firstValueFrom(
-        this.http.post(
-          `${this.apiUrl}/api/solicitudes/${solicitudId}/completar`,
-          {},
-        ),
+      const response = await firstValueFrom(
+        this.http.post<any>(`${this.apiUrl}/api/solicitudes/${solicitudId}/completar`, {})
       );
 
-      // El socket ya manejará la actualización del estado
-      this._state.update((s) => ({ ...s, loading: false }));
+      // ✅ Actualizar estado local inmediatamente
+      // Eliminar de pendientes (viaje completado)
+      const pendientes = this.solicitudes_pendientes();
+      this.solicitudes_pendientes.set(
+        pendientes.filter(s => s.solicitud_id !== solicitudId)
+      );
+
+      this._state.update(s => ({ ...s, loading: false }));
     } catch (err) {
       console.error('❌ Error al completar viaje:', err);
       this._state.update((s) => ({ ...s, loading: false }));
@@ -1003,6 +1026,25 @@ export class SolcitudService {
       this._state.update((s) => ({ ...s, loading: false }));
       throw err;
     }
+  }
+
+  // ========================================
+  // ACTUALIZACIÓN LOCAL DIRECTA
+  // ========================================
+
+  /**
+   * ✅ Actualizar una solicitud en el estado local (para uso directo del componente)
+   * Usado cuando el componente necesita reflejar un cambio inmediato sin esperar socket
+   */
+  actualizarSolicitudLocal(solicitudId: number, cambios: Partial<Solicitud>): void {
+    this._state.update(s => ({
+      ...s,
+      solicitudes: s.solicitudes.map(sol =>
+        sol.solicitud_id === solicitudId
+          ? { ...sol, ...cambios } as Solicitud
+          : sol
+      )
+    }));
   }
 
   // ========================================
