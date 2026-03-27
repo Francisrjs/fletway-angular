@@ -16,7 +16,7 @@ const envFileContent = `export const environment = {
   production: true,
   supabaseUrl: '${env.NG_APP_SUPABASE_URL || ""}',
   supabaseKey: '${env.NG_APP_SUPABASE_KEY || ""}',
-  apiUrl: '${env.NG_APP_API_URL || "https://fletway-api-533654897399.us-central1.run.app"}',
+  apiUrl: '${env.NG_APP_API_URL || "https://fletway-api-568207456643.us-central1.run.app"}',
 };
 `;
 
@@ -33,5 +33,5 @@ console.log(
 console.log(`   - SUPABASE_URL: ${env.NG_APP_SUPABASE_URL ? "✓" : "✗"}`);
 console.log(`   - SUPABASE_KEY: ${env.NG_APP_SUPABASE_KEY ? "✓" : "✗"}`);
 console.log(
-  `   - API_URL: ${env.NG_APP_API_URL || "https://fletway-api-533654897399.us-central1.run.app"}`,
+  `   - API_URL: ${env.NG_APP_API_URL || "https://fletway-api-568207456643.us-central1.run.app"}`,
 );
