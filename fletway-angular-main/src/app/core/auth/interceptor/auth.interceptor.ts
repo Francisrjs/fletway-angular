@@ -7,8 +7,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const state = authService.userState();
   const token = state?.session?.access_token;
 
-  // Filtrar: Solo agregar token a tu API de Flask (evita enviarlo a otras APIs externas si las hubiera)
-  const isApiUrl = req.url.includes('fletway-api') ||
+  // Filtrar: Solo agregar token a tu API (cualquier host que contenga 'fletway') o en local
+  const isApiUrl = req.url.includes('fletway') ||
     req.url.includes('localhost') ||
     req.url.includes('127.0.0.1');
 
